@@ -1,10 +1,8 @@
 import { App } from 'vue'
-import SForm from '@/lib/S-Form/index'
-import STable from '@/lib/S-Table/index'
+import SIcon from '@/lib/S-Icon/index'
 
 export default {
   install(app: App) {
-    app.component('SForm', SForm)
-    app.component('STable', STable)
+    app.component('SIcon', SIcon)
   }
 }

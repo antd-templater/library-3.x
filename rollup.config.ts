@@ -13,8 +13,7 @@ import vue from 'rollup-plugin-vue'
 export default defineConfig([
   {
     input: [
-      'src/lib/S-Table/index.tsx',
-      'src/lib/S-Form/index.tsx',
+      'src/lib/S-Icon/index.tsx',
       'src/util/helper.ts',
       'src/util/base.ts',
       'src/index.ts'

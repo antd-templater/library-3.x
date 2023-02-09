@@ -1,10 +1,8 @@
-import SForm from './lib/S-Form/index.mjs';
-import STable from './lib/S-Table/index.mjs';
+import SIcon from './lib/S-Icon/index.mjs';
 
 var index = {
     install(app) {
-        app.component('SForm', SForm);
-        app.component('STable', STable);
+        app.component('SIcon', SIcon);
     }
 };
 
