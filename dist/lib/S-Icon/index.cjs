@@ -24,13 +24,8 @@ function _interopNamespaceDefault(e) {
 
 var AllIcons__namespace = /*#__PURE__*/_interopNamespaceDefault(AllIcons);
 
-var SIcon = vue.defineComponent({
-  name: 'SIcon',
-  setup() {
-    const props = vue.defineProps();
-    const Component = AllIcons__namespace[props.name];
-    return vue.createVNode(Component, null, null);
-  }
-});
+const SIconComponent = function SIcon(props, context) {
+  return vue.createVNode(AllIcons__namespace[props.name], context.attrs, context.slots);
+};
 
-exports.default = SIcon;
+exports.default = SIconComponent;

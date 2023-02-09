@@ -1,13 +1,8 @@
-import { defineComponent, defineProps, createVNode } from 'vue';
+import { createVNode } from 'vue';
 import * as AllIcons from '@ant-design/icons-vue';
 
-var SIcon = defineComponent({
-  name: 'SIcon',
-  setup() {
-    const props = defineProps();
-    const Component = AllIcons[props.name];
-    return createVNode(Component, null, null);
-  }
-});
+const SIconComponent = function SIcon(props, context) {
+  return createVNode(AllIcons[props.name], context.attrs, context.slots);
+};
 
-export { SIcon as default };
+export { SIconComponent as default };

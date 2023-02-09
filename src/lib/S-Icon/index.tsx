@@ -1,16 +1,14 @@
-import { defineComponent, defineProps } from 'vue'
+import { FunctionalComponent, createVNode } from 'vue'
 import { AntdIconProps } from '@ant-design/icons-vue/es/components/AntdIcon'
 import * as AllIcons from '@ant-design/icons-vue'
 
 type AllKeys = keyof typeof AllIcons
 type AllNames = AllCapitalize<keyof typeof AllIcons>
 type AllCapitalize<K extends AllKeys> = K extends Capitalize<K> ? K : never;
+type TypeSIconComponent = FunctionalComponent<AntdIconProps & { name: AllNames }>
 
-export default defineComponent({
-  name: 'SIcon',
-  setup() {
-    const props = defineProps<AntdIconProps & { name: AllNames }>()
-    const Component = AllIcons[props.name]
-    return <Component/>
-  }
-})
+const SIconComponent: TypeSIconComponent = function SIcon(props, context) {
+  return createVNode(AllIcons[props.name], context.attrs, context.slots)
+}
+
+export default SIconComponent

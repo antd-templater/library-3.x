@@ -1,8 +1,8 @@
-import SIcon from './lib/S-Icon/index.mjs';
+import SIconComponent from './lib/S-Icon/index.mjs';
 
 var index = {
     install(app) {
-        app.component('SIcon', SIcon);
+        app.component('SIcon', SIconComponent);
     }
 };
 
