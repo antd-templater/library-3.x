@@ -2,8 +2,8 @@
 
 > S-IconSelect - pending  
 > S-EditCell - pending  
-> S-Ellipsis - pending  
+> S-Ellipsis - finished  
 > S-Table - pending  
 > S-Tree - pending  
 > S-Form - pending  
-> S-Icon - doing  
+> S-Icon - finished  

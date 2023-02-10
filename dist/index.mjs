@@ -1,9 +1,11 @@
-import SIconComponent from './lib/S-Icon/index.mjs';
+import { SIcon } from './S-Icon/index.mjs';
+import { SEllipsis } from './S-Ellipsis/index.mjs';
 
 var index = {
     install(app) {
-        app.component('SIcon', SIconComponent);
+        app.component('SIcon', SIcon);
+        app.component('SEllipsis', SEllipsis);
     }
 };
 
-export { index as default };
+export { SEllipsis, SIcon, index as default };

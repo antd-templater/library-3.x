@@ -1,3 +1,5 @@
+import dayjs from 'dayjs'
+
 export function itType(val: unknown) {
   return Object.prototype.toString.call(val).replace(/^\[[^\s\]]+\s*([^\s\]]+)]$/, '$1')
 }
@@ -129,6 +131,68 @@ export function toDeepClone<T = unknown>(source: T, ...reset: unknown[]): T {
   return input as T
 }
 
+export const takeTimeToDate = (date: dayjs.ConfigType, format?: dayjs.OptionType) => {
+  if (date) {
+    try { return dayjs(date, format) } catch {}
+  }
+  return null
+}
+
+export const takeTimeToFormat = (date: dayjs.ConfigType, format = 'YYYY-MM-DD HH:mm:ss') => {
+  if (date) {
+    try { return dayjs(date).format(format) } catch {}
+  }
+  return ''
+}
+
+export const takeLabelByKey = (trees: Record<string, any>[], key: string | number, label = 'label', value = 'value', children = 'children'): string | number => {
+  return takeTreeByKey(trees, key, value, children)?.[label] || key
+}
+
+export const takeTreeByKey = (trees: Record<string, any>[], key: string | number, value = 'value', children = 'children'): Record<string, any> | null => {
+  if (isArray(trees) && (isString(key) || isNumber(key))) {
+    for (const tree of trees) {
+      if (key === tree[value]) {
+        return tree
+      }
+      if (isNotEmptyArray(tree[children])) {
+        const node = takeTreeByKey(tree[children], key, value, children)
+        if (node) return node
+      }
+    }
+  }
+  return null
+}
+
+export const takePadEnd = (num: number | string, keep = 0) => {
+  const string = String(+num || 0)
+  const [integer = '0', decimal = ''] = string.split('.')
+  return +keep || decimal ? [integer, decimal.padEnd(+keep, '0')].join('.') : integer
+}
+
+export const takeFixed = (num: number | string, digit = 0) => {
+  if (!isFinite(+num)) {
+    return '0.' + ''.padEnd(digit, '0')
+  }
+
+  let string = ''
+
+  num = +num || 0
+  digit = isFinite(digit) ? +digit : 2
+  string = String(Math.round(Math.pow(10, digit) * num) / Math.pow(10, digit))
+
+  if (~string.indexOf('.')) {
+    const arr = string.split('.')
+    return arr[0] + '.' + arr[1].padEnd(digit, '0')
+  }
+
+  if (digit !== 0) {
+    string += '.' + ''.padEnd(digit, '0')
+  }
+
+  return string
+}
+
 export default {
   itType,
   isArray,
@@ -146,5 +210,11 @@ export default {
   isNotEmptyString,
   isNotFiniteNumber,
   isFiniteNumber,
-  toDeepClone
+  toDeepClone,
+  takeTimeToDate,
+  takeTimeToFormat,
+  takeLabelByKey,
+  takeTreeByKey,
+  takePadEnd,
+  takeFixed
 }

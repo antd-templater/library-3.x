@@ -13,9 +13,8 @@ import vue from 'rollup-plugin-vue'
 export default defineConfig([
   {
     input: [
-      'src/lib/S-Icon/index.tsx',
-      'src/util/helper.ts',
-      'src/util/base.ts',
+      'src/S-Ellipsis/index.tsx',
+      'src/S-Icon/index.tsx',
       'src/index.ts'
     ],
     output: [
@@ -25,11 +24,9 @@ export default defineConfig([
         hoistTransitiveImports: false,
         entryFileNames: chunk => {
           const id = chunk.facadeModuleId
-          const dir = id?.replace(/.+\/src\/(([^/]+)\/)?(([^./]+)\/)?[^./]+(\.vue|\.tsx|\.ts)/, '$2')
-          const type = id?.replace(/.+\/src\/(([^/]+)\/)?(([^./]+)\/)?[^./]+(\.vue|\.tsx|\.ts)/, '$4')
-          return dir && type ? `${dir}/${type}/[name].mjs` : dir ? `${dir}/[name].mjs` : `[name].mjs`
-        },
-        chunkFileNames: `vendor/[name]-[hash].mjs`
+          const dir = id?.replace(/.+\/src\/(([^./]+)\/)?[^./]+(\.vue|\.tsx|\.ts)/, '$2')
+          return dir ? `${dir}/[name].mjs` : `[name].mjs`
+        }
       },
       {
         dir: 'dist',
@@ -38,11 +35,9 @@ export default defineConfig([
         hoistTransitiveImports: false,
         entryFileNames: chunk => {
           const id = chunk.facadeModuleId
-          const dir = id?.replace(/.+\/src\/(([^/]+)\/)?(([^./]+)\/)?[^./]+(\.vue|\.tsx|\.ts)/, '$2')
-          const type = id?.replace(/.+\/src\/(([^/]+)\/)?(([^./]+)\/)?[^./]+(\.vue|\.tsx|\.ts)/, '$4')
-          return dir && type ? `${dir}/${type}/[name].cjs` : dir ? `${dir}/[name].cjs` : `[name].cjs`
-        },
-        chunkFileNames: `vendor/[name]-[hash].cjs`
+          const dir = id?.replace(/.+\/src\/(([^./]+)\/)?[^./]+(\.vue|\.tsx|\.ts)/, '$2')
+          return dir ? `${dir}/[name].cjs` : `[name].cjs`
+        }
       }
     ],
     plugins: [
@@ -66,7 +61,7 @@ export default defineConfig([
     ],
     external: [
       /^vue(\/.+|$)/,
-      /^moment(\/.+|$)/,
+      /^dayjs(\/.+|$)/,
       /^ant-design-vue(\/.+|$)/,
       /^@ant-design\/icons-vue/
     ]
