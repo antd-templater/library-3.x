@@ -1,6 +1,7 @@
 import { App } from 'vue'
-import SIcon from './S-Icon/index'
+import SIconSelect from './S-IconSelect/index'
 import SEllipsis from './S-Ellipsis/index'
+import SIcon from './S-Icon/index'
 
 export {
   SIcon,
@@ -9,7 +10,8 @@ export {
 
 export default {
   install(app: App) {
-    app.component('SIcon', SIcon)
+    app.component('SIconSelect', SIconSelect)
     app.component('SEllipsis', SEllipsis)
+    app.component('SIcon', SIcon)
   }
 }

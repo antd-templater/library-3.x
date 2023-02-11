@@ -13,6 +13,7 @@ import vue from 'rollup-plugin-vue'
 export default defineConfig([
   {
     input: [
+      'src/S-IconSelect/index.tsx',
       'src/S-Ellipsis/index.tsx',
       'src/S-Icon/index.tsx',
       'src/index.ts'

@@ -1,6 +1,6 @@
 ## Todo List
 
-> S-IconSelect - pending  
+> S-IconSelect - finished  
 > S-EditCell - pending  
 > S-Ellipsis - finished  
 > S-Table - pending  
