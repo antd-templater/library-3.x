@@ -1,10 +1,10 @@
 import { PropType, defineComponent } from 'vue'
 import * as AllIcons from '@ant-design/icons-vue'
 
-type AllIconType = Exclude<keyof typeof AllIcons, NotIconType>
+type AllIconType = keyof typeof AllIcons
 type NotIconType = 'setTwoToneColor' | 'getTwoToneColor' | 'createFromIconfontCN' | 'default'
 
-export const isIconType = (type: string): type is AllIconType => {
+export const isIconType = (type: string): type is Exclude<AllIconType, NotIconType> => {
   return (
     type !== 'default' &&
     type !== 'getTwoToneColor' &&
@@ -18,7 +18,7 @@ export const SIcon = defineComponent({
   name: 'SIcon',
   props: {
     type: {
-      type: String as PropType<AllIconType>,
+      type: String as PropType<Exclude<AllIconType, NotIconType>>,
       required: true
     },
     spin: {
