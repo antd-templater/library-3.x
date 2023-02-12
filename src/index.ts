@@ -4,8 +4,9 @@ import SEllipsis from './S-Ellipsis/index'
 import SIcon from './S-Icon/index'
 
 export {
-  SIcon,
-  SEllipsis
+  SIconSelect,
+  SEllipsis,
+  SIcon
 }
 
 export default {

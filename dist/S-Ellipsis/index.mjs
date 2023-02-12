@@ -2,7 +2,7 @@ import { defineComponent, toRefs, createVNode, mergeProps, reactive } from 'vue'
 import ATooltip, { tooltipProps } from 'ant-design-vue/es/tooltip';
 import 'ant-design-vue/es/tooltip/style/index.less';
 
-var SEllipsis = defineComponent({
+const SEllipsis = defineComponent({
   name: 'SEllipsis',
   props: {
     ...tooltipProps(),
@@ -88,4 +88,4 @@ var SEllipsis = defineComponent({
   }
 });
 
-export { SEllipsis as default };
+export { SEllipsis, SEllipsis as default };

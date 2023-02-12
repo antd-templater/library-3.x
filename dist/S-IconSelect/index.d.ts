@@ -1,12 +1,12 @@
 import { PropType } from 'vue';
 import { DefaultOptionType, SelectValue } from 'ant-design-vue/es/select';
 import 'ant-design-vue/es/select/style/index.less';
-export interface FieldNames {
+interface FieldNames {
     value?: string;
     label?: string;
     options?: string;
 }
-declare const _default: import("vue").DefineComponent<{
+export declare const SIconSelect: import("vue").DefineComponent<{
     optionFilterProp: {
         type: StringConstructor;
         default: undefined;
@@ -145,4 +145,4 @@ declare const _default: import("vue").DefineComponent<{
     mode: "multiple" | "tags";
     size: "small" | "large" | "middle";
 }>;
-export default _default;
+export default SIconSelect;

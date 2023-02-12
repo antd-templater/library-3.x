@@ -1,7 +1,8 @@
 import { App } from 'vue';
+import SIconSelect from './S-IconSelect/index';
 import SEllipsis from './S-Ellipsis/index';
 import SIcon from './S-Icon/index';
-export { SIcon, SEllipsis };
+export { SIconSelect, SEllipsis, SIcon };
 declare const _default: {
     install(app: App): void;
 };

@@ -1,6 +1,6 @@
-import SIconSelect from './S-IconSelect/index.mjs';
-import SEllipsis from './S-Ellipsis/index.mjs';
-import SIcon from './S-Icon/index.mjs';
+import { SIconSelect } from './S-IconSelect/index.mjs';
+import { SEllipsis } from './S-Ellipsis/index.mjs';
+import { SIcon } from './S-Icon/index.mjs';
 
 var index = {
     install(app) {
@@ -10,4 +10,4 @@ var index = {
     }
 };
 
-export { SEllipsis, SIcon, index as default };
+export { SEllipsis, SIcon, SIconSelect, index as default };

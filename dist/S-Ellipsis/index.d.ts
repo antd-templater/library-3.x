@@ -1,6 +1,6 @@
 import { PropType } from 'vue';
 import 'ant-design-vue/es/tooltip/style/index.less';
-declare const _default: import("vue").DefineComponent<{
+export declare const SEllipsis: import("vue").DefineComponent<{
     limit: {
         type: NumberConstructor;
         default: number;
@@ -145,4 +145,4 @@ declare const _default: import("vue").DefineComponent<{
     align: import("ant-design-vue/es/vc-trigger/interface").AlignType;
     builtinPlacements: import("ant-design-vue/es/vc-trigger/interface").BuildInPlacements;
 }>;
-export default _default;
+export default SEllipsis;

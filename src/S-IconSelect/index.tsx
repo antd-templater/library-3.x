@@ -5,13 +5,13 @@ import 'ant-design-vue/es/select/style/index.less'
 import SIcon, { isIconType } from '../S-Icon'
 import defaultOptions from './icons'
 
-export interface FieldNames {
+interface FieldNames {
   value?: string;
   label?: string;
   options?: string;
 }
 
-export default defineComponent({
+export const SIconSelect = defineComponent({
   name: 'SIconSelect',
   props: {
     optionFilterProp: {
@@ -112,10 +112,13 @@ export default defineComponent({
         optionLabelProp={props.optionLabelProp}
         optionFilterProp={props.optionFilterProp}
         v-slots={{ option: OptionRender, tagRender: TagRender }}
-        onClick={() => { open.value = true }}
         onSearch={() => { open.value = true }}
+        onClick={() => { open.value = true }}
+        onBlur={() => { open.value = false }}
         onChange={onChange}
       />
     )
   }
 })
+
+export default SIconSelect

@@ -414,7 +414,7 @@ var defaultOptions = [
     }
 ];
 
-var SIconSelect = vue.defineComponent({
+const SIconSelect = vue.defineComponent({
   name: 'SIconSelect',
   props: {
     optionFilterProp: {
@@ -475,13 +475,13 @@ var SIconSelect = vue.defineComponent({
   },
   setup(props, context) {
     const OptionRender = props => {
-      return index.isIconType(props.value) ? vue.createVNode("span", null, [vue.createVNode(index.default, {
+      return index.isIconType(props.value) ? vue.createVNode("span", null, [vue.createVNode(index.SIcon, {
         "type": props.value,
         "style": 'margin: 0px 3px 0 -3px; font-size: 18px; vertical-align: middle;'
       }, null), props.label]) : vue.createVNode("span", null, [props.label]);
     };
     const TagRender = props => {
-      return index.isIconType(props.value) ? vue.createVNode("span", null, [vue.createVNode(index.default, {
+      return index.isIconType(props.value) ? vue.createVNode("span", null, [vue.createVNode(index.SIcon, {
         "type": props.value,
         "style": 'margin: 0px 3px 2px 2px; font-size: 20px; vertical-align: middle;'
       }, null), props.label]) : vue.createVNode("span", null, [props.label]);
@@ -510,11 +510,14 @@ var SIconSelect = vue.defineComponent({
       "placeholder": props.placeholder,
       "optionLabelProp": props.optionLabelProp,
       "optionFilterProp": props.optionFilterProp,
+      "onSearch": () => {
+        open.value = true;
+      },
       "onClick": () => {
         open.value = true;
       },
-      "onSearch": () => {
-        open.value = true;
+      "onBlur": () => {
+        open.value = false;
       },
       "onChange": onChange
     }, {
@@ -524,4 +527,5 @@ var SIconSelect = vue.defineComponent({
   }
 });
 
+exports.SIconSelect = SIconSelect;
 exports.default = SIconSelect;

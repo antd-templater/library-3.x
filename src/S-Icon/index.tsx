@@ -1,13 +1,24 @@
-import { defineComponent, PropType, h } from 'vue'
-import * as AllIcons from '@ant-design/icons-vue/lib/icons'
+import { PropType, defineComponent } from 'vue'
+import * as AllIcons from '@ant-design/icons-vue'
 
-export const isIconType = (type: string): type is keyof typeof AllIcons => !!(AllIcons as any)[type]
+type AllIconType = Exclude<keyof typeof AllIcons, NotIconType>
+type NotIconType = 'setTwoToneColor' | 'getTwoToneColor' | 'createFromIconfontCN' | 'default'
 
-export default defineComponent({
+export const isIconType = (type: string): type is AllIconType => {
+  return (
+    type !== 'default' &&
+    type !== 'getTwoToneColor' &&
+    type !== 'setTwoToneColor' &&
+    type !== 'createFromIconfontCN' &&
+    type && (AllIcons as any)[type] && true || false
+  )
+}
+
+export const SIcon = defineComponent({
   name: 'SIcon',
   props: {
     type: {
-      type: String as PropType<keyof typeof AllIcons>,
+      type: String as PropType<AllIconType>,
       required: true
     },
     spin: {
@@ -23,7 +34,11 @@ export default defineComponent({
       default: undefined
     }
   },
-  setup(props, context) {
-    return () => h(AllIcons[props.type], { ...props, ...context.attrs, type: undefined }, context.slots)
+  setup(props) {
+    const Icon = AllIcons[props.type]
+    const binds = { ...props, type: undefined }
+    return () => isIconType(props.type) ? <Icon { ...binds }/> : null
   }
 })
+
+export default SIcon

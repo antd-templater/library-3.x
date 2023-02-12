@@ -3,7 +3,7 @@
   "description": "基于 Vue3.x Ant Design Vue 对Tree、Table、Form等组件二次封装",
   "homepage": "https://github.com/antd-templater/antd-template-lib3.x",
   "author": "lin pengteng <china.linpengteng@gmail.com>",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "keywords": [
     "front-end",
     "vue-components",
@@ -21,7 +21,8 @@
       "types": "./dist/index.mjs",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
-    }
+    },
+    "./dist/*": "./dist/*"
   },
   "repository": {
     "type": "git",

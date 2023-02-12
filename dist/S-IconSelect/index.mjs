@@ -1,7 +1,7 @@
 import { defineComponent, ref, createVNode } from 'vue';
 import ASelect from 'ant-design-vue/es/select';
 import 'ant-design-vue/es/select/style/index.less';
-import SIcon, { isIconType } from '../S-Icon/index.mjs';
+import { isIconType, SIcon } from '../S-Icon/index.mjs';
 
 /**
  * 图标库映射
@@ -410,7 +410,7 @@ var defaultOptions = [
     }
 ];
 
-var SIconSelect = defineComponent({
+const SIconSelect = defineComponent({
   name: 'SIconSelect',
   props: {
     optionFilterProp: {
@@ -506,11 +506,14 @@ var SIconSelect = defineComponent({
       "placeholder": props.placeholder,
       "optionLabelProp": props.optionLabelProp,
       "optionFilterProp": props.optionFilterProp,
+      "onSearch": () => {
+        open.value = true;
+      },
       "onClick": () => {
         open.value = true;
       },
-      "onSearch": () => {
-        open.value = true;
+      "onBlur": () => {
+        open.value = false;
       },
       "onChange": onChange
     }, {
@@ -520,4 +523,4 @@ var SIconSelect = defineComponent({
   }
 });
 
-export { SIconSelect as default };
+export { SIconSelect, SIconSelect as default };

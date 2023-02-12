@@ -6,7 +6,7 @@ var vue = require('vue');
 var ATooltip = require('ant-design-vue/es/tooltip');
 require('ant-design-vue/es/tooltip/style/index.less');
 
-var SEllipsis = vue.defineComponent({
+const SEllipsis = vue.defineComponent({
   name: 'SEllipsis',
   props: {
     ...ATooltip.tooltipProps(),
@@ -92,4 +92,5 @@ var SEllipsis = vue.defineComponent({
   }
 });
 
+exports.SEllipsis = SEllipsis;
 exports.default = SEllipsis;

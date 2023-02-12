@@ -3,7 +3,7 @@
 Object.defineProperty(exports, '__esModule', { value: true });
 
 var vue = require('vue');
-var AllIcons = require('@ant-design/icons-vue/lib/icons');
+var AllIcons = require('@ant-design/icons-vue');
 
 function _interopNamespaceDefault(e) {
   var n = Object.create(null);
@@ -24,8 +24,10 @@ function _interopNamespaceDefault(e) {
 
 var AllIcons__namespace = /*#__PURE__*/_interopNamespaceDefault(AllIcons);
 
-const isIconType = type => !!AllIcons__namespace[type];
-var SIcon = vue.defineComponent({
+const isIconType = type => {
+  return type !== 'default' && type !== 'getTwoToneColor' && type !== 'setTwoToneColor' && type !== 'createFromIconfontCN' && type && AllIcons__namespace[type] && true || false;
+};
+const SIcon = vue.defineComponent({
   name: 'SIcon',
   props: {
     type: {
@@ -45,14 +47,16 @@ var SIcon = vue.defineComponent({
       default: undefined
     }
   },
-  setup(props, context) {
-    return () => vue.h(AllIcons__namespace[props.type], {
+  setup(props) {
+    const Icon = AllIcons__namespace[props.type];
+    const binds = {
       ...props,
-      ...context.attrs,
       type: undefined
-    }, context.slots);
+    };
+    return () => isIconType(props.type) ? vue.createVNode(Icon, binds, null) : null;
   }
 });
 
+exports.SIcon = SIcon;
 exports.default = SIcon;
 exports.isIconType = isIconType;

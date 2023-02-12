@@ -1,8 +1,10 @@
-import { defineComponent, h } from 'vue';
-import * as AllIcons from '@ant-design/icons-vue/lib/icons';
+import { defineComponent, createVNode } from 'vue';
+import * as AllIcons from '@ant-design/icons-vue';
 
-const isIconType = type => !!AllIcons[type];
-var SIcon = defineComponent({
+const isIconType = type => {
+  return type !== 'default' && type !== 'getTwoToneColor' && type !== 'setTwoToneColor' && type !== 'createFromIconfontCN' && type && AllIcons[type] && true || false;
+};
+const SIcon = defineComponent({
   name: 'SIcon',
   props: {
     type: {
@@ -22,13 +24,14 @@ var SIcon = defineComponent({
       default: undefined
     }
   },
-  setup(props, context) {
-    return () => h(AllIcons[props.type], {
+  setup(props) {
+    const Icon = AllIcons[props.type];
+    const binds = {
       ...props,
-      ...context.attrs,
       type: undefined
-    }, context.slots);
+    };
+    return () => isIconType(props.type) ? createVNode(Icon, binds, null) : null;
   }
 });
 
-export { SIcon as default, isIconType };
+export { SIcon, SIcon as default, isIconType };
