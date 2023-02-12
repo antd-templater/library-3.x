@@ -1,9 +1,10 @@
 import { App } from 'vue'
+import SIcon, { isIconType } from './S-Icon/index'
 import SIconSelect from './S-IconSelect/index'
 import SEllipsis from './S-Ellipsis/index'
-import SIcon from './S-Icon/index'
 
 export {
+  isIconType,
   SIconSelect,
   SEllipsis,
   SIcon
