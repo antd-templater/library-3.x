@@ -1,6 +1,7 @@
+import { SIcon } from './S-Icon/index.mjs';
+export { isIconType } from './S-Icon/index.mjs';
 import { SIconSelect } from './S-IconSelect/index.mjs';
 import { SEllipsis } from './S-Ellipsis/index.mjs';
-import { SIcon } from './S-Icon/index.mjs';
 
 var index = {
     install(app) {
