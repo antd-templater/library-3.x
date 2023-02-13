@@ -23,5 +23,6 @@ dist-ssr
 *.sw?
 
 # ingore
-/node_modules
+node_modules
+dist
 

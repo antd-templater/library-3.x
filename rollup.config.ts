@@ -13,9 +13,15 @@ import vue from 'rollup-plugin-vue'
 export default defineConfig([
   {
     input: [
+      'src/S-EditCell/input.tsx',
+      'src/S-EditCell/select.tsx',
+      'src/S-EditCell/textarea.tsx',
+      'src/S-EditCell/tree-select.tsx',
+      'src/S-EditCell/date-picker.tsx',
       'src/S-IconSelect/index.tsx',
       'src/S-Ellipsis/index.tsx',
       'src/S-Icon/index.tsx',
+      'src/helper.ts',
       'src/index.ts'
     ],
     output: [

@@ -70,7 +70,7 @@ export const SIconSelect = defineComponent({
   emits: {
     'update:value': (_: SelectValue) => true
   },
-  setup(props, context) {
+  setup(props, { emit }) {
     const OptionRender = (props: any) => {
       return isIconType(props.value)
         ? <span><SIcon type={props.value} style='margin: 0px 3px 0 -3px; font-size: 18px; vertical-align: middle;'/>{props.label}</span>
@@ -84,6 +84,7 @@ export const SIconSelect = defineComponent({
     }
 
     const open: any = ref(undefined)
+    const selector: any = ref(undefined)
     const isMultiple = props.multiple !== false
     const isMultipleMode = props.mode === 'tags' || props.mode === 'multiple'
 
@@ -91,13 +92,18 @@ export const SIconSelect = defineComponent({
       const isArrayValue = Array.isArray(value)
       const isOnlyArrayValue = isMultipleMode && isArrayValue && !isMultiple
 
-      context.emit('update:value', isOnlyArrayValue ? value.slice(-1) : value)
+      emit('update:value', isOnlyArrayValue ? value.slice(-1) : value)
+
+      isOnlyArrayValue && selector.value?.blur()
+      isMultipleMode || selector.value?.blur()
+
       isOnlyArrayValue && (open.value = false)
       isMultipleMode || (open.value = false)
     }
 
     return () => (
       <ASelect
+        ref={selector}
         open={open.value}
         size={props.size}
         mode={props.mode}

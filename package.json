@@ -3,7 +3,7 @@
   "description": "基于 Vue3.x Ant Design Vue 对Tree、Table、Form等组件二次封装",
   "homepage": "https://github.com/antd-templater/antd-template-lib3.x",
   "author": "lin pengteng <china.linpengteng@gmail.com>",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "keywords": [
     "front-end",
     "vue-components",
@@ -48,8 +48,8 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.12",
-    "@commitlint/cli": "^17.4.2",
-    "@commitlint/config-conventional": "^17.4.2",
+    "@commitlint/cli": "^17.4.3",
+    "@commitlint/config-conventional": "^17.4.3",
     "@rollup/plugin-alias": "^4.0.3",
     "@rollup/plugin-babel": "^6.0.3",
     "@rollup/plugin-commonjs": "^24.0.1",
@@ -67,7 +67,7 @@
     "@vue/babel-helper-vue-jsx-merge-props": "^1.4.0",
     "@vue/babel-plugin-jsx": "^1.1.1",
     "@vue/compiler-sfc": "^3.2.47",
-    "cz-message-helper": "^1.2.1",
+    "cz-message-helper": "^1.2.2",
     "eslint": "^8.34.0",
     "eslint-plugin-vue": "^9.9.0",
     "husky": "^8.0.3",
