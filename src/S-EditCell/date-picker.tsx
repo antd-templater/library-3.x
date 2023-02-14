@@ -1,9 +1,11 @@
 import './date-picker.less'
+import 'ant-design-vue/es/empty/style/index.less'
 import 'ant-design-vue/es/button/style/index.less'
 import 'ant-design-vue/es/date-picker/style/index.less'
 
-import { defineComponent, PropType, reactive, watch, watchEffect } from 'vue'
-
+import SEllipsis from '../S-Ellipsis/index'
+import { CheckOutlined, EditOutlined } from '@ant-design/icons-vue'
+import { defineComponent, PropType, reactive, toRaw, watch, watchEffect } from 'vue'
 import { PanelMode, PickerMode } from 'ant-design-vue/es/vc-picker/interface'
 import ADatePicker from 'ant-design-vue/es/date-picker'
 import AButton from 'ant-design-vue/es/button'
@@ -24,6 +26,10 @@ export const SEditCellDatePicker = defineComponent({
     format: {
       type: String,
       default: undefined
+    },
+    showTime: {
+      type: Boolean,
+      default: false
     },
     valueFormat: {
       type: String,
@@ -49,6 +55,10 @@ export const SEditCellDatePicker = defineComponent({
       type: Boolean,
       default: true
     },
+    synced: {
+      type: Boolean,
+      default: false
+    },
     opened: {
       type: Boolean,
       default: false
@@ -57,9 +67,9 @@ export const SEditCellDatePicker = defineComponent({
       type: Boolean,
       default: false
     },
-    synced: {
-      type: Boolean,
-      default: false
+    tooltip: {
+      type: Object as PropType<{ enable?: boolean, limit?: number }>,
+      default: () => ({ enable: true, limit: Infinity })
     },
     disabled: {
       type: Boolean,
@@ -75,9 +85,11 @@ export const SEditCellDatePicker = defineComponent({
     }
   },
   emits: {
-    'edit': (options: { event: Event, value: string }) => true,
-    'confirm': (options: { event: Event, value: string }) => true,
-    'change': (options: { value: string }) => true,
+    'edit': (proxy: { editable: boolean, value: string }) => true,
+    'blur': (proxy: { editable: boolean, value: string }) => true,
+    'focus': (proxy: { editable: boolean, value: string }) => true,
+    'change': (proxy: { editable: boolean, value: string }) => true,
+    'confirm': (proxy: { editable: boolean, value: string }) => true,
     'update:status': (status: boolean) => true,
     'update:text': (text: string) => true
   },
@@ -87,29 +99,39 @@ export const SEditCellDatePicker = defineComponent({
     }
 
     const doFormat = (date: any) => {
-      return date ? dayjs(date).format(props.valueFormat || props.format || (props.mode === 'time' ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD')) : ''
+      return date ? dayjs(date).format(props.valueFormat || props.format || (props.showTime === true ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD')) : ''
     }
 
     const doEdit = (event: Event) => {
       proxy.editable = true
       proxy.value = props.text
       proxy.date = doDayjs(props.text)
-      emit('edit', { event, value: proxy.value })
       emit('update:status', true)
+      emit('edit', toRaw(proxy))
+      event.stopPropagation()
+    }
+
+    const doBlur = (event: Event) => {
+      emit('blur', toRaw(proxy))
+      event.stopPropagation()
+    }
+
+    const doFocus = (event: Event) => {
+      emit('focus', toRaw(proxy))
       event.stopPropagation()
     }
 
     const doChange = (date: dayjs.Dayjs | string) => {
       proxy.value = doFormat(proxy.date)
-      emit('change', { value: proxy.value })
       emit('update:text', proxy.value)
+      emit('change', toRaw(proxy))
     }
 
     const doConfirm = (event: Event) => {
       if (!props.opened) {
         proxy.editable = false
       }
-      emit('confirm', { event, value: proxy.value })
+      emit('confirm', toRaw(proxy))
       event.stopPropagation()
     }
 
@@ -118,8 +140,8 @@ export const SEditCellDatePicker = defineComponent({
         return (
           <AButton
             class='s-editable-cell-button-check'
-            icon='check'
             type='link'
+            icon={<CheckOutlined/>}
             style={{ color: '--ant-primary-color', ...props.cellStyle.check }}
             onClick={(event: Event) => doConfirm(event)}
           />
@@ -129,12 +151,12 @@ export const SEditCellDatePicker = defineComponent({
     }
 
     const RenderEditButton = () => {
-      if (!props.disabled && props.check) {
+      if (!props.disabled && props.edit) {
         return (
           <AButton
             class='s-editable-cell-button-edit'
-            icon='edit'
             type='link'
+            icon={<EditOutlined/>}
             style={props.cellStyle.edit}
           />
         )
@@ -150,7 +172,7 @@ export const SEditCellDatePicker = defineComponent({
             style={props.cellStyle.inputWrapper}
           >
             <ADatePicker
-              v-model={[proxy.value, 'value']}
+              v-model={[proxy.date, 'value']}
               class='s-editable-cell-input'
               style={props.cellStyle.input}
               mode={props.mode}
@@ -161,27 +183,35 @@ export const SEditCellDatePicker = defineComponent({
               placeholder={props.placeholder}
               inputReadOnly={props.inputReadOnly}
               onChange={(date: dayjs.Dayjs | string) => doChange(date)}
+              onFocus={(event: Event) => doFocus(event)}
+              onBlur={(event: Event) => doBlur(event)}
             />
             <RenderCheckButton/>
           </div>
         )
       }
+
       return (
-        <div
-          title={props.text}
-          style={props.cellStyle.textWrapper}
-          class={['s-editable-cell-text-wrapper', { 'disabled-icon': props.disabled || !props.edit }]}
-          onClick={event => !props.disabled && props.edit && doEdit(event)}
+        <SEllipsis
+          title={props.text ? String(props.text) : undefined}
+          limit={props.tooltip.limit ? props.tooltip.limit : Infinity}
+          tooltip={props.tooltip.enable !== false}
         >
-          { RenderEditableCellText() }
-          <RenderEditButton/>
-        </div>
+          <div
+            style={props.cellStyle.textWrapper}
+            class={['s-editable-cell-text-wrapper', { 'disabled-icon': props.disabled || !props.edit }]}
+            onClick={event => !props.disabled && props.edit && doEdit(event)}
+          >
+            { RenderEditableCellText() }
+            <RenderEditButton/>
+          </div>
+        </SEllipsis>
       )
     }
 
     const RenderEditableCellText = () => {
       return slots.editableCellText
-        ? slots.editableCellText({ text: props.text })
+        ? slots.editableCellText({ text: props.text, ...toRaw(proxy) })
         : props.text
     }
 
@@ -202,8 +232,10 @@ export const SEditCellDatePicker = defineComponent({
 
     return () => (
       <div
-        class={['s-editable-cell-container', { editabled: proxy.editable }]}
         style={props.cellStyle.container}
+        class={['s-editable-cell-container', { editabled: proxy.editable }]}
+        onDblclick={ (event: Event) => event.stopPropagation() }
+        onClick={ (event: Event) => event.stopPropagation() }
       >
         <RenderEditableContainer/>
       </div>

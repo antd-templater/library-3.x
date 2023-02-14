@@ -8,7 +8,7 @@ export const SEllipsis = defineComponent({
     ...tooltipProps(),
     limit: {
       type: Number,
-      default: 0
+      default: Infinity
     },
     title: {
       type: String,
@@ -27,7 +27,7 @@ export const SEllipsis = defineComponent({
       default: 'top'
     }
   },
-  setup(props) {
+  setup(props, { slots }) {
     const {
       limit,
       title,
@@ -56,12 +56,18 @@ export const SEllipsis = defineComponent({
     }
 
     const RenderTextNode = ({ title = '', length = 0 }) => {
-      if (limit.value > 0 && sheared) {
+      if (limit.value > 0 && sheared.value) {
         const content = cutFullLength(title, limit.value)
         const expand = length > limit.value ? '...' : ''
-        return <span>{content + expand}</span>
+
+        return slots.default
+          ? slots.default({ title: content + expand })
+          : content + expand
       }
-      return <span>{title}</span>
+
+      return slots.default
+        ? slots.default({ title })
+        : title
     }
 
     const RenderTooltip = ({ title = '', length = 0 }) => {
@@ -71,21 +77,16 @@ export const SEllipsis = defineComponent({
           placement={placement.value}
           title={title}
         >
-          <RenderTextNode
-            title={title}
-            length={length}
-          />
+          { RenderTextNode({ title, length }) }
         </ATooltip>
       )
     }
 
-    const length = getFullLength(title.value)
-
-    return () => (
-      tooltip && length > limit.value
-        ? <RenderTooltip title={title.value} length={length}/>
-        : <RenderTextNode title={title.value} length={length}/>
-    )
+    return () => {
+      const length = getFullLength(title.value)
+      const isUseTooltip = tooltip.value && length > limit.value
+      return isUseTooltip ? RenderTooltip({ title: title.value, length }) : RenderTextNode({ title: title.value, length })
+    }
   }
 })
 

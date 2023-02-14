@@ -1,7 +1,7 @@
 ## Todo List
 
 > S-IconSelect - finished  
-> S-EditCell - pending  
+> S-EditCell - finished  
 > S-Ellipsis - finished  
 > S-Table - pending  
 > S-Tree - pending  
