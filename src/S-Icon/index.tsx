@@ -30,7 +30,7 @@ export const SIcon = defineComponent({
       default: undefined
     },
     twoToneColor: {
-      type: [String, Array] as PropType< string | [string, string]>,
+      type: [String, Array] as PropType<string | [string, string]>,
       default: undefined
     }
   },

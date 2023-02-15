@@ -70,7 +70,7 @@ export default defineConfig([
       /^vue(\/.+|$)/,
       /^dayjs(\/.+|$)/,
       /^ant-design-vue(\/.+|$)/,
-      /^@ant-design\/icons-vue/
+      /^@ant-design\/icons-vue(\/.+|$)/
     ]
   }
 ])

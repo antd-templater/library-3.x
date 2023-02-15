@@ -1,4 +1,4 @@
-import dayjs from 'dayjs'
+import dayjs from './dayjs'
 
 export function itType(val: unknown) {
   return Object.prototype.toString.call(val).replace(/^\[[^\s\]]+\s*([^\s\]]+)]$/, '$1')
@@ -8,7 +8,7 @@ export function isArray(arr: unknown): arr is unknown[] {
   return Array.isArray(arr)
 }
 
-export function isObject(obj: unknown): obj is object {
+export function isObject(obj: unknown): obj is object & Exclude<unknown, unknown[] | Function | RegExp> {
   return itType(obj) === 'Object'
 }
 
@@ -24,7 +24,7 @@ export function isRegExp(reg: unknown): reg is RegExp {
   return itType(reg) === 'RegExp'
 }
 
-export function isBoolean(bool: unknown): bool is boolean {
+export function isBoolean(bool: unknown): bool is Boolean {
   return itType(bool) === 'Boolean'
 }
 
@@ -32,11 +32,15 @@ export function isFunction(func: unknown): func is Function {
   return itType(func) === 'Function'
 }
 
+export function isPrimitive(val: unknown): val is string | number {
+  return isString(val) || isFiniteNumber(val)
+}
+
 export function isNotEmptyArray(arr: unknown): arr is unknown[] {
   return isArray(arr) && arr.length > 0
 }
 
-export function isNotEmptyObject(obj: unknown): obj is object {
+export function isNotEmptyObject(obj: unknown): obj is object & Exclude<unknown, unknown[] | Function | RegExp> {
   return isObject(obj) && Object.keys(obj).length > 0
 }
 
@@ -49,14 +53,14 @@ export function isNotFiniteNumber(num: unknown): num is number {
 }
 
 export function isFiniteNumber(num: unknown): num is number {
-  return isNumber(num) && isFinite(num)
+  return isNumber(num) && Number.isFinite(num)
 }
 
 export function isEmptyString(str: unknown): str is string {
   return isString(str) && !str.trim()
 }
 
-export function isEmptyObject(obj: unknown): obj is object {
+export function isEmptyObject(obj: unknown): obj is object & Exclude<unknown, unknown[] | Function | RegExp> {
   return isObject(obj) && Object.keys(obj).length === 0
 }
 
@@ -65,7 +69,7 @@ export function isEmptyArray(arr: unknown): arr is unknown[] {
 }
 
 export function toDeepClone<T = unknown>(source: T, ...reset: unknown[]): T {
-  const keys = (own: any) => {
+  const keys = (own: unknown) => {
     return isObject(own) ? Object.keys(own) : isArray(own) ? own.keys() : []
   }
 
@@ -202,6 +206,7 @@ export default {
   isRegExp,
   isBoolean,
   isFunction,
+  isPrimitive,
   isEmptyArray,
   isEmptyObject,
   isEmptyString,
