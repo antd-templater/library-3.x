@@ -1,4 +1,5 @@
-import { defineComponent, PropType, ref } from 'vue'
+import * as VueTypes from 'vue-types'
+import { defineComponent, ref } from 'vue'
 import ASelect, { DefaultOptionType, SelectValue } from 'ant-design-vue/es/select'
 import 'ant-design-vue/es/select/style/index.less'
 
@@ -14,58 +15,19 @@ interface FieldNames {
 export const SIconSelect = defineComponent({
   name: 'SIconSelect',
   props: {
-    optionFilterProp: {
-      type: String,
-      default: undefined
-    },
-    optionLabelProp: {
-      type: String,
-      default: undefined
-    },
-    placeholder: {
-      type: String,
-      default: ''
-    },
-    showSearch: {
-      type: Boolean,
-      default: true
-    },
-    allowClear: {
-      type: Boolean,
-      default: false
-    },
-    showArrow: {
-      type: Boolean,
-      default: true
-    },
-    fieldNames: {
-      type: Object as PropType<FieldNames>,
-      default: undefined
-    },
-    multiple: {
-      type: Boolean,
-      default: true
-    },
-    disabled: {
-      type: Boolean,
-      default: false
-    },
-    options: {
-      type: Array as PropType<DefaultOptionType[]>,
-      default: () => defaultOptions
-    },
-    value: {
-      type: [Array, String] as PropType<SelectValue>,
-      default: undefined
-    },
-    mode: {
-      type: String as PropType<'multiple' | 'tags'>,
-      default: undefined
-    },
-    size: {
-      type: String as PropType<'large' | 'middle' | 'small'>,
-      default: undefined
-    }
+    optionFilterProp: VueTypes.string().def(),
+    optionLabelProp: VueTypes.string().def(),
+    placeholder: VueTypes.string().def(''),
+    showSearch: VueTypes.bool().def(true),
+    allowClear: VueTypes.bool().def(false),
+    showArrow: VueTypes.bool().def(true),
+    fieldNames: VueTypes.object<FieldNames>().def(),
+    multiple: VueTypes.bool().def(true),
+    disabled: VueTypes.bool().def(false),
+    options: VueTypes.array<DefaultOptionType>().def(() => defaultOptions),
+    value: VueTypes.any<SelectValue>().def(),
+    mode: VueTypes.string<'multiple' | 'tags'>().def(),
+    size: VueTypes.string<'large' | 'middle' | 'small'>().def()
   },
   emits: {
     'update:value': (_: SelectValue) => true

@@ -1,31 +1,17 @@
-import { defineComponent, PropType, reactive, toRefs } from 'vue'
-import ATooltip, { tooltipProps } from 'ant-design-vue/es/tooltip'
 import 'ant-design-vue/es/tooltip/style/index.less'
+
+import ATooltip from 'ant-design-vue/es/tooltip'
+import { defineComponent, reactive, toRefs } from 'vue'
+import * as VueTypes from 'vue-types'
 
 export const SEllipsis = defineComponent({
   name: 'SEllipsis',
   props: {
-    ...tooltipProps(),
-    limit: {
-      type: Number,
-      default: Infinity
-    },
-    title: {
-      type: String,
-      default: ''
-    },
-    tooltip: {
-      type: Boolean,
-      default: false
-    },
-    sheared: {
-      type: Boolean,
-      default: true
-    },
-    placement: {
-      type: String as PropType<'top' | 'left' | 'right' | 'bottom' | 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' | 'leftTop' | 'leftBottom' | 'rightTop' | 'rightBottom'>,
-      default: 'top'
-    }
+    limit: VueTypes.number().def(Infinity),
+    title: VueTypes.string().def(''),
+    tooltip: VueTypes.bool().def(false),
+    sheared: VueTypes.bool().def(true),
+    placement: VueTypes.string<'top' | 'left' | 'right' | 'bottom' | 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' | 'leftTop' | 'leftBottom' | 'rightTop' | 'rightBottom'>().def('top')
   },
   setup(props, { slots }) {
     const {

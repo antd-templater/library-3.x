@@ -3,13 +3,14 @@ import 'ant-design-vue/es/empty/style/index.less'
 import 'ant-design-vue/es/button/style/index.less'
 import 'ant-design-vue/es/tree-select/style/index.less'
 
-import helper from '../helper'
+import * as VueTypes from 'vue-types'
 import SEllipsis from '../S-Ellipsis/index'
 import { CheckOutlined, EditOutlined } from '@ant-design/icons-vue'
-import { defineComponent, reactive, toRaw, watch, watchEffect, PropType } from 'vue'
+import { defineComponent, reactive, toRaw, watch, watchEffect } from 'vue'
 import { DefaultOptionType } from 'ant-design-vue/es/vc-tree-select/TreeSelect'
 import ATreeSelect from 'ant-design-vue/es/tree-select'
 import AButton from 'ant-design-vue/es/button'
+import helper from '../helper'
 
 interface FieldNames {
   label?: string;
@@ -20,74 +21,23 @@ interface FieldNames {
 export const SEditCellTreeSelect = defineComponent({
   name: 'SEditCellTreeSelect',
   props: {
-    text: {
-      type: [String, Array] as PropType<any>,
-      default: ''
-    },
-    edit: {
-      type: Boolean,
-      default: true
-    },
-    check: {
-      type: Boolean,
-      default: true
-    },
-    synced: {
-      type: Boolean,
-      default: false
-    },
-    opened: {
-      type: Boolean,
-      default: false
-    },
-    status: {
-      type: Boolean,
-      default: false
-    },
-    tooltip: {
-      type: Object as PropType<{ enable?: boolean, limit?: number }>,
-      default: () => ({ enable: true, limit: Infinity })
-    },
-    disabled: {
-      type: Boolean,
-      default: false
-    },
-    treeData: {
-      type: Array as PropType<DefaultOptionType[]>,
-      default: () => ([])
-    },
-    showArrow: {
-      type: Boolean,
-      default: true
-    },
-    allowClear: {
-      type: Boolean,
-      default: false
-    },
-    showSearch: {
-      type: Boolean,
-      default: false
-    },
-    fieldNames: {
-      type: Object as PropType<FieldNames>,
-      default: () => ({ label: 'title', value: 'value', children: 'children' })
-    },
-    placeholder: {
-      type: String,
-      default: undefined
-    },
-    treeNodeFilterProp: {
-      type: String,
-      default: undefined
-    },
-    treeDefaultExpandAll: {
-      type: Boolean,
-      default: true
-    },
-    cellStyle: {
-      type: Object,
-      default: () => ({})
-    }
+    text: VueTypes.string().def(''),
+    edit: VueTypes.bool().def(true),
+    check: VueTypes.bool().def(true),
+    synced: VueTypes.bool().def(false),
+    opened: VueTypes.bool().def(false),
+    status: VueTypes.bool().def(false),
+    tooltip: VueTypes.object<{ enable?: boolean, limit?: number }>().def(() => ({ enable: true, limit: Infinity })),
+    disabled: VueTypes.bool().def(false),
+    treeData: VueTypes.array<DefaultOptionType>().def(() => ([])),
+    showArrow: VueTypes.bool().def(true),
+    allowClear: VueTypes.bool().def(false),
+    showSearch: VueTypes.bool().def(false),
+    fieldNames: VueTypes.object<FieldNames>().def(() => ({ label: 'title', value: 'value', children: 'children' })),
+    placeholder: VueTypes.string().def(),
+    treeNodeFilterProp: VueTypes.string().def(),
+    treeDefaultExpandAll: VueTypes.bool().def(true),
+    cellStyle: VueTypes.object().def(() => ({}))
   },
   emits: {
     'edit': (proxy: { editable: boolean, value: any }) => true,

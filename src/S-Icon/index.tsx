@@ -1,5 +1,6 @@
-import { PropType, defineComponent } from 'vue'
+import * as VueTypes from 'vue-types'
 import * as AllIcons from '@ant-design/icons-vue'
+import { defineComponent } from 'vue'
 
 type AllIconType = keyof typeof AllIcons
 type NotIconType = 'setTwoToneColor' | 'getTwoToneColor' | 'createFromIconfontCN' | 'default'
@@ -17,22 +18,10 @@ export const isIconType = (type: string): type is Exclude<AllIconType, NotIconTy
 export const SIcon = defineComponent({
   name: 'SIcon',
   props: {
-    type: {
-      type: String as PropType<Exclude<AllIconType, NotIconType>>,
-      required: true
-    },
-    spin: {
-      type: Boolean,
-      default: false
-    },
-    rotate: {
-      type: Number,
-      default: undefined
-    },
-    twoToneColor: {
-      type: [String, Array] as PropType<string | [string, string]>,
-      default: undefined
-    }
+    type: VueTypes.string<Exclude<AllIconType, NotIconType>>().isRequired,
+    spin: VueTypes.bool().def(false),
+    rotate: VueTypes.number().def(undefined),
+    twoToneColor: VueTypes.any<string | [string, string]>().def()
   },
   setup(props) {
     const Icon = AllIcons[props.type]

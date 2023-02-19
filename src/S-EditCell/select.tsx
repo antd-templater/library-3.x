@@ -3,12 +3,13 @@ import 'ant-design-vue/es/empty/style/index.less'
 import 'ant-design-vue/es/button/style/index.less'
 import 'ant-design-vue/es/select/style/index.less'
 
-import helper from '../helper'
+import * as VueTypes from 'vue-types'
 import SEllipsis from '../S-Ellipsis/index'
 import { CheckOutlined, EditOutlined } from '@ant-design/icons-vue'
-import { defineComponent, reactive, toRaw, watch, watchEffect, PropType } from 'vue'
+import { defineComponent, reactive, toRaw, watch, watchEffect } from 'vue'
 import ASelect, { SelectValue, DefaultOptionType } from 'ant-design-vue/es/select'
 import AButton from 'ant-design-vue/es/button'
+import helper from '../helper'
 
 interface FieldNames {
   label?: string;
@@ -20,70 +21,22 @@ export const SEditCellSelect = defineComponent({
   name: 'SEditCellSelect',
   inheritAttrs: false,
   props: {
-    text: {
-      type: [Object, Array, Number, String] as PropType<SelectValue>,
-      default: ''
-    },
-    edit: {
-      type: Boolean,
-      default: true
-    },
-    check: {
-      type: Boolean,
-      default: true
-    },
-    synced: {
-      type: Boolean,
-      default: false
-    },
-    opened: {
-      type: Boolean,
-      default: false
-    },
-    status: {
-      type: Boolean,
-      default: false
-    },
-    tooltip: {
-      type: Object as PropType<{ enable?: boolean, limit?: number }>,
-      default: () => ({ enable: true, limit: Infinity })
-    },
-    disabled: {
-      type: Boolean,
-      default: false
-    },
-    options: {
-      type: Array as PropType<DefaultOptionType[]>,
-      default: () => ([])
-    },
-    showArrow: {
-      type: Boolean,
-      default: true
-    },
-    allowClear: {
-      type: Boolean,
-      default: false
-    },
-    showSearch: {
-      type: Boolean,
-      default: false
-    },
-    fieldNames: {
-      type: Object as PropType<FieldNames>,
-      default: () => ({ label: 'label', value: 'value', options: 'options' })
-    },
-    placeholder: {
-      type: String,
-      default: undefined
-    },
-    optionFilterProp: {
-      type: String,
-      default: undefined
-    },
-    cellStyle: {
-      type: Object,
-      default: () => ({})
-    }
+    text: VueTypes.string().def(''),
+    edit: VueTypes.bool().def(true),
+    check: VueTypes.bool().def(true),
+    synced: VueTypes.bool().def(false),
+    opened: VueTypes.bool().def(false),
+    status: VueTypes.bool().def(false),
+    tooltip: VueTypes.object<{ enable?: boolean, limit?: number }>().def(() => ({ enable: true, limit: Infinity })),
+    disabled: VueTypes.bool().def(false),
+    options: VueTypes.array<DefaultOptionType>().def(() => ([])),
+    showArrow: VueTypes.bool().def(true),
+    allowClear: VueTypes.bool().def(false),
+    showSearch: VueTypes.bool().def(false),
+    fieldNames: VueTypes.object<FieldNames>().def(() => ({ label: 'label', value: 'value', options: 'options' })),
+    placeholder: VueTypes.string().def(),
+    optionFilterProp: VueTypes.string().def(),
+    cellStyle: VueTypes.object().def(() => ({}))
   },
   emits: {
     'edit': (proxy: { editable: boolean, value: SelectValue }) => true,

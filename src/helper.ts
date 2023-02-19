@@ -68,71 +68,122 @@ export function isEmptyArray(arr: unknown): arr is unknown[] {
   return isArray(arr) && arr.length === 0
 }
 
-export function toDeepClone<T = unknown>(source: T, ...reset: unknown[]): T {
-  const keys = (own: unknown) => {
+export function toDeepAssign<T = unknown>(any: T, ...args: unknown[]): T {
+  let target: any
+  let sources: any
+
+  const keys = (own: any) => {
     return isObject(own) ? Object.keys(own) : isArray(own) ? own.keys() : []
   }
 
-  const clone = (i: any, o: any) => {
-    for (const key of keys(o)) {
-      const iIsArray = isArray(i[key])
-      const oIsArray = isArray(o[key])
-      const iIsObject = isObject(i[key])
-      const oIsObject = isObject(o[key])
-      const ioIsArray = iIsArray && oIsArray
-      const ioIsObject = iIsObject && oIsObject
-
-      if (ioIsArray || ioIsObject) {
-        clone(i[key], o[key])
-        continue
-      }
+  const clone = (t: any, s: any) => {
+    for (const key of keys(s)) {
+      const target = t[key]
+      const source = s[key]
+      const iIsArray = isArray(target)
+      const oIsArray = isArray(source)
+      const iIsObject = isObject(target)
+      const oIsObject = isObject(source)
 
       if (oIsObject) {
-        clone((i[key] = {}), o[key])
+        clone(t[key] = iIsObject ? target : {}, source)
         continue
       }
 
       if (oIsArray) {
-        clone((i[key] = []), o[key])
+        clone(t[key] = iIsArray ? (target.length !== source.length && target.splice(0), target) : [], source)
         continue
       }
 
-      i[key] = o[key]
+      t[key] = s[key]
     }
   }
 
-  let input
-  let inArgs
-
-  if (!isObject(source) && !isArray(source)) {
-    return source
+  if (!isObject(any) && !isArray(any)) {
+    return any
   }
 
-  if (isObject(source)) {
-    input = {}
-    inArgs = [source, ...reset]
+  if (isObject(any)) {
+    sources = [...args]
+    target = any
   }
 
-  if (isArray(source)) {
-    input = []
-    inArgs = [source, ...reset]
+  if (isArray(any)) {
+    sources = [...args]
+    target = any
   }
 
-  if (inArgs) {
-    for (const output of inArgs) {
-      const iIsArray = isArray(input)
-      const oIsArray = isArray(output)
-      const iIsObject = isObject(input)
-      const oIsObject = isObject(output)
-      const ioIsArray = iIsArray && oIsArray
-      const ioIsObject = iIsObject && oIsObject
-
-      ioIsObject && clone(input, output)
-      ioIsArray && clone(input, output)
+  if (sources) {
+    for (const source of sources) {
+      const iIsArray = isArray(target)
+      const oIsArray = isArray(source)
+      const iIsObject = isObject(target)
+      const oIsObject = isObject(source)
+      iIsObject && oIsObject && clone(target, source)
+      iIsArray && oIsArray && clone((target.length !== source.length && target.splice(0), target), source)
     }
   }
 
-  return input as T
+  return target as T
+}
+
+export function toDeepClone<T = unknown>(any: T, ...args: unknown[]): T {
+  let target: any
+  let sources: any
+
+  const keys = (own: any) => {
+    return isObject(own) ? Object.keys(own) : isArray(own) ? own.keys() : []
+  }
+
+  const clone = (t: any, s: any) => {
+    for (const key of keys(s)) {
+      const target = t[key]
+      const source = s[key]
+      const iIsArray = isArray(target)
+      const oIsArray = isArray(source)
+      const iIsObject = isObject(target)
+      const oIsObject = isObject(source)
+
+      if (oIsObject) {
+        clone(t[key] = iIsObject ? target : {}, source)
+        continue
+      }
+
+      if (oIsArray) {
+        clone(t[key] = iIsArray ? (target.length !== source.length && target.splice(0), target) : [], source)
+        continue
+      }
+
+      t[key] = s[key]
+    }
+  }
+
+  if (!isObject(any) && !isArray(any)) {
+    return any
+  }
+
+  if (isObject(any)) {
+    sources = [any, ...args]
+    target = {}
+  }
+
+  if (isArray(any)) {
+    sources = [any, ...args]
+    target = []
+  }
+
+  if (sources) {
+    for (const source of sources) {
+      const iIsArray = isArray(target)
+      const oIsArray = isArray(source)
+      const iIsObject = isObject(target)
+      const oIsObject = isObject(source)
+      iIsObject && oIsObject && clone(target, source)
+      iIsArray && oIsArray && clone((target.length !== source.length && target.splice(0), target), source)
+    }
+  }
+
+  return target as T
 }
 
 export const takeTimeToDate = (date: dayjs.ConfigType, format?: dayjs.OptionType) => {
@@ -215,6 +266,7 @@ export default {
   isNotEmptyString,
   isNotFiniteNumber,
   isFiniteNumber,
+  toDeepAssign,
   toDeepClone,
   takeTimeToDate,
   takeTimeToFormat,

@@ -3,9 +3,10 @@ import 'ant-design-vue/es/empty/style/index.less'
 import 'ant-design-vue/es/button/style/index.less'
 import 'ant-design-vue/es/date-picker/style/index.less'
 
+import * as VueTypes from 'vue-types'
 import SEllipsis from '../S-Ellipsis/index'
 import { CheckOutlined, EditOutlined } from '@ant-design/icons-vue'
-import { defineComponent, PropType, reactive, toRaw, watch, watchEffect } from 'vue'
+import { defineComponent, reactive, toRaw, watch, watchEffect } from 'vue'
 import { PanelMode, PickerMode } from 'ant-design-vue/es/vc-picker/interface'
 import ADatePicker from 'ant-design-vue/es/date-picker'
 import AButton from 'ant-design-vue/es/button'
@@ -15,74 +16,23 @@ export const SEditCellDatePicker = defineComponent({
   name: 'SEditCellDatePicker',
   inheritAttrs: false,
   props: {
-    mode: {
-      type: String as PropType<PanelMode>,
-      default: 'date'
-    },
-    picker: {
-      type: String as PropType<PickerMode>,
-      default: 'date'
-    },
-    format: {
-      type: String,
-      default: undefined
-    },
-    showTime: {
-      type: Boolean,
-      default: false
-    },
-    valueFormat: {
-      type: String,
-      default: undefined
-    },
-    allowClear: {
-      type: Boolean,
-      default: false
-    },
-    inputReadOnly: {
-      type: Boolean,
-      default: false
-    },
-    text: {
-      type: String,
-      default: ''
-    },
-    edit: {
-      type: Boolean,
-      default: true
-    },
-    check: {
-      type: Boolean,
-      default: true
-    },
-    synced: {
-      type: Boolean,
-      default: false
-    },
-    opened: {
-      type: Boolean,
-      default: false
-    },
-    status: {
-      type: Boolean,
-      default: false
-    },
-    tooltip: {
-      type: Object as PropType<{ enable?: boolean, limit?: number }>,
-      default: () => ({ enable: true, limit: Infinity })
-    },
-    disabled: {
-      type: Boolean,
-      default: false
-    },
-    placeholder: {
-      type: String,
-      default: undefined
-    },
-    cellStyle: {
-      type: Object,
-      default: () => ({})
-    }
+    mode: VueTypes.string<PanelMode>().def('date'),
+    picker: VueTypes.string<PickerMode>().def('date'),
+    format: VueTypes.string().def(),
+    showTime: VueTypes.bool().def(false),
+    valueFormat: VueTypes.string().def(),
+    inputReadOnly: VueTypes.bool().def(false),
+    text: VueTypes.string().def(''),
+    edit: VueTypes.bool().def(true),
+    check: VueTypes.bool().def(true),
+    synced: VueTypes.bool().def(false),
+    opened: VueTypes.bool().def(false),
+    status: VueTypes.bool().def(false),
+    tooltip: VueTypes.object<{ enable?: boolean, limit?: number }>().def(() => ({ enable: true, limit: Infinity })),
+    disabled: VueTypes.bool().def(false),
+    allowClear: VueTypes.bool().def(false),
+    placeholder: VueTypes.string().def(),
+    cellStyle: VueTypes.object().def(() => ({}))
   },
   emits: {
     'edit': (proxy: { editable: boolean, value: string }) => true,

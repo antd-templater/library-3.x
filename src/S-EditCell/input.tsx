@@ -2,9 +2,10 @@ import './input.less'
 import 'ant-design-vue/es/input/style/index.less'
 import 'ant-design-vue/es/button/style/index.less'
 
+import * as VueTypes from 'vue-types'
 import SEllipsis from '../S-Ellipsis/index'
 import { CheckOutlined, EditOutlined } from '@ant-design/icons-vue'
-import { defineComponent, reactive, toRaw, watch, watchEffect, PropType } from 'vue'
+import { defineComponent, reactive, toRaw, watch, watchEffect } from 'vue'
 import AButton from 'ant-design-vue/es/button'
 import AInput from 'ant-design-vue/es/input'
 
@@ -12,50 +13,17 @@ export const SEditCellInput = defineComponent({
   name: 'SEditCellInput',
   inheritAttrs: false,
   props: {
-    text: {
-      type: String,
-      default: ''
-    },
-    edit: {
-      type: Boolean,
-      default: true
-    },
-    check: {
-      type: Boolean,
-      default: true
-    },
-    synced: {
-      type: Boolean,
-      default: true
-    },
-    opened: {
-      type: Boolean,
-      default: false
-    },
-    status: {
-      type: Boolean,
-      default: false
-    },
-    tooltip: {
-      type: Object as PropType<{ enable?: boolean, limit?: number }>,
-      default: () => ({ enable: true, limit: Infinity })
-    },
-    disabled: {
-      type: Boolean,
-      default: false
-    },
-    allowClear: {
-      type: Boolean,
-      default: false
-    },
-    placeholder: {
-      type: String,
-      default: undefined
-    },
-    cellStyle: {
-      type: Object,
-      default: () => ({})
-    }
+    text: VueTypes.string().def(''),
+    edit: VueTypes.bool().def(true),
+    check: VueTypes.bool().def(true),
+    synced: VueTypes.bool().def(false),
+    opened: VueTypes.bool().def(false),
+    status: VueTypes.bool().def(false),
+    tooltip: VueTypes.object<{ enable?: boolean, limit?: number }>().def(() => ({ enable: true, limit: Infinity })),
+    disabled: VueTypes.bool().def(false),
+    allowClear: VueTypes.bool().def(false),
+    placeholder: VueTypes.string().def(),
+    cellStyle: VueTypes.object().def(() => ({}))
   },
   emits: {
     'edit': (proxy: { editable: boolean, value: string }) => true,

@@ -69,6 +69,7 @@ export default defineConfig([
     external: [
       /^vue(\/.+|$)/,
       /^dayjs(\/.+|$)/,
+      /^vue-types(\/.+|$)/,
       /^ant-design-vue(\/.+|$)/,
       /^@ant-design\/icons-vue(\/.+|$)/
     ]
