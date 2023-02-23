@@ -6,7 +6,8 @@ import 'ant-design-vue/es/tree-select/style/index.less'
 import * as VueTypes from 'vue-types'
 import SEllipsis from '../S-Ellipsis/index'
 import { CheckOutlined, EditOutlined } from '@ant-design/icons-vue'
-import { defineComponent, reactive, toRaw, watch, watchEffect } from 'vue'
+import { defaultConfigProvider } from 'ant-design-vue/es/config-provider'
+import { defineComponent, reactive, toRaw, watch, watchEffect, inject } from 'vue'
 import { DefaultOptionType } from 'ant-design-vue/es/vc-tree-select/TreeSelect'
 import ATreeSelect from 'ant-design-vue/es/tree-select'
 import AButton from 'ant-design-vue/es/button'
@@ -120,6 +121,7 @@ export const SEditCellTreeSelect = defineComponent({
               v-model={[proxy.value, 'value']}
               class='s-editable-cell-input'
               style={props.cellStyle.input}
+              size={provider.componentSize}
               treeData={props.treeData}
               showArrow={props.showArrow}
               allowClear={props.allowClear}
@@ -174,6 +176,8 @@ export const SEditCellTreeSelect = defineComponent({
         ? slots.editableCellText({ text: props.text, ...toRaw(proxy) })
         : isPrimitive ? helper.takeLabelByKey(props.treeData, text, fieldLabel, fieldValue, fieldChildren) || props.text : props.text
     }
+
+    const provider = inject('configProvider', defaultConfigProvider)
 
     const proxy = reactive({
       value: props.text,

@@ -9,6 +9,7 @@ declare module '@vue/runtime-core' {
     SEditCellInput: typeof import('./dist/S-EditCell/input')['default']
     SIconSelect: typeof import('./dist/S-IconSelect')['default']
     SEllipsis: typeof import('./dist/S-Ellipsis')['default']
+    SForm: typeof import('./dist/S-Form')['default']
     SIcon: typeof import('./dist/S-Icon')['default']
   }
 }

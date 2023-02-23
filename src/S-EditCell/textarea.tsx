@@ -5,7 +5,8 @@ import 'ant-design-vue/es/button/style/index.less'
 import * as VueTypes from 'vue-types'
 import SEllipsis from '../S-Ellipsis/index'
 import { CheckOutlined, EditOutlined } from '@ant-design/icons-vue'
-import { defineComponent, reactive, toRaw, watch, watchEffect } from 'vue'
+import { defineComponent, reactive, toRaw, watch, watchEffect, inject } from 'vue'
+import { defaultConfigProvider } from 'ant-design-vue/es/config-provider'
 import AButton from 'ant-design-vue/es/button'
 import AInput from 'ant-design-vue/es/input'
 
@@ -108,6 +109,7 @@ export const SEditCellTextarea = defineComponent({
               v-model={[proxy.value, 'value']}
               class='s-editable-cell-input'
               style={props.cellStyle.input}
+              size={provider.componentSize}
               autoSize={props.autoSize}
               allowClear={props.allowClear}
               placeholder={props.placeholder}
@@ -143,6 +145,8 @@ export const SEditCellTextarea = defineComponent({
         ? slots.editableCellText({ text: props.text, ...toRaw(proxy) })
         : props.text
     }
+
+    const provider = inject('configProvider', defaultConfigProvider)
 
     const proxy = reactive({
       value: props.text,

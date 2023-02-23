@@ -1,39 +1,9 @@
-import { SFormValidatorManager } from './form.declare'
 import helper from '../helper'
+import { ValidatorManager, FormDefineGroups } from './form.declare'
 
-export default {
-  number(rule) {
-    const message = rule.message
-    const pattern = rule.pattern
-    const validator = typeof rule.validator === 'string' ? rule.validator : ''
+export const formDefineGroups: FormDefineGroups = groups => groups
 
-    if (helper.isString(validator)) {
-      if (!helper.isRegExp(pattern)) {
-        Object.assign(rule, { pattern: /^[+-]?\d+\.?\d*$/i })
-      }
-
-      rule.validator = (rule, value) => {
-        if (!value && value !== 0 && rule.required !== true) {
-          return Promise.resolve()
-        }
-
-        if (!value && value !== 0 && rule.required === true) {
-          return Promise.reject(new Error(message || '该项为必填项'))
-        }
-
-        if (!rule.pattern?.test(value)) {
-          return Promise.reject(new Error(validator || message || '格式有误'))
-        }
-
-        return Promise.resolve()
-      }
-
-      Object.assign(rule, { message: undefined })
-    }
-
-    return rule
-  },
-
+export const formValidator: ValidatorManager = {
   password(rule) {
     const message = rule.message
     const pattern = rule.pattern
@@ -64,5 +34,41 @@ export default {
     }
 
     return rule
+  },
+  number(rule) {
+    const message = rule.message
+    const pattern = rule.pattern
+    const validator = typeof rule.validator === 'string' ? rule.validator : ''
+
+    if (helper.isString(validator)) {
+      if (!helper.isRegExp(pattern)) {
+        Object.assign(rule, { pattern: /^[+-]?\d+\.?\d*$/i })
+      }
+
+      rule.validator = (rule, value) => {
+        if (!value && value !== 0 && rule.required !== true) {
+          return Promise.resolve()
+        }
+
+        if (!value && value !== 0 && rule.required === true) {
+          return Promise.reject(new Error(message || '该项为必填项'))
+        }
+
+        if (!rule.pattern?.test(value)) {
+          return Promise.reject(new Error(validator || message || '格式有误'))
+        }
+
+        return Promise.resolve()
+      }
+
+      Object.assign(rule, { message: undefined })
+    }
+
+    return rule
   }
-} as SFormValidatorManager
+}
+
+export default {
+  formDefineGroups,
+  formValidator
+}

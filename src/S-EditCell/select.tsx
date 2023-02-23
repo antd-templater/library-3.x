@@ -6,7 +6,8 @@ import 'ant-design-vue/es/select/style/index.less'
 import * as VueTypes from 'vue-types'
 import SEllipsis from '../S-Ellipsis/index'
 import { CheckOutlined, EditOutlined } from '@ant-design/icons-vue'
-import { defineComponent, reactive, toRaw, watch, watchEffect } from 'vue'
+import { defaultConfigProvider } from 'ant-design-vue/es/config-provider'
+import { defineComponent, reactive, toRaw, watch, watchEffect, inject } from 'vue'
 import ASelect, { SelectValue, DefaultOptionType } from 'ant-design-vue/es/select'
 import AButton from 'ant-design-vue/es/button'
 import helper from '../helper'
@@ -119,6 +120,7 @@ export const SEditCellSelect = defineComponent({
               v-model={[proxy.value, 'value']}
               class='s-editable-cell-input'
               style={props.cellStyle.input}
+              size={provider.componentSize}
               options={props.options}
               showArrow={props.showArrow}
               allowClear={props.allowClear}
@@ -171,6 +173,8 @@ export const SEditCellSelect = defineComponent({
         ? slots.editableCellText({ text: props.text, ...toRaw(proxy) })
         : isPrimitive ? helper.takeLabelByKey(props.options, text, fieldLabel, fieldValue, fieldOptions) || props.text : props.text
     }
+
+    const provider = inject('configProvider', defaultConfigProvider)
 
     const proxy = reactive({
       value: props.text,

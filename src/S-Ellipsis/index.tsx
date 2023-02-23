@@ -11,7 +11,20 @@ export const SEllipsis = defineComponent({
     title: VueTypes.string().def(''),
     tooltip: VueTypes.bool().def(false),
     sheared: VueTypes.bool().def(true),
-    placement: VueTypes.string<'top' | 'left' | 'right' | 'bottom' | 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' | 'leftTop' | 'leftBottom' | 'rightTop' | 'rightBottom'>().def('top')
+    placement: VueTypes.string<
+      | 'top'
+      | 'left'
+      | 'right'
+      | 'bottom'
+      | 'topLeft'
+      | 'topRight'
+      | 'bottomLeft'
+      | 'bottomRight'
+      | 'leftTop'
+      | 'leftBottom'
+      | 'rightTop'
+      | 'rightBottom'
+    >().def('top')
   },
   setup(props, { slots }) {
     const {

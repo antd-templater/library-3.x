@@ -6,8 +6,9 @@ import 'ant-design-vue/es/date-picker/style/index.less'
 import * as VueTypes from 'vue-types'
 import SEllipsis from '../S-Ellipsis/index'
 import { CheckOutlined, EditOutlined } from '@ant-design/icons-vue'
-import { defineComponent, reactive, toRaw, watch, watchEffect } from 'vue'
+import { defineComponent, reactive, toRaw, watch, watchEffect, inject } from 'vue'
 import { PanelMode, PickerMode } from 'ant-design-vue/es/vc-picker/interface'
+import { defaultConfigProvider } from 'ant-design-vue/es/config-provider'
 import ADatePicker from 'ant-design-vue/es/date-picker'
 import AButton from 'ant-design-vue/es/button'
 import dayjs from 'dayjs'
@@ -125,6 +126,7 @@ export const SEditCellDatePicker = defineComponent({
               v-model={[proxy.date, 'value']}
               class='s-editable-cell-input'
               style={props.cellStyle.input}
+              size={provider.componentSize}
               mode={props.mode}
               picker={props.picker}
               format={props.format}
@@ -164,6 +166,8 @@ export const SEditCellDatePicker = defineComponent({
         ? slots.editableCellText({ text: props.text, ...toRaw(proxy) })
         : props.text
     }
+
+    const provider = inject('configProvider', defaultConfigProvider)
 
     const proxy = reactive({
       date: doDayjs(props.text),

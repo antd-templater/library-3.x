@@ -1,6 +1,7 @@
 import { App } from 'vue'
 
 import { SIcon, isIconType } from './S-Icon/index'
+import { SForm, formValidator, formDefineGroups } from './S-Form/index'
 import { SEditCellDatePicker } from './S-EditCell/date-picker'
 import { SEditCellTreeSelect } from './S-EditCell/tree-select'
 import { SEditCellTextarea } from './S-EditCell/textarea'
@@ -8,9 +9,10 @@ import { SEditCellSelect } from './S-EditCell/select'
 import { SEditCellInput } from './S-EditCell/input'
 import { SIconSelect } from './S-IconSelect/index'
 import { SEllipsis } from './S-Ellipsis/index'
-
 export {
   isIconType,
+  formValidator,
+  formDefineGroups,
   SEditCellInput,
   SEditCellSelect,
   SEditCellTextarea,
@@ -18,6 +20,7 @@ export {
   SEditCellDatePicker,
   SIconSelect,
   SEllipsis,
+  SForm,
   SIcon
 }
 
@@ -30,6 +33,7 @@ export default {
     app.component('SEditCellDatePicker', SEditCellDatePicker)
     app.component('SIconSelect', SIconSelect)
     app.component('SEllipsis', SEllipsis)
+    app.component('SForm', SForm)
     app.component('SIcon', SIcon)
   }
 }

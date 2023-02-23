@@ -8,7 +8,7 @@ export function isArray(arr: unknown): arr is unknown[] {
   return Array.isArray(arr)
 }
 
-export function isObject(obj: unknown): obj is object & Exclude<unknown, unknown[] | Function | RegExp> {
+export function isObject(obj: unknown): obj is Record<string, unknown> {
   return itType(obj) === 'Object'
 }
 
@@ -32,6 +32,10 @@ export function isFunction(func: unknown): func is Function {
   return itType(func) === 'Function'
 }
 
+export function isReference(val: unknown): val is Record<string, unknown> {
+  return isArray(val) || isObject(val)
+}
+
 export function isPrimitive(val: unknown): val is string | number {
   return isString(val) || isFiniteNumber(val)
 }
@@ -40,7 +44,7 @@ export function isNotEmptyArray(arr: unknown): arr is unknown[] {
   return isArray(arr) && arr.length > 0
 }
 
-export function isNotEmptyObject(obj: unknown): obj is object & Exclude<unknown, unknown[] | Function | RegExp> {
+export function isNotEmptyObject(obj: unknown): obj is Record<string, unknown> {
   return isObject(obj) && Object.keys(obj).length > 0
 }
 
@@ -60,7 +64,7 @@ export function isEmptyString(str: unknown): str is string {
   return isString(str) && !str.trim()
 }
 
-export function isEmptyObject(obj: unknown): obj is object & Exclude<unknown, unknown[] | Function | RegExp> {
+export function isEmptyObject(obj: unknown): obj is Record<string, unknown> {
   return isObject(obj) && Object.keys(obj).length === 0
 }
 
@@ -186,11 +190,45 @@ export function toDeepClone<T = unknown>(any: T, ...args: unknown[]): T {
   return target as T
 }
 
-export const takeTimeToDate = (date: dayjs.ConfigType, format?: dayjs.OptionType) => {
-  if (date) {
-    try { return dayjs(date, format) } catch {}
+export function toDeepEqual<T = unknown>(any: T, other: unknown): boolean {
+  if (any === other) {
+    return true
   }
-  return null
+
+  if (Object.is(any, other)) {
+    return true
+  }
+
+  if (itType(any) !== itType(other)) {
+    return false
+  }
+
+  if (isArray(any) && isArray(other) && any.length === other.length) {
+    for (const key of any.keys()) {
+      const reuslt = toDeepEqual(any[key], other[key])
+
+      if (!reuslt) {
+        return false
+      }
+    }
+    return true
+  }
+
+  if (isObject(any) && isObject(other) && Object.keys(any).length === Object.keys(other).length) {
+    for (const key of Object.keys(any)) {
+      const reuslt = toDeepEqual(any[key], other[key])
+
+      if (!reuslt) {
+        return false
+      }
+    }
+    return true
+  }
+
+  return false
+}
+
+export const takeTimeToDate = (date: dayjs.ConfigType, format?: dayjs.OptionType) => {
 }
 
 export const takeTimeToFormat = (date: dayjs.ConfigType, format = 'YYYY-MM-DD HH:mm:ss') => {
@@ -257,6 +295,7 @@ export default {
   isRegExp,
   isBoolean,
   isFunction,
+  isReference,
   isPrimitive,
   isEmptyArray,
   isEmptyObject,
@@ -268,6 +307,7 @@ export default {
   isFiniteNumber,
   toDeepAssign,
   toDeepClone,
+  toDeepEqual,
   takeTimeToDate,
   takeTimeToFormat,
   takeLabelByKey,

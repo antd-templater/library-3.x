@@ -1,5 +1,6 @@
 import * as VueTypes from 'vue-types'
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref, inject } from 'vue'
+import { defaultConfigProvider } from 'ant-design-vue/es/config-provider'
 import ASelect, { DefaultOptionType, SelectValue } from 'ant-design-vue/es/select'
 import 'ant-design-vue/es/select/style/index.less'
 
@@ -49,6 +50,7 @@ export const SIconSelect = defineComponent({
     const selector: any = ref(undefined)
     const isMultiple = props.multiple !== false
     const isMultipleMode = props.mode === 'tags' || props.mode === 'multiple'
+    const provider = inject('configProvider', defaultConfigProvider)
 
     const onChange = (value: any) => {
       const isArrayValue = Array.isArray(value)
@@ -67,7 +69,7 @@ export const SIconSelect = defineComponent({
       <ASelect
         ref={selector}
         open={open.value}
-        size={props.size}
+        size={props.size || provider.componentSize}
         mode={props.mode}
         value={props.value}
         options={props.options}

@@ -21,6 +21,7 @@ export default defineConfig([
       'src/S-IconSelect/index.tsx',
       'src/S-Ellipsis/index.tsx',
       'src/S-Icon/index.tsx',
+      'src/S-Form/index.tsx',
       'src/helper.ts',
       'src/index.ts'
     ],
