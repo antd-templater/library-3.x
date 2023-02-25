@@ -135,8 +135,8 @@ export type SFormGroupItem = {
   grid: SFormGrid;
   slot: string;
   label: string;
-  border?: string | boolean | Ref<string | boolean>;
   items: Array<SFormRowItem>;
+  border?: string | boolean | Ref<string | boolean>;
   readonly: Ref<boolean> | boolean;
   disabled: Ref<boolean> | boolean;
   render: Ref<boolean> | boolean;

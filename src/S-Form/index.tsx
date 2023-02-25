@@ -139,6 +139,7 @@ export const SForm = defineComponent({
             slot: node.slot || '',
             label: node.label || '',
             items: [],
+            border: node.border,
             disabled: node.disabled !== undefined ? node.disabled : false,
             readonly: node.disabled !== undefined ? node.disabled : false,
             render: node.render !== undefined ? node.render : true,
@@ -281,7 +282,7 @@ export const SForm = defineComponent({
 
     const GroupHeaderRender = (opt: FormProps & GroupProps, ctx: SetupContext) => {
       const group = opt.group
-      const border = group.border || opt.border
+      const border = opt.border === 'no' || opt.border === false ? opt.border : unref(group.border)
       const disabled = [unref(opt.disabled), unref(group.disabled)].includes(true)
       const readonly = [unref(opt.readonly), unref(group.readonly)].includes(true)
       const className = 's-form-group-item-header-title'
