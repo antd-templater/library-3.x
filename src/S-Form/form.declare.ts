@@ -8,22 +8,21 @@ export type SFormType =
   | 'ASwitch'
   | 'ASlider'
   | 'ASelect'
+  | 'ACascader'
   | 'ATreeSelect'
   | 'ARadioGroup'
   | 'ACheckboxGroup'
-  | 'AInputPassword'
   | 'AAutoComplete'
+  | 'AInputSearch'
+  | 'AInputPassword'
+  | 'AInputTextarea'
   | 'AInputNumber'
   | 'ARangePicker'
   | 'ADatePicker'
   | 'AYearPicker'
   | 'AMonthPicker'
   | 'AQuarterPicker'
-  | 'AWeekPicker'
   | 'ATimePicker'
-  | 'ATextarea'
-  | 'ACascader'
-  | 'ASearch'
 
 export type SFormGridGutter = number | {
   xs?: number;
@@ -136,6 +135,7 @@ export type SFormGroupItem = {
   grid: SFormGrid;
   slot: string;
   label: string;
+  border?: string | boolean | Ref<string | boolean>;
   items: Array<SFormRowItem>;
   readonly: Ref<boolean> | boolean;
   disabled: Ref<boolean> | boolean;
@@ -149,13 +149,14 @@ export type SFormGroupPartItem = {
   slot?: string;
   label?: string;
   field?: string;
+  border?: string | boolean | Ref<string | boolean>;
   readonly?: Ref<boolean> | boolean;
   disabled?: Ref<boolean> | boolean;
   render?: Ref<boolean> | boolean;
   show?: Ref<boolean> | boolean;
 }
 
-export type ValidatorManager = Record<string, (options: ValidatorRule) => ValidatorRule>
-export type ValidatorRule = Omit<Rule, 'message' | 'validator'> & { message: string, validator: Rule['validator'] | string }
-export type FormDefineGroups = (config: Array<SFormGroupPartItem | SFormRowPartItem | SFormColPartItem>) => Array<SFormGroupPartItem | SFormRowPartItem | SFormColPartItem>
 export type NormalizeType = Record<SFormType, SFormColItem>
+export type ValidatorRule = Omit<Rule, 'message' | 'validator'> & { message: string, validator: Rule['validator'] | string }
+export type FormGroupsDefiner = (config: Array<SFormGroupPartItem | SFormRowPartItem | SFormColPartItem>) => Array<SFormGroupPartItem | SFormRowPartItem | SFormColPartItem>
+export type ValidatorManager = Record<string, (options: ValidatorRule) => ValidatorRule>

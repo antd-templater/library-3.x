@@ -1,7 +1,7 @@
 import helper from '../helper'
-import { ValidatorManager, FormDefineGroups } from './form.declare'
+import { ValidatorManager, FormGroupsDefiner } from './form.declare'
 
-export const formDefineGroups: FormDefineGroups = groups => groups
+export const formGroupsDefiner: FormGroupsDefiner = groups => groups
 
 export const formValidator: ValidatorManager = {
   password(rule) {
@@ -69,6 +69,6 @@ export const formValidator: ValidatorManager = {
 }
 
 export default {
-  formDefineGroups,
+  formGroupsDefiner,
   formValidator
 }

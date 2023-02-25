@@ -3,13 +3,13 @@ import 'ant-design-vue/es/grid/style/index.less'
 import 'ant-design-vue/es/spin/style/index.less'
 import 'ant-design-vue/es/form/style/index.less'
 
-export { formValidator, formDefineGroups } from './form.helper'
+export { formValidator, formGroupsDefiner } from './form.helper'
 
 import * as VueTypes from 'vue-types'
 import Normalize from './form.normalize'
 import SFormComponent from './index.component'
 import { SFormGrid, SFormColItem, SFormColPartItem, SFormRowItem, SFormRowPartItem, SFormGroupItem, SFormGroupPartItem } from './form.declare'
-import { Ref, defineComponent, watchEffect, watch, shallowRef, unref, ref, readonly, PropType, SetupContext, inject } from 'vue'
+import { Ref, defineComponent, watchEffect, watch, shallowRef, toRaw, unref, ref, readonly, PropType, SetupContext, inject } from 'vue'
 import { Rule, NamePath, InternalNamePath, ValidateOptions } from 'ant-design-vue/es/form/interface'
 import { defaultConfigProvider } from 'ant-design-vue/es/config-provider'
 import AForm, { FormItem as AFormItem } from 'ant-design-vue/es/form'
@@ -21,6 +21,7 @@ import helper from '@/helper'
 interface FormProps {
   grid: SFormGrid;
   model: Record<string, any>;
+  border?: string | boolean;
   disabled: boolean;
   readonly: boolean;
 }
@@ -52,6 +53,7 @@ export const SForm = defineComponent({
       default: () => ({})
     },
     grid: VueTypes.object<Partial<SFormGrid>>().def(() => ({})),
+    border: VueTypes.any<string | boolean>().def(false),
     groups: VueTypes.array<SFormGroupPartItem | SFormRowPartItem | SFormColPartItem>().def(() => ([])),
     modelValue: VueTypes.object().def(() => undefined),
     model: VueTypes.object().def(() => undefined),
@@ -244,18 +246,28 @@ export const SForm = defineComponent({
         ? item.default.output({ helper, self: readonly(item) })
         : item.default.output
 
-      let tempRefModel: any = refModel.value
+      let tempRefModel: any = unref(refModel)
       let tempSyncModel: any = syncModel
 
       for (const [index, field] of item.field.entries()) {
         if (index < item.field.length - 1) {
-          tempSyncModel = helper.isObject(tempSyncModel?.[field]) ? tempSyncModel[field] : {}
-          tempRefModel = helper.isObject(tempRefModel?.[field]) ? tempRefModel[field] : {}
+          tempSyncModel = helper.isObject(tempSyncModel?.[field]) ? tempSyncModel[field] : (tempSyncModel[field] = {})
+          tempRefModel = helper.isObject(tempRefModel?.[field]) ? tempRefModel[field] : (tempRefModel[field] = {})
         }
 
         if (index === item.field.length - 1) {
-          tempSyncModel[field] = tempRefModel?.[field] !== undefined ? tempRefModel[field] : defModel
-          tempSyncModel[field] = item.transfer.output(tempSyncModel[field], { helper, self: readonly(item) })
+          const oldSyncModel = toRaw(tempSyncModel[field])
+          const refSyncModel = toRaw(tempRefModel?.[field] !== undefined ? tempRefModel[field] : defModel)
+          const newSyncModel = item.transfer.output(refSyncModel, { helper, self: readonly(item) })
+
+          if (!helper.toDeepEqual(oldSyncModel, newSyncModel)) {
+            tempSyncModel[field] = newSyncModel
+          }
+
+          // when field not in syncModel
+          if (tempSyncModel[field] === undefined) {
+            tempSyncModel[field] = undefined
+          }
         }
       }
     }
@@ -269,16 +281,24 @@ export const SForm = defineComponent({
 
     const GroupHeaderRender = (opt: FormProps & GroupProps, ctx: SetupContext) => {
       const group = opt.group
+      const border = group.border || opt.border
       const disabled = [unref(opt.disabled), unref(group.disabled)].includes(true)
       const readonly = [unref(opt.readonly), unref(group.readonly)].includes(true)
+      const className = 's-form-group-item-header-title'
       const slotRender = ctx.slots[group.slot]
+
+      const attrs = {
+        border: border !== false && border !== 'no'
+          ? undefined
+          : 'no'
+      }
 
       if (group.label || group.slot) {
         return (
-          <div class='s-form-group-item-header'>
+          <div class='s-form-group-item-header' {...attrs}>
             {
               slotRender
-                ? slotRender({ group, disabled, readonly })
+                ? slotRender({ class: className, group, disabled, readonly })
                 : <div class='s-form-group-item-header-title'>{group.label}</div>
             }
           </div>
@@ -321,16 +341,14 @@ export const SForm = defineComponent({
           unref(opt.disabled),
           unref(group.disabled),
           unref(row.disabled),
-          unref(col.disabled),
-          unref(col.props.disabled)
+          helper.isBoolean(unref(col.props.disabled)) ? unref(col.props.disabled) : unref(col.disabled)
         ].includes(true)
 
         const readonly = [
           unref(opt.readonly),
           unref(group.readonly),
           unref(row.readonly),
-          unref(col.readonly),
-          unref(col.props.readonly)
+          helper.isBoolean(unref(col.props.readonly)) ? unref(col.props.readonly) : unref(col.readonly)
         ].includes(true)
 
         return {
@@ -345,16 +363,14 @@ export const SForm = defineComponent({
           unref(opt.disabled),
           unref(group.disabled),
           unref(row.disabled),
-          unref(col.disabled),
-          unref(col.props.disabled)
+          helper.isBoolean(unref(col.props.disabled)) ? unref(col.props.disabled) : unref(col.disabled)
         ].includes(true)
 
         const readonly = [
           unref(opt.readonly),
           unref(group.readonly),
           unref(row.readonly),
-          unref(col.readonly),
-          unref(col.props.readonly)
+          helper.isBoolean(unref(col.props.readonly)) ? unref(col.props.readonly) : unref(col.readonly)
         ].includes(true)
 
         return {
@@ -366,11 +382,11 @@ export const SForm = defineComponent({
         <div class='s-form-group-item-content'>
           {
             opt.group.items
-              .filter(row => row.items.every(col => unref(col.render)))
+              .filter(row => row.items.some(col => unref(col.render)))
               .map(row => (
                 <ARow
                   {...handleRowBind(row, opt.group)}
-                  v-show={row.items.every(col => unref(col.show))}
+                  v-show={row.items.some(col => unref(col.show))}
                 >
                   {
                     row.items
@@ -484,6 +500,7 @@ export const SForm = defineComponent({
 
     return () => {
       const grid = ref(props.grid || {})
+      const border = ref(props.border || false)
       const disabled = ref(props.disabled || false)
       const readonly = ref(props.readonly || false)
       const spinning = ref(props.spinning || false)
@@ -502,6 +519,7 @@ export const SForm = defineComponent({
 
               <GroupContainerRender
                 grid={grid.value}
+                border={border.value}
                 model={refModel.value}
                 groups={refGroups.value}
                 disabled={disabled.value}

@@ -1,7 +1,7 @@
 import { App } from 'vue'
 
 import { SIcon, isIconType } from './S-Icon/index'
-import { SForm, formValidator, formDefineGroups } from './S-Form/index'
+import { SForm, formValidator, formGroupsDefiner } from './S-Form/index'
 import { SEditCellDatePicker } from './S-EditCell/date-picker'
 import { SEditCellTreeSelect } from './S-EditCell/tree-select'
 import { SEditCellTextarea } from './S-EditCell/textarea'
@@ -12,7 +12,7 @@ import { SEllipsis } from './S-Ellipsis/index'
 export {
   isIconType,
   formValidator,
-  formDefineGroups,
+  formGroupsDefiner,
   SEditCellInput,
   SEditCellSelect,
   SEditCellTextarea,
