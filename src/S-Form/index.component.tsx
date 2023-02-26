@@ -51,6 +51,7 @@ const Components: Record<string, any> = {
   AYearPicker: ADatePicker.YearPicker,
   AMonthPicker: ADatePicker.MonthPicker,
   AQuarterPicker: ADatePicker.QuarterPicker,
+  AWeekPicker: ADatePicker.WeekPicker,
   ADatePicker: ADatePicker,
   ATimePicker: ATimePicker
 }
@@ -103,6 +104,26 @@ export const SFormComponent = defineComponent({
           'onUpdate:value': (value: any) => { source[field] = value },
           ...props.attrs
         }
+      }
+
+      if (type === 'AQuarterPicker') {
+        attrs.valueFormat = 'YYYY-Q'
+        attrs.format = 'YYYY-Q'
+      }
+
+      if (type === 'AMonthPicker') {
+        attrs.valueFormat = 'YYYY-MM'
+        attrs.format = 'YYYY-MM'
+      }
+
+      if (type === 'AYearPicker') {
+        attrs.valueFormat = 'YYYY'
+        attrs.format = 'YYYY'
+      }
+
+      if (type === 'AWeekPicker') {
+        attrs.valueFormat = 'YYYY-ww'
+        attrs.format = 'YYYY-ww'
       }
 
       return Component ? h(Component, attrs, context.slots) : null

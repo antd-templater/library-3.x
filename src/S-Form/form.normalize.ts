@@ -421,8 +421,16 @@ export const Normalize: NormalizeType = {
       output: []
     },
     transfer: {
-      input: (value, { helper }) => helper.isArray(value) ? value.map((v: any) => v !== undefined && dayjs(v).isValid() ? dayjs(v) : undefined) : [],
-      output: (value, { helper, self }) => helper.isArray(value) ? value.map((v: any) => v !== undefined && dayjs(v).isValid() ? dayjs(v).format(self.props.valueFormat || self.props.format || 'YYYY-MM-DD') : '') : []
+      input: (value, { helper, self }) => {
+        const values = helper.isArray(value) ? value : []
+        const format = self.props.valueFormat || self.props.format || (self.props.showTime ? 'YYYY-M-D HH:mm:ss' : 'YYYY-M-D')
+        return values.map((v: any) => v !== undefined && dayjs(v, format).isValid() ? dayjs(v, format) : undefined)
+      },
+      output: (value, { helper, self }) => {
+        const values = helper.isArray(value) ? value : []
+        const format = self.props.valueFormat || self.props.format || (self.props.showTime ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD')
+        return values.map((v: any) => v !== undefined && dayjs(v, format).isValid() ? dayjs(v, format).format(format) : '')
+      }
     },
 
     readonly: false,
@@ -448,8 +456,14 @@ export const Normalize: NormalizeType = {
       output: ''
     },
     transfer: {
-      input: (value, _) => value !== undefined && dayjs(value).isValid() ? dayjs(value) : undefined,
-      output: (value, { self }) => value !== undefined && dayjs(value).isValid() ? dayjs(value).format(self.props.valueFormat || self.props.format || 'YYYY-MM-DD') : ''
+      input: (value, { self }) => {
+        const format = self.props.valueFormat || self.props.format || (self.props.showTime ? 'YYYY-M-D HH:mm:ss' : 'YYYY-M-D')
+        return value !== undefined && dayjs(value, format).isValid() ? dayjs(value, format) : undefined
+      },
+      output: (value, { self }) => {
+        const format = self.props.valueFormat || self.props.format || (self.props.showTime ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD')
+        return value !== undefined && dayjs(value, format).isValid() ? dayjs(value, format).format(format) : ''
+      }
     },
 
     readonly: false,
@@ -475,8 +489,14 @@ export const Normalize: NormalizeType = {
       output: ''
     },
     transfer: {
-      input: (value, _) => value !== undefined && dayjs(value).isValid() ? dayjs(value) : undefined,
-      output: (value, { self }) => value !== undefined && dayjs(value).isValid() ? dayjs(value).format(self.props.valueFormat || self.props.format || 'YYYY') : ''
+      input: (value, { self }) => {
+        const format = 'YYYY'
+        return value !== undefined && dayjs(value, format).isValid() ? dayjs(value, format) : undefined
+      },
+      output: (value, { self }) => {
+        const format = 'YYYY'
+        return value !== undefined && dayjs(value, format).isValid() ? dayjs(value, format).format(format) : ''
+      }
     },
 
     readonly: false,
@@ -502,8 +522,14 @@ export const Normalize: NormalizeType = {
       output: ''
     },
     transfer: {
-      input: (value, _) => value !== undefined && dayjs(value).isValid() ? dayjs(value) : undefined,
-      output: (value, { self }) => value !== undefined && dayjs(value).isValid() ? dayjs(value).format(self.props.valueFormat || self.props.format || 'YYYY-MM') : ''
+      input: (value, { self }) => {
+        const format = 'YYYY-M'
+        return value !== undefined && dayjs(value, format).isValid() ? dayjs(value, format) : undefined
+      },
+      output: (value, { self }) => {
+        const format = (self.props.valueFormat || self.props.format) === 'YYYY-M' ? 'YYYY-M' : 'YYYY-MM'
+        return value !== undefined && dayjs(value, format).isValid() ? dayjs(value, format).format(format) : ''
+      }
     },
 
     readonly: false,
@@ -529,8 +555,56 @@ export const Normalize: NormalizeType = {
       output: ''
     },
     transfer: {
-      input: (value, _) => value !== undefined && dayjs(value).isValid() ? dayjs(value) : undefined,
-      output: (value, { self }) => value !== undefined && dayjs(value).isValid() ? dayjs(value).format(self.props.valueFormat || self.props.format || 'YYYY-Q') : ''
+      input: (value, _) => {
+        const rex = /^(\d{4})-(\d{1,2})$/
+        const date = dayjs(typeof value === 'string' ? value.replace(rex, '$1') : value || null)
+        return date && date.isValid() ? (typeof value === 'string' ? date.quarter(+value.replace(rex, '$2')) : date) : undefined
+      },
+      output: (value, _) => {
+        return value !== undefined && typeof value !== 'string' && dayjs(value).isValid()
+          ? dayjs(value).format('YYYY-Q')
+          : typeof value === 'string'
+            ? value
+            : ''
+      }
+    },
+
+    readonly: false,
+    disabled: false,
+    render: true,
+    show: true
+  },
+
+  AWeekPicker: {
+    type: 'AWeekPicker',
+    slot: '',
+    label: '',
+    field: [],
+
+    grid: {},
+    layer: {},
+    rules: undefined,
+
+    props: {},
+    slots: {},
+    default: {
+      input: undefined,
+      output: ''
+    },
+    transfer: {
+      input: (value, _) => {
+        const rex = /^(\d{4})-(\d{1,2})$/
+        const date = dayjs(typeof value === 'string' ? value.replace(rex, '$1') : value || null)
+        return date && date.isValid() ? (typeof value === 'string' ? date.week(+value.replace(rex, '$2')) : date) : undefined
+      },
+      output: (value, { self }) => {
+        const format = (self.props.valueFormat || self.props.format) === 'YYYY-w' ? 'YYYY-w' : 'YYYY-ww'
+        return value !== undefined && typeof value !== 'string' && dayjs(value).isValid()
+          ? dayjs(value).format(format)
+          : typeof value === 'string'
+            ? value
+            : ''
+      }
     },
 
     readonly: false,
@@ -556,8 +630,14 @@ export const Normalize: NormalizeType = {
       output: ''
     },
     transfer: {
-      input: (value, { self }) => value !== undefined && dayjs(value, self.props.format || (self.props.use12Hours ? 'h:mm:ss a' : 'hh:mm:ss')).isValid() ? dayjs(value, self.props.format || (self.props.use12Hours ? 'h:mm:ss a' : 'hh:mm:ss')) : undefined,
-      output: (value, { self }) => value !== undefined && dayjs(value).isValid() ? dayjs(value).format(self.props.valueFormat || self.props.format || (self.props.use12Hours ? 'h:mm:ss a' : 'hh:mm:ss')) : ''
+      input: (value, { self }) => {
+        const format = self.props.valueFormat || self.props.format || (self.props.use12Hours ? 'h:mm:ss a' : 'HH:mm:ss')
+        return value !== undefined && dayjs(value, format).isValid() ? dayjs(value, format) : undefined
+      },
+      output: (value, { self }) => {
+        const format = self.props.valueFormat || self.props.format || (self.props.use12Hours ? 'h:mm:ss a' : 'HH:mm:ss')
+        return value !== undefined && dayjs(value, format).isValid() ? dayjs(value, format).format(format) : ''
+      }
     },
 
     readonly: false,

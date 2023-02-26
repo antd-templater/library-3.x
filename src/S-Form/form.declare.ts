@@ -22,6 +22,7 @@ export type SFormType =
   | 'AYearPicker'
   | 'AMonthPicker'
   | 'AQuarterPicker'
+  | 'AWeekPicker'
   | 'ATimePicker'
 
 export type SFormGridGutter = number | {
