@@ -20,8 +20,9 @@ export default defineConfig([
       'src/S-EditCell/date-picker.tsx',
       'src/S-IconSelect/index.tsx',
       'src/S-Ellipsis/index.tsx',
-      'src/S-Icon/index.tsx',
+      'src/S-Tree/index.tsx',
       'src/S-Form/index.tsx',
+      'src/S-Icon/index.tsx',
       'src/helper.ts',
       'src/index.ts'
     ],

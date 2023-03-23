@@ -23,10 +23,13 @@ export const SIcon = defineComponent({
     rotate: VueTypes.number().def(undefined),
     twoToneColor: VueTypes.any<string | [string, string]>().def()
   },
-  setup(props) {
+  emits: {
+    click: (event: MouseEvent) => true
+  },
+  setup(props, context) {
     const Icon = AllIcons[props.type]
     const binds = { ...props, type: undefined }
-    return () => isIconType(props.type) ? <Icon { ...binds }/> : null
+    return () => isIconType(props.type) ? <Icon { ...binds } onClick={event => context.emit('click', event)}/> : null
   }
 })
 
