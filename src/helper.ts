@@ -24,7 +24,7 @@ export function isRegExp(reg: unknown): reg is RegExp {
   return itType(reg) === 'RegExp'
 }
 
-export function isBoolean(bool: unknown): bool is Boolean {
+export function isBoolean(bool: unknown): bool is boolean {
   return itType(bool) === 'Boolean'
 }
 
