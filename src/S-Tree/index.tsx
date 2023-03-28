@@ -59,7 +59,7 @@ interface STreeMethoder {
   removeTreeNodes: (nodes: STreeSourceNodes, parent?: STreeTargetNode | null) => STreeTargetNodes;
   compileTreeNodes: (nodes: STreeSourceNodes, parent?: STreeTargetNode | null) => STreeTargetNodes;
   recoverTreeNodes: (nodes: STreeTargetNodes) => STreeSourceNodes;
-  spreadTreeNodes: (nodes: STreeTargetNodes) => STreeTargetNodes;
+  spreadTreeNodes: <T extends STreeSourceNodes> (nodes: T) => T;
 
   expandTreeNodes: (keys: SKeys | { expanded: SKeys }) => void;
   collapseTreeNodes: (keys: SKeys | { expanded: SKeys }) => void;
@@ -102,13 +102,10 @@ interface STreeSourcer {
 interface STreeStater {
   loadKeys: ShallowReactive<SKeys>;
   loadedKeys: ShallowReactive<SKeys>;
-  expandedKeys: ShallowReactive<SKeys>;
 
-  selectedKeys: ShallowReactive<SKeys>;
-  selectedLinkKeys: ShallowReactive<SKeys>;
-  checkedLinkKeys: ShallowReactive<SKeys>;
-  checkedHalfKeys: ShallowReactive<SKeys>;
   checkedKeys: ShallowReactive<SKeys>;
+  selectedKeys: ShallowReactive<SKeys>;
+  expandedKeys: ShallowReactive<SKeys>;
 
   parentTreeNodes: ShallowRef<Record<string, STreeTargetNodes>>;
   childTreeNodes: ShallowRef<Record<string, STreeTargetNodes>>;
@@ -170,7 +167,6 @@ export const STree = defineComponent({
     tooltip: VueTypes.number().def(-1)
   },
   emits: {
-    'init': (emiter: STreeEmiter) => true,
     'check': (emiter: STreeEmiter) => true,
     'select': (emiter: STreeEmiter) => true,
     'expand': (emiter: STreeEmiter) => true,
@@ -183,19 +179,16 @@ export const STree = defineComponent({
     const Stater: STreeStater = {
       loadKeys: shallowReactive([]),
       loadedKeys: shallowReactive([]),
+
+      checkedKeys: shallowReactive([]),
+      selectedKeys: shallowReactive([]),
       expandedKeys: shallowReactive([]),
 
-      selectedKeys: shallowReactive([]),
-      selectedLinkKeys: shallowReactive([]),
-      checkedLinkKeys: shallowReactive([]),
-      checkedHalfKeys: shallowReactive([]),
-      checkedKeys: shallowReactive([]),
-
-      propTreeNodes: shallowReactive([]),
-      linkTreeNodes: shallowReactive([]),
-      flatTreeNodes: shallowReactive([]),
       parentTreeNodes: shallowRef({}),
-      childTreeNodes: shallowRef({})
+      childTreeNodes: shallowRef({}),
+      flatTreeNodes: shallowReactive([]),
+      linkTreeNodes: shallowReactive([]),
+      propTreeNodes: shallowReactive([])
     }
 
     const Sourcer: STreeSourcer = {
@@ -371,12 +364,7 @@ export const STree = defineComponent({
                     checkedNodes.splice(checkedNodes.findIndex(node => node.key === parent.key), 1)
                   }
 
-                  if (
-                    children.some(child => (
-                      checkedNodes.some(node => node.key === child.key) ||
-                      checkedHalfNodes.some(node => node.key === child.key)
-                    ))
-                  ) {
+                  if (children.some(child => checkedNodes.some(node => node.key === child.key) || checkedHalfNodes.some(node => node.key === child.key))) {
                     if (!checkedHalfNodes.some(node => node.key === parent.key)) {
                       checkedHalfNodes.push(parent)
                     }
@@ -432,15 +420,15 @@ export const STree = defineComponent({
         }
 
         // Stater
-        Stater.checkedKeys = Targeter.checkedNodes.map(node => node.key)
-        Stater.selectedKeys = Targeter.selectedNodes.map(node => node.key)
+        Stater.checkedKeys.splice(0, Stater.checkedKeys.length, ...Targeter.checkedNodes.map(node => node.key))
+        Stater.selectedKeys.splice(0, Stater.selectedKeys.length, ...Targeter.selectedNodes.map(node => node.key))
 
         // Targeter
-        Targeter.selectedNode.value = selectedNodes[0]
-        Targeter.selectedLinkNode.value = selectedLinkNodes[0]
-        Targeter.checkedLinkNode.value = checkedLinkNodes[0]
-        Targeter.checkedHalfNode.value = checkedHalfNodes[0]
-        Targeter.checkedNode.value = checkedNodes[0]
+        Targeter.selectedNode.value = selectedNodes[0] || null
+        Targeter.selectedLinkNode.value = selectedLinkNodes[0] || null
+        Targeter.checkedLinkNode.value = checkedLinkNodes[0] || null
+        Targeter.checkedHalfNode.value = checkedHalfNodes[0] || null
+        Targeter.checkedNode.value = checkedNodes[0] || null
 
         // Sourcer
         Sourcer.selectedNodes.splice(0, Sourcer.selectedNodes.length, ...selectedNodes.map(node => node.referenceTreeNode))
@@ -497,20 +485,19 @@ export const STree = defineComponent({
         const expandedKeys = Stater.expandedKeys
         const flatTreeNodes = Stater.flatTreeNodes
 
-        // 清理中 - loadKeys
+        // 清理中
         loadKeys.splice(0, loadKeys.length, ...loadKeys.filter(key => flatTreeNodes.some(every => every.key === key && every.isLeaf === false)))
-
-        // 清理中 - loadedKeys
         loadedKeys.splice(0, loadedKeys.length, ...loadedKeys.filter(key => flatTreeNodes.some(every => every.key === key && every.isLeaf === false)))
-
-        // 清理中 - expanded
         expandedKeys.splice(0, expandedKeys.length, ...expandedKeys.filter(key => flatTreeNodes.some(every => every.key === key && helper.isNotEmptyArray(every.children))))
-
-        // 清理中 - selected
         selectedKeys.splice(0, selectedKeys.length, ...selectedKeys.filter(key => flatTreeNodes.some(every => every.key === key)))
-
-        // 清理中 - checked
         checkedKeys.splice(0, checkedKeys.length, ...checkedKeys.filter(key => flatTreeNodes.some(every => every.key === key)))
+
+        // 排序中
+        loadKeys.sort((a, b) => flatTreeNodes.findIndex(node => node.key === a) - flatTreeNodes.findIndex(node => node.key === b))
+        loadedKeys.sort((a, b) => flatTreeNodes.findIndex(node => node.key === a) - flatTreeNodes.findIndex(node => node.key === b))
+        expandedKeys.sort((a, b) => flatTreeNodes.findIndex(node => node.key === a) - flatTreeNodes.findIndex(node => node.key === b))
+        selectedKeys.sort((a, b) => flatTreeNodes.findIndex(node => node.key === a) - flatTreeNodes.findIndex(node => node.key === b))
+        checkedKeys.sort((a, b) => flatTreeNodes.findIndex(node => node.key === a) - flatTreeNodes.findIndex(node => node.key === b))
       },
 
       resetTreeNodes(nodes) {
@@ -519,25 +506,10 @@ export const STree = defineComponent({
         }
 
         if (nodes !== Stater.propTreeNodes) {
-          Stater.propTreeNodes.splice(0, Stater.propTreeNodes.length, ...nodes)
+          Stater.propTreeNodes = [...nodes]
         }
 
         Methoder.reloadTreeNodes(nodes, null)
-
-        context.emit('init', {
-          loadKeys: [...Stater.loadKeys],
-          loadedKeys: [...Stater.loadedKeys],
-          expandedKeys: [...Stater.expandedKeys],
-
-          checkedKeys: props.checkedMode === 'link' ? Targeter.checkedLinkNodes.map(node => node.key) : Targeter.checkedNodes.map(node => node.key),
-          selectedKeys: props.selectedMode === 'link' ? Targeter.selectedLinkNodes.map(node => node.key) : Targeter.selectedNodes.map(node => node.key),
-
-          checkedNodes: props.checkedMode === 'link' ? Sourcer.checkedLinkNodes.map(node => node) : Sourcer.checkedNodes.map(node => node),
-          selectedNodes: props.selectedMode === 'link' ? Sourcer.selectedLinkNodes.map(node => node) : Sourcer.selectedNodes.map(node => node),
-
-          checkedNode: props.checkedMode === 'link' ? toRaw(Sourcer.checkedLinkNode) : toRaw(Sourcer.checkedNode),
-          selectedNode: props.selectedMode === 'link' ? toRaw(Sourcer.selectedLinkNode) : toRaw(Sourcer.selectedNode)
-        })
       },
 
       reloadTreeNodes(nodes, parent) {
@@ -551,23 +523,20 @@ export const STree = defineComponent({
 
         const loadKeys = Stater.loadKeys
         const loadedKeys = Stater.loadedKeys
-        const expandedKeys = Stater.expandedKeys
-        const propTreeNodes = Stater.propTreeNodes
         const linkTreeNodes = Stater.linkTreeNodes
         const childTreeNodes = Stater.childTreeNodes
         const parentTreeNodes = Stater.parentTreeNodes
-        const referenceTreeNodes = helper.isNotEmptyArray(nodes) ? nodes : undefined
+        const referencedNodes = helper.isNotEmptyArray(nodes) ? nodes : undefined
         const resultTreeNodes = Methoder.compileTreeNodes(nodes, parentTreeNode)
         const flatResultNodes = Methoder.spreadTreeNodes(resultTreeNodes)
 
         if (!helper.isNotEmptyObject(parentTreeNode)) {
-          if (nodes !== propTreeNodes) {
-            propTreeNodes.splice(0, propTreeNodes.length, ...nodes)
+          if (nodes !== Stater.propTreeNodes) {
+            Stater.propTreeNodes = [...nodes]
           }
 
           loadKeys.splice(0, loadKeys.length)
           loadedKeys.splice(0, loadedKeys.length)
-          expandedKeys.splice(0, expandedKeys.length)
           linkTreeNodes.splice(0, linkTreeNodes.length)
           flatTreeNodes.splice(0, flatTreeNodes.length)
           parentTreeNodes.value = {}
@@ -584,7 +553,7 @@ export const STree = defineComponent({
           const isAsyncNode = !isLeafedNode && helper.isFunction(props.loadData)
 
           isAsyncNode && !isLoadedNode && loadedKeys.push(parentTreeNode.key)
-          parentTreeNode.referenceTreeNode.children = referenceTreeNodes
+          parentTreeNode.referenceTreeNode.children = referencedNodes
           parentTreeNode.children = resultTreeNodes
         }
 
@@ -641,14 +610,13 @@ export const STree = defineComponent({
 
         const loadKeys = Stater.loadKeys
         const loadedKeys = Stater.loadedKeys
-        const propTreeNodes = Stater.propTreeNodes
         const childTreeNodes = Stater.childTreeNodes
         const parentTreeNodes = Stater.parentTreeNodes
         const resultTreeNodes = Methoder.compileTreeNodes(nodes, parentTreeNode)
         const flatResultNodes = Methoder.spreadTreeNodes(resultTreeNodes)
 
         if (!helper.isNotEmptyObject(parentTreeNode)) {
-          propTreeNodes.push(...nodes)
+          Stater.propTreeNodes = [...Stater.propTreeNodes, ...nodes]
         }
 
         if (helper.isNotEmptyObject(parentTreeNode)) {
@@ -667,7 +635,9 @@ export const STree = defineComponent({
         }
 
         if (helper.isNotEmptyObject(parentTreeNode)) {
-          flatTreeNodes.splice(flatTreeNodes.findIndex(every => every.key === parentTreeNode.key) + 1, 0, ...flatResultNodes)
+          const presetTreeNodes = childTreeNodes.value[parentTreeNode.key] || []
+          flatTreeNodes.splice(0, flatTreeNodes.length, ...flatTreeNodes.filter(every => !presetTreeNodes.some(child => child.key === every.key)))
+          flatTreeNodes.splice(flatTreeNodes.findIndex(every => every.key === parentTreeNode.key) + 1, 0, ...presetTreeNodes, ...flatResultNodes)
         }
 
         if (!helper.isNotEmptyObject(parentTreeNode)) {
@@ -718,14 +688,13 @@ export const STree = defineComponent({
 
         const loadKeys = Stater.loadKeys
         const loadedKeys = Stater.loadedKeys
-        const propTreeNodes = Stater.propTreeNodes
         const childTreeNodes = Stater.childTreeNodes
         const parentTreeNodes = Stater.parentTreeNodes
-        const resultTreeNodes = Methoder.compileTreeNodes(nodes, parentTreeNode)
-        const flatResultNodes = Methoder.spreadTreeNodes(resultTreeNodes)
+        const filterRemoveKeys = nodes.map(node => node[props.replaceFields.key || 'key'])
+        const flatRemoveNodes = Methoder.spreadTreeNodes(nodes)
 
         if (!helper.isNotEmptyObject(parentTreeNode)) {
-          propTreeNodes.splice(0, propTreeNodes.length, ...propTreeNodes.filter(every => !nodes.some(node => node.key === every.key)))
+          Stater.propTreeNodes = Stater.propTreeNodes.filter(every => !filterRemoveKeys.includes(every.key))
         }
 
         if (helper.isNotEmptyObject(parentTreeNode)) {
@@ -738,18 +707,18 @@ export const STree = defineComponent({
           }
 
           if (helper.isNotEmptyArray(parentTreeNode.referenceTreeNode.children)) {
-            parentTreeNode.referenceTreeNode.children = parentTreeNode.referenceTreeNode.children.filter(child => !nodes.some(node => node.key === child.key))
+            parentTreeNode.referenceTreeNode.children = parentTreeNode.referenceTreeNode.children.filter(child => !filterRemoveKeys.includes(child.key))
           }
 
           if (!helper.isNotEmptyArray(parentTreeNode.referenceTreeNode.children)) {
             delete parentTreeNode.referenceTreeNode.children
           }
 
-          parentTreeNode.children.splice(0, parentTreeNode.children.length, ...parentTreeNode.children.filter(every => !nodes.some(node => node.key === every.key)))
+          parentTreeNode.children.splice(0, parentTreeNode.children.length, ...parentTreeNode.children.filter(every => !filterRemoveKeys.includes(every.key)))
         }
 
         if (helper.isNotEmptyObject(parentTreeNode)) {
-          flatTreeNodes.splice(0, flatTreeNodes.length, ...flatTreeNodes.filter(every => !flatResultNodes.some(result => result.key === every.key)))
+          flatTreeNodes.splice(0, flatTreeNodes.length, ...flatTreeNodes.filter(every => !flatRemoveNodes.some(remove => remove.key === every.key)))
         }
 
         childTreeNodes.value = {}
@@ -776,7 +745,7 @@ export const STree = defineComponent({
         Methoder.cleanTreeStater()
         Methoder.resetTreeStater()
 
-        return parentTreeNode ? parentTreeNode.children : resultTreeNodes
+        return parentTreeNode ? parentTreeNode.children : []
       },
 
       compileTreeNodes(nodes, parent) {
@@ -822,7 +791,7 @@ export const STree = defineComponent({
         return currentNodes
       },
 
-      recoverTreeNodes: nodes => {
+      recoverTreeNodes(nodes) {
         const trees: STreeSourceNodes = []
 
         for (const node of nodes) {
@@ -842,21 +811,23 @@ export const STree = defineComponent({
         return trees
       },
 
-      spreadTreeNodes: nodes => {
-        const spreadNodes: STreeTargetNodes = []
+      spreadTreeNodes(nodes) {
+        const spreadNodes: any = []
 
         if (!helper.isNotEmptyArray(nodes)) {
           return spreadNodes
         }
 
         for (const node of nodes) {
-          spreadNodes.push(node, ...Methoder.spreadTreeNodes(node.children))
+          helper.isNotEmptyArray(node.children)
+            ? spreadNodes.push(node, ...Methoder.spreadTreeNodes(node.children))
+            : spreadNodes.push(node)
         }
 
         return spreadNodes
       },
 
-      expandTreeNodes: keys => {
+      expandTreeNodes(keys) {
         if (helper.isNotEmptyObject(keys)) {
           keys = keys.expanded
         }
@@ -906,15 +877,18 @@ export const STree = defineComponent({
                 key => (
                   !loadKeys.includes(key) &&
                   !loadedKeys.includes(key) &&
+                  !helper.isNotEmptyArray(flatTreeNodes.find(node => node.key === key)?.children) &&
                   flatTreeNodes.find(node => node.key === key)?.isLeaf === false
                 )
               )
             )
           }
         }
+
+        expandedKeys.splice(0, expandedKeys.length, ...expandedKeys.filter(key => flatTreeNodes.some(every => every.key === key && helper.isNotEmptyArray(every.children))))
       },
 
-      collapseTreeNodes: keys => {
+      collapseTreeNodes(keys) {
         if (helper.isNotEmptyObject(keys)) {
           keys = keys.expanded
         }
@@ -942,6 +916,8 @@ export const STree = defineComponent({
         if (helper.isNotEmptyArray(expandedKeys)) {
           expandedKeys.sort((a, b) => flatTreeNodes.findIndex(node => node.key === a) - flatTreeNodes.findIndex(node => node.key === b))
         }
+
+        expandedKeys.splice(0, expandedKeys.length, ...expandedKeys.filter(key => flatTreeNodes.some(every => every.key === key && helper.isNotEmptyArray(every.children))))
       },
 
       doTreeAllCollapse(keys) {
@@ -979,15 +955,15 @@ export const STree = defineComponent({
 
         if (helper.isNotEmptyArray(addExpandedNodes)) {
           if (!props.allowMultiExpanded) {
-            // 折叠
             if (helper.isNotEmptyArray(expandedKeys)) {
               Methoder.collapseTreeNodes([...expandedKeys])
             }
 
-            // 排序
-            addExpandedKeys.sort((a, b) => flatTreeNodes.findIndex(node => node.key === a) - flatTreeNodes.findIndex(node => node.key === b))
+            addExpandedKeys.sort((a, b) => (
+              flatTreeNodes.findIndex(node => node.key === a) -
+              flatTreeNodes.findIndex(node => node.key === b)
+            ))
 
-            // 展开
             const expandKeys: SKeys = []
             const firstKey = addExpandedKeys[0]
             const firstNode = flatTreeNodes.find(node => node.key === firstKey)
@@ -1008,7 +984,7 @@ export const STree = defineComponent({
                   .filter(child => addExpandedKeys.includes(child.key))
                   .filter(child => helper.isNotEmptyArray(child.children))
                   .filter(child => !expandKeys.includes(child.key))
-                  .map(node => node.key)
+                  .map(child => child.key)
               )
             }
 
@@ -1045,7 +1021,7 @@ export const STree = defineComponent({
                     .filter(child => addExpandedKeys.includes(child.key))
                     .filter(child => helper.isNotEmptyArray(child.children))
                     .filter(child => !expandKeys.includes(child.key))
-                    .map(node => node.key)
+                    .map(child => child.key)
                 )
               }
             }
@@ -1163,6 +1139,7 @@ export const STree = defineComponent({
           addSelectedKeys = selectedKeys.includes(newFirstSelectedKey) ? [newFirstSelectedKey] : []
         }
 
+        Methoder.cleanTreeStater()
         Methoder.resetTreeStater()
 
         context.emit('select', {
@@ -1214,6 +1191,7 @@ export const STree = defineComponent({
           checkedKeys.push(...addCheckedKeys)
         }
 
+        Methoder.cleanTreeStater()
         Methoder.resetTreeStater()
 
         context.emit('check', {
@@ -1237,14 +1215,29 @@ export const STree = defineComponent({
 
       doTreeLoad(keys) {
         const promises = []
+        const tempKeys = [...keys]
         const loadKeys = Stater.loadKeys
         const loadedKeys = Stater.loadedKeys
         const expandedKeys = Stater.expandedKeys
         const flatTreeNodes = Stater.flatTreeNodes
+        const childTreeNodes = Stater.childTreeNodes
         const loadTreeNodes = helper.isFunction(props.loadData) ? props.loadData : null
 
         if (!helper.isFunction(loadTreeNodes)) {
           return Promise.resolve([])
+        }
+
+        if (helper.isNotEmptyArray(tempKeys)) {
+          tempKeys.sort((a, b) => (
+            flatTreeNodes.findIndex(node => node.key === a) -
+            flatTreeNodes.findIndex(node => node.key === b)
+          ))
+
+          for (const temp of tempKeys) {
+            if (keys.includes(temp)) {
+              keys.splice(0, keys.length, ...keys.filter(key => !childTreeNodes.value[temp].some(child => child.key === key)))
+            }
+          }
         }
 
         if (helper.isNotEmptyArray(keys)) {
@@ -1468,18 +1461,16 @@ export const STree = defineComponent({
     context.expose({
       loadKeys: Stater.loadKeys,
       loadedKeys: Stater.loadedKeys,
-      expandedKeys: Stater.expandedKeys,
 
-      selectedKeys: Stater.selectedKeys,
-      selectedLinkKeys: Stater.selectedLinkKeys,
-      checkedLinkKeys: Stater.checkedLinkKeys,
-      checkedHalfKeys: Stater.checkedHalfKeys,
       checkedKeys: Stater.checkedKeys,
+      selectedKeys: Stater.selectedKeys,
+      expandedKeys: Stater.expandedKeys,
 
       parentTreeNodes: Stater.parentTreeNodes,
       childTreeNodes: Stater.childTreeNodes,
       flatTreeNodes: Stater.flatTreeNodes,
       linkTreeNodes: Stater.linkTreeNodes,
+      propTreeNodes: Stater.propTreeNodes,
 
       selectedNode: Sourcer.selectedNode,
       selectedNodes: Sourcer.selectedNodes,
@@ -1497,6 +1488,7 @@ export const STree = defineComponent({
       appendTreeNodes: Methoder.appendTreeNodes,
       removeTreeNodes: Methoder.removeTreeNodes,
       recoverTreeNodes: Methoder.recoverTreeNodes,
+      spreadTreeNodes: Methoder.spreadTreeNodes,
 
       doTreeAllCollapse: Methoder.doTreeAllCollapse,
       doTreeAllExpand: Methoder.doTreeAllExpand,
@@ -1505,10 +1497,69 @@ export const STree = defineComponent({
       doTreeCheck: Methoder.doTreeCheck
     })
 
-    watch(Stater.propTreeNodes, trees => context.emit('update:treeData', trees))
-    watch(Stater.expandedKeys, keys => context.emit('update:expandedKeys', keys))
-    watch(Stater.selectedKeys, keys => context.emit('update:selectedKeys', keys))
-    watch(Stater.checkedKeys, keys => context.emit('update:checkedKeys', keys))
+    watch(Stater.propTreeNodes, trees => context.emit('update:treeData', [...trees]))
+    watch(Stater.expandedKeys, keys => context.emit('update:expandedKeys', [...keys]))
+    watch(Stater.selectedKeys, keys => context.emit('update:selectedKeys', [...keys]))
+    watch(Stater.checkedKeys, keys => context.emit('update:checkedKeys', [...keys]))
+
+    watch([
+      props.treeData,
+      props.checkable,
+      props.checkedMode,
+      props.selectedMode,
+      props.checkedKeys,
+      props.selectedKeys,
+      props.expandedKeys
+    ], (
+      [newTreeNodes, newCheckable, newCheckedMode, newSelectedMode, newCheckedKeys, newSelectedKeys, newExpandedKeys]: [STreeSourceNodes, boolean, 'link' | 'default', 'link' | 'default', SKeys, SKeys, SKeys],
+      [oldTreeNodes, oldCheckable, oldCheckedMode, oldSelectedMode, oldCheckedKeys, oldSelectedKeys, oldExpandedKeys]: [STreeSourceNodes, boolean, 'link' | 'default', 'link' | 'default', SKeys, SKeys, SKeys]
+    ) => {
+      let isReloadTreeNodes = false
+      let isReloadTreeStater = false
+      let isForcedCleanStater = false
+
+      const key = props.replaceFields.key || 'key'
+      const propTreeNodes = Stater.propTreeNodes
+      const expandedKeys = Stater.expandedKeys
+      const selectedKeys = Stater.selectedKeys
+      const checkedKeys = Stater.checkedKeys
+
+      if (!isReloadTreeNodes) {
+        isReloadTreeNodes = (
+          !newTreeNodes.every(newNode => propTreeNodes.some(propNode => propNode[key] === newNode[key])) ||
+          !propTreeNodes.every(propNode => newTreeNodes.some(newNode => newNode[key] === propNode[key]))
+        )
+      }
+
+      if (!isReloadTreeStater) {
+        isReloadTreeStater = newCheckable !== oldCheckable
+        isForcedCleanStater = newCheckable !== oldCheckable
+      }
+
+      if (!isReloadTreeStater) {
+        isReloadTreeStater = newCheckedMode !== oldCheckedMode || newSelectedMode !== oldSelectedMode
+      }
+
+      if (!isReloadTreeStater) {
+        isReloadTreeStater = (
+          !checkedKeys.every(key => newCheckedKeys.includes(key)) ||
+          !selectedKeys.every(key => newSelectedKeys.includes(key)) ||
+          !expandedKeys.every(key => newExpandedKeys.includes(key)) ||
+          !newCheckedKeys.every(newKey => checkedKeys.includes(newKey)) ||
+          !newSelectedKeys.every(newKey => selectedKeys.includes(newKey)) ||
+          !newExpandedKeys.every(newKey => expandedKeys.includes(newKey))
+        )
+      }
+
+      if (isReloadTreeNodes) {
+        Methoder.resetTreeNodes(newTreeNodes)
+      }
+
+      if (isReloadTreeStater) {
+        Methoder.cleanTreeStater(isForcedCleanStater)
+        Methoder.resetTreeStater()
+      }
+    })
 
     return () => <RenderTreeContainer v-slots={context.slots} />
   }
