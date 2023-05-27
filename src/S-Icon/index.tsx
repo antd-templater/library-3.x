@@ -5,7 +5,7 @@ import { defineComponent } from 'vue'
 type AllIconType = keyof typeof AllIcons
 type NotIconType = 'setTwoToneColor' | 'getTwoToneColor' | 'createFromIconfontCN' | 'default'
 
-export const isIconType = (type: string): type is Exclude<AllIconType, NotIconType> => {
+export const isIconType = (type: any): type is Exclude<AllIconType, NotIconType> => {
   return (
     type !== 'default' &&
     type !== 'getTwoToneColor' &&

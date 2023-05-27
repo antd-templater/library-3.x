@@ -72,8 +72,8 @@ export type SFormColItem = {
   slots: Record<string, VNode | Function>;
 
   default: {
-    input: string | number | boolean | undefined | null | Set<any> | Map<any, any> | Record<string, any> | Array<any> | ((options: { helper: typeof helper, self: DeepReadonly<SFormColItem> }) => any);
-    output: string | number | boolean | undefined | null | Set<any> | Map<any, any> | Record<string, any> | Array<any> | ((options: { helper: typeof helper, self: DeepReadonly<SFormColItem> }) => any);
+    input: string | number | boolean | undefined | null | Record<string, any> | Array<any> | ((options: { helper: typeof helper, self: DeepReadonly<SFormColItem> }) => any);
+    output: string | number | boolean | undefined | null | Record<string, any> | Array<any> | ((options: { helper: typeof helper, self: DeepReadonly<SFormColItem> }) => any);
   };
 
   transfer: {
@@ -101,8 +101,8 @@ export type SFormColPartItem = {
   slots?: Record<string, VNode | Function>;
 
   default?: {
-    input?: string | number | boolean | undefined | null | Set<any> | Map<any, any> | Record<string, any> | Array<any> | ((options: { helper: typeof helper, self: DeepReadonly<SFormColItem> }) => any);
-    output?: string | number | boolean | undefined | null | Set<any> | Map<any, any> | Record<string, any> | Array<any> | ((options: { helper: typeof helper, self: DeepReadonly<SFormColItem> }) => any);
+    input?: string | number | boolean | undefined | null | Record<string, any> | Array<any> | ((options: { helper: typeof helper, self: DeepReadonly<SFormColItem> }) => any);
+    output?: string | number | boolean | undefined | null | Record<string, any> | Array<any> | ((options: { helper: typeof helper, self: DeepReadonly<SFormColItem> }) => any);
   };
 
   transfer?: {

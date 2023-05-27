@@ -7,7 +7,7 @@ export const formValidator: ValidatorManager = {
   password(rule) {
     const message = rule.message
     const pattern = rule.pattern
-    const validator = typeof rule.validator === 'string' ? rule.validator : ''
+    const validator = rule.validator
 
     if (helper.isString(validator)) {
       if (!helper.isRegExp(pattern)) {
@@ -38,7 +38,7 @@ export const formValidator: ValidatorManager = {
   number(rule) {
     const message = rule.message
     const pattern = rule.pattern
-    const validator = typeof rule.validator === 'string' ? rule.validator : ''
+    const validator = rule.validator
 
     if (helper.isString(validator)) {
       if (!helper.isRegExp(pattern)) {

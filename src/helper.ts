@@ -4,7 +4,7 @@ export function itType(val: unknown) {
   return Object.prototype.toString.call(val).replace(/^\[[^\s\]]+\s*([^\s\]]+)]$/, '$1')
 }
 
-export function isArray(arr: unknown): arr is unknown[] {
+export function isArray(arr: unknown): arr is any[] {
   return Array.isArray(arr)
 }
 
@@ -32,7 +32,7 @@ export function isFunction(func: unknown): func is Function {
   return itType(func) === 'Function'
 }
 
-export function isReference(val: unknown): val is Record<string, unknown> {
+export function isReference(val: unknown): val is any[] | Record<string, unknown> {
   return isArray(val) || isObject(val)
 }
 
@@ -40,7 +40,7 @@ export function isPrimitive(val: unknown): val is string | number {
   return isString(val) || isFiniteNumber(val)
 }
 
-export function isNotEmptyArray(arr: unknown): arr is unknown[] {
+export function isNotEmptyArray(arr: unknown): arr is any[] {
   return isArray(arr) && arr.length > 0
 }
 
@@ -68,7 +68,7 @@ export function isEmptyObject(obj: unknown): obj is Record<string, unknown> {
   return isObject(obj) && Object.keys(obj).length === 0
 }
 
-export function isEmptyArray(arr: unknown): arr is unknown[] {
+export function isEmptyArray(arr: unknown): arr is any[] {
   return isArray(arr) && arr.length === 0
 }
 
@@ -228,14 +228,20 @@ export function toDeepEqual<T = unknown>(any: T, other: unknown): boolean {
   return false
 }
 
-export const takeTimeToDate = (date: dayjs.ConfigType, format?: dayjs.OptionType) => {
-}
-
-export const takeTimeToFormat = (date: dayjs.ConfigType, format = 'YYYY-MM-DD HH:mm:ss') => {
-  if (date) {
+export const takeTimeToDesc = (date: dayjs.ConfigType, format = 'YYYY-MM-DD HH:mm:ss'): string => {
+  if (date !== null && date !== undefined) {
     try { return dayjs(date).format(format) } catch {}
   }
   return ''
+}
+
+export const takeTimeToDate = (date: dayjs.ConfigType, format?: dayjs.OptionType): dayjs.Dayjs | undefined => {
+  if (date !== null && date !== undefined) {
+    try {
+      return dayjs(date, format)
+    } catch {}
+  }
+  return undefined
 }
 
 export const takeLabelByKey = (trees: Record<string, any>[], key: string | number, label = 'label', value = 'value', children = 'children'): string | number => {
@@ -308,8 +314,8 @@ export default {
   toDeepAssign,
   toDeepClone,
   toDeepEqual,
+  takeTimeToDesc,
   takeTimeToDate,
-  takeTimeToFormat,
   takeLabelByKey,
   takeTreeByKey,
   takePadEnd,

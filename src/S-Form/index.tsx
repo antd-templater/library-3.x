@@ -91,8 +91,8 @@ export const SForm = defineComponent({
           slots: node.slots || helper.toDeepClone(Normalize[node.type].slots),
 
           default: {
-            input: node?.default?.input || Normalize[node.type].default.input,
-            output: node?.default?.output || Normalize[node.type].default.output
+            input: node?.default?.input || helper.isFunction(Normalize[node.type].default.input) ? Normalize[node.type].default.input : helper.toDeepClone(Normalize[node.type].default.input),
+            output: node?.default?.output || helper.isFunction(Normalize[node.type].default.output) ? Normalize[node.type].default.output : helper.toDeepClone(Normalize[node.type].default.output)
           },
 
           transfer: {
@@ -299,7 +299,7 @@ export const SForm = defineComponent({
           <div class='s-form-group-item-header' {...attrs}>
             {
               slotRender
-                ? slotRender({ class: className, group, disabled, readonly })
+                ? slotRender({ className: className, group, disabled, readonly })
                 : <div class='s-form-group-item-header-title'>{group.label}</div>
             }
           </div>
@@ -450,6 +450,7 @@ export const SForm = defineComponent({
                     group={group}
                     grid={opt.grid}
                     model={opt.model}
+                    border={opt.border}
                     readonly={opt.readonly}
                     disabled={opt.disabled}
                     v-slots={ctx.slots}

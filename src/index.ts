@@ -35,7 +35,7 @@ export default {
     app.component('SEditCellDatePicker', SEditCellDatePicker)
     app.component('SIconSelect', SIconSelect)
     app.component('SEllipsis', SEllipsis)
-    app.component('SForm', STree)
+    app.component('STree', STree)
     app.component('SForm', SForm)
     app.component('SIcon', SIcon)
   }

@@ -138,9 +138,9 @@ export const SEditCellSelect = defineComponent({
       }
 
       const text = props.text
-      const fieldLabel = props.fieldNames.label
-      const fieldValue = props.fieldNames.value
-      const fieldOptions = props.fieldNames.options
+      const fieldLabel = props.fieldNames.label || 'label'
+      const fieldValue = props.fieldNames.value || 'value'
+      const fieldOptions = props.fieldNames.options || 'options'
       const isPrimitive = typeof text === 'string' || typeof text === 'number'
       const title = isPrimitive ? helper.takeLabelByKey(props.options, text, fieldLabel, fieldValue, fieldOptions) || props.text : undefined
 
