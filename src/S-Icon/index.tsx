@@ -1,5 +1,6 @@
-import * as VueTypes from 'vue-types'
+/* eslint-disable vue/no-setup-props-destructure */
 import * as AllIcons from '@ant-design/icons-vue'
+import * as VueTypes from 'vue-types'
 import { defineComponent } from 'vue'
 
 type AllIconType = keyof typeof AllIcons
@@ -18,7 +19,7 @@ export const isIconType = (type: any): type is Exclude<AllIconType, NotIconType>
 export const SIcon = defineComponent({
   name: 'SIcon',
   props: {
-    type: VueTypes.string<Exclude<AllIconType, NotIconType>>().isRequired,
+    type: VueTypes.string().isRequired,
     spin: VueTypes.bool().def(false),
     rotate: VueTypes.number().def(undefined),
     twoToneColor: VueTypes.any<string | [string, string]>().def()
@@ -27,9 +28,10 @@ export const SIcon = defineComponent({
     click: (event: MouseEvent) => true
   },
   setup(props, context) {
-    const Icon = AllIcons[props.type]
+    const type = props.type
+    const Icon = isIconType(type) ? AllIcons[type] : null
     const binds = { ...props, type: undefined }
-    return () => isIconType(props.type) ? <Icon { ...binds } onClick={event => context.emit('click', event)}/> : null
+    return () => Icon ? <Icon { ...binds } onClick={event => context.emit('click', event)}/> : null
   }
 })
 

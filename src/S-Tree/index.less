@@ -1,14 +1,17 @@
 .s-tree-container {
-  width: calc(100% - 48px);
-  height: calc(100% - 48px);
-  position: absolute;
-  top: 24px;
-  left: 24px;
+  width: 100%;
+  height: 100%;
+  position: relative;
 
   .ant-spin-container,
   .ant-spin-nested-loading {
     width: 100%;
     height: 100%;
+  }
+
+  .ant-tree,
+  .ant-spin-container .ant-tree {
+    background-color: transparent;
   }
 
   .s-tree-title-container {

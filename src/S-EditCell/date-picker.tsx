@@ -13,12 +13,15 @@ import ADatePicker from 'ant-design-vue/es/date-picker'
 import AButton from 'ant-design-vue/es/button'
 import dayjs from 'dayjs'
 
+export type SEditCellPanelMode = PanelMode
+export type SEditCellPickerMode = PickerMode
+
 export const SEditCellDatePicker = defineComponent({
   name: 'SEditCellDatePicker',
   inheritAttrs: false,
   props: {
-    mode: VueTypes.string<PanelMode>().def('date'),
-    picker: VueTypes.string<PickerMode>().def('date'),
+    mode: VueTypes.string<SEditCellPanelMode>().def('date'),
+    picker: VueTypes.string<SEditCellPickerMode>().def('date'),
     format: VueTypes.string().def(),
     showTime: VueTypes.bool().def(false),
     valueFormat: VueTypes.string().def(),

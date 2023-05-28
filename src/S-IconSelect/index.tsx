@@ -1,20 +1,24 @@
 import * as VueTypes from 'vue-types'
 import { defineComponent, ref, inject } from 'vue'
 import { defaultConfigProvider } from 'ant-design-vue/es/config-provider'
-import ASelect, { DefaultOptionType, SelectValue } from 'ant-design-vue/es/select'
+import ASelect from 'ant-design-vue/es/select'
+
 import 'ant-design-vue/es/select/style/index.less'
 
 import SIcon, { isIconType } from '../S-Icon'
 import defaultOptions from './icons'
 
-interface FieldNames {
-  value?: string;
-  label?: string;
-  options?: string;
+export type SIconSelectOptionType = {
+  label?: any;
+  value?: string | number | null;
+  options?: Omit<SIconSelectOptionType, 'options'>[];
+  disabled?: boolean;
+  [name: string]: any;
 }
 
 export const SIconSelect = defineComponent({
   name: 'SIconSelect',
+  inheritAttrs: false,
   props: {
     optionFilterProp: VueTypes.string().def(),
     optionLabelProp: VueTypes.string().def(),
@@ -22,16 +26,15 @@ export const SIconSelect = defineComponent({
     showSearch: VueTypes.bool().def(true),
     allowClear: VueTypes.bool().def(false),
     showArrow: VueTypes.bool().def(true),
-    fieldNames: VueTypes.object<FieldNames>().def(),
     multiple: VueTypes.bool().def(true),
     disabled: VueTypes.bool().def(false),
-    options: VueTypes.array<DefaultOptionType>().def(() => defaultOptions),
-    value: VueTypes.any<SelectValue>().def(),
+    options: VueTypes.array<SIconSelectOptionType>().def(() => defaultOptions),
+    value: VueTypes.any<string | number | string[] | number[]>().def(),
     mode: VueTypes.string<'multiple' | 'tags'>().def(),
     size: VueTypes.string<'large' | 'middle' | 'small'>().def()
   },
   emits: {
-    'update:value': (_: SelectValue) => true
+    'update:value': (_: string | number | string[] | number[]) => true
   },
   setup(props, { emit }) {
     const OptionRender = (props: any) => {
@@ -75,7 +78,6 @@ export const SIconSelect = defineComponent({
         options={props.options}
         disabled={props.disabled}
         showArrow={props.showArrow}
-        fieldNames={props.fieldNames}
         allowClear={props.allowClear}
         showSearch={props.showSearch}
         placeholder={props.placeholder}

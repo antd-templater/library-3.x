@@ -13,11 +13,7 @@ import ATreeSelect from 'ant-design-vue/es/tree-select'
 import AButton from 'ant-design-vue/es/button'
 import helper from '../helper'
 
-interface FieldNames {
-  label?: string;
-  value?: string;
-  children?: string;
-}
+export type SEditCellTreeSelectOptionType = DefaultOptionType
 
 export const SEditCellTreeSelect = defineComponent({
   name: 'SEditCellTreeSelect',
@@ -30,11 +26,11 @@ export const SEditCellTreeSelect = defineComponent({
     status: VueTypes.bool().def(false),
     tooltip: VueTypes.object<{ enable?: boolean, limit?: number }>().def(() => ({ enable: true, limit: Infinity })),
     disabled: VueTypes.bool().def(false),
-    treeData: VueTypes.array<DefaultOptionType>().def(() => ([])),
+    treeData: VueTypes.array<SEditCellTreeSelectOptionType>().def(() => ([])),
     showArrow: VueTypes.bool().def(true),
     allowClear: VueTypes.bool().def(false),
     showSearch: VueTypes.bool().def(false),
-    fieldNames: VueTypes.object<FieldNames>().def(() => ({ label: 'title', value: 'value', children: 'children' })),
+    fieldNames: VueTypes.object<{ label?: string; value?: string; children?: string; }>().def(() => ({ label: 'title', value: 'value', children: 'children' })),
     placeholder: VueTypes.string().def(),
     treeNodeFilterProp: VueTypes.string().def(),
     treeDefaultExpandAll: VueTypes.bool().def(true),

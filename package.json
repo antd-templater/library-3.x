@@ -18,11 +18,15 @@
   "module": "./dist/index.mjs",
   "exports": {
     ".": {
-      "types": "./dist/index.mjs",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     },
-    "./dist/*": "./dist/*"
+    "./dist/*": {
+      "types": "./dist/*/index.d.ts",
+      "import": "./dist/*/index.mjs",
+      "require": "./dist/*/index.cjs"
+    }
   },
   "repository": {
     "type": "git",
@@ -34,10 +38,6 @@
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
-  },
-  "scripts": {
-    "build": "shx rm -rf dist && rollup --config rollup.config.ts --configPlugin typescript",
-    "eslint": "npx eslint --fix --quiet src --ext .vue,.js,ts,jsx,tsx"
   },
   "dependencies": {
     "@ant-design/icons-vue": "^6.1.0",
@@ -93,5 +93,9 @@
   },
   "engines": {
     "node": ">=16.0.0"
+  },
+  "scripts": {
+    "build": "shx rm -rf dist && rollup --config rollup.config.ts --configPlugin typescript",
+    "eslint": "npx eslint --fix --quiet src --ext .vue,.js,ts,jsx,tsx"
   }
 }

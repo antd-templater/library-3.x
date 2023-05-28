@@ -12,11 +12,8 @@ import ASelect, { SelectValue, DefaultOptionType } from 'ant-design-vue/es/selec
 import AButton from 'ant-design-vue/es/button'
 import helper from '../helper'
 
-interface FieldNames {
-  label?: string;
-  value?: string;
-  options?: string;
-}
+export type SEditCellSelectValueType = SelectValue
+export type SEditCellSelectOptionType = DefaultOptionType
 
 export const SEditCellSelect = defineComponent({
   name: 'SEditCellSelect',
@@ -30,22 +27,22 @@ export const SEditCellSelect = defineComponent({
     status: VueTypes.bool().def(false),
     tooltip: VueTypes.object<{ enable?: boolean, limit?: number }>().def(() => ({ enable: true, limit: Infinity })),
     disabled: VueTypes.bool().def(false),
-    options: VueTypes.array<DefaultOptionType>().def(() => ([])),
+    options: VueTypes.array<SEditCellSelectOptionType>().def(() => ([])),
     showArrow: VueTypes.bool().def(true),
     allowClear: VueTypes.bool().def(false),
     showSearch: VueTypes.bool().def(false),
-    fieldNames: VueTypes.object<FieldNames>().def(() => ({ label: 'label', value: 'value', options: 'options' })),
+    fieldNames: VueTypes.object<{ label?: string; value?: string; options?: string; }>().def(() => ({ label: 'label', value: 'value', options: 'options' })),
     placeholder: VueTypes.string().def(),
     optionFilterProp: VueTypes.string().def(),
     cellStyle: VueTypes.object().def(() => ({}))
   },
   emits: {
-    'edit': (proxy: { editable: boolean, value: SelectValue }) => true,
-    'blur': (proxy: { editable: boolean, value: SelectValue }) => true,
-    'focus': (proxy: { editable: boolean, value: SelectValue }) => true,
-    'change': (proxy: { editable: boolean, value: SelectValue }) => true,
-    'confirm': (proxy: { editable: boolean, value: SelectValue }) => true,
-    'update:text': (text: SelectValue) => true,
+    'edit': (proxy: { editable: boolean, value: SEditCellSelectValueType }) => true,
+    'blur': (proxy: { editable: boolean, value: SEditCellSelectValueType }) => true,
+    'focus': (proxy: { editable: boolean, value: SEditCellSelectValueType }) => true,
+    'change': (proxy: { editable: boolean, value: SEditCellSelectValueType }) => true,
+    'confirm': (proxy: { editable: boolean, value: SEditCellSelectValueType }) => true,
+    'update:text': (text: SEditCellSelectValueType) => true,
     'update:status': (status: boolean) => true
   },
   setup(props, { emit, slots }) {
@@ -67,7 +64,7 @@ export const SEditCellSelect = defineComponent({
       event.stopPropagation()
     }
 
-    const doChange = (option: DefaultOptionType) => {
+    const doChange = (option: SEditCellSelectOptionType) => {
       emit('update:text', proxy.value)
       emit('change', toRaw(proxy))
     }
@@ -128,7 +125,7 @@ export const SEditCellSelect = defineComponent({
               fieldNames={props.fieldNames}
               placeholder={props.placeholder}
               optionFilterProp={props.optionFilterProp}
-              onChange={(_: any, option: DefaultOptionType) => doChange(option)}
+              onChange={(_: any, option: SEditCellSelectOptionType) => doChange(option)}
               onFocus={(event: Event) => doFocus(event)}
               onBlur={(event: Event) => doBlur(event)}
             />

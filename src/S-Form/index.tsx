@@ -3,8 +3,6 @@ import 'ant-design-vue/es/grid/style/index.less'
 import 'ant-design-vue/es/spin/style/index.less'
 import 'ant-design-vue/es/form/style/index.less'
 
-export { formValidator, formGroupsDefiner } from './form.helper'
-
 import * as VueTypes from 'vue-types'
 import Normalize from './form.normalize'
 import SFormComponent from './index.component'
@@ -43,6 +41,9 @@ type FormItemsHandler = (groups: Array<SFormColPartItem | SFormRowPartItem | SFo
 type FormGroupsHandler = (groups: Array<SFormGroupPartItem | SFormRowPartItem | SFormColPartItem>) => SFormGroupItem[]
 type FormModelHandler = (item: SFormColItem, options: { first: boolean, oldModel: Record<string, any>, newModel: Record<string, any>, refModel: Ref<Record<string, any>> }) => void
 type FormSyncHandler = (item: SFormColItem, options: { syncModel: Record<string, any>, refModel: Ref<Record<string, any>> }) => void
+
+export * from './form.declare'
+export * from './form.helper'
 
 export const SForm = defineComponent({
   name: 'SForm',
