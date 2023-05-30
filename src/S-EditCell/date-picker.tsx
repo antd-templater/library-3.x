@@ -96,7 +96,7 @@ export const SEditCellDatePicker = defineComponent({
             class='s-editable-cell-button-check'
             type='link'
             icon={<CheckOutlined/>}
-            style={{ color: '--ant-primary-color', ...props.cellStyle.check }}
+            style={{ color: 'var(--ant-primary-color, #1890ff)', ...props.cellStyle.check }}
             onClick={(event: Event) => doConfirm(event)}
           />
         )
