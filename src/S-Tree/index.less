@@ -21,32 +21,65 @@
     background-color: transparent;
   }
 
+  .ant-tree-title,
   .s-tree-title-container {
     display: flex;
     width: 100%;
+    height: 24px;
 
     .s-tree-title-label {
       flex: 1 1 auto;
+      height: 24px;
+      font-size: 14px;
+      line-height: 24px;
+      vertical-align: middle;
       text-overflow: ellipsis;
       white-space: nowrap;
       overflow: hidden;
     }
 
     .s-tree-title-button {
-      display: none;
       flex: 0 0 auto;
+      height: 24px;
       margin: 0;
-      padding: 0;
+      padding: 0 0 0 8px;
       font-size: 15px;
-      line-height: 20px;
-      right: 5px;
+      line-height: 24px;
 
-      &.always-show {
-        display: block;
+      button,
+      .button,
+      .ant-btn {
+        vertical-align: top;
       }
 
-      & > button:not(.ant-btn-background-ghost),
-      & > .ant-btn:not(.ant-btn-background-ghost) {
+      button:not(.always-show-title-button),
+      .button:not(.always-show-title-button),
+      .ant-btn:not(.always-show-title-button) {
+        display: none;
+      }
+
+      &.always-show-title-button,
+      & .always-show-title-button,
+      & > .always-show-title-button {
+        button,
+        .button,
+        .ant-btn {
+          display: inline-block;
+        }
+      }
+
+      .ant-btn-link.border-color-inherit:hover,
+      .ant-btn-link.border-color-inherit:focus,
+      .ant-btn-link.border-color-inherit:active {
+        border-color: inherit;
+      }
+
+      & button:not(.ant-btn-background-ghost):not(:hover),
+      & .button:not(.ant-btn-background-ghost):not(:hover),
+      & .ant-btn:not(.ant-btn-background-ghost):not(:hover),
+      & > button:not(.ant-btn-background-ghost):not(:hover),
+      & > .button:not(.ant-btn-background-ghost):not(:hover),
+      & > .ant-btn:not(.ant-btn-background-ghost):not(:hover) {
         border: none;
       }
     }
@@ -54,7 +87,11 @@
 
   .s-tree-title-container:hover {
     .s-tree-title-button {
-      display: block;
+      button,
+      .button,
+      .ant-btn {
+        display: inline-block;
+      }
     }
   }
 }
