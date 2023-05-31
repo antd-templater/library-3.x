@@ -3,7 +3,7 @@ import 'ant-design-vue/es/tree/style/index.less'
 import 'ant-design-vue/es/spin/style/index.less'
 
 import * as VueTypes from 'vue-types'
-import { defineComponent, SetupContext, ShallowReactive, ShallowRef, shallowReactive, shallowRef, watch } from 'vue'
+import { defineComponent, SetupContext, ShallowReactive, ShallowRef, shallowReactive, shallowRef, watch, unref, toRaw } from 'vue'
 import { Key, DataNode } from 'ant-design-vue/es/vc-tree/interface'
 import SIcon, { isIconType } from '@/S-Icon/index'
 import SEllipsis from '@/S-Ellipsis/index'
@@ -1766,15 +1766,15 @@ export const STree = defineComponent({
 
     const RenderTreeNodeIcon = (node: STreeTargetNode, ctx: SetupContext) => {
       if (node.scopedSlots.icon === 'iconRoot') {
-        return helper.isFunction(ctx.slots.iconRoot) ? ctx.slots.iconRoot(node.referenceSourceNode) : <SIcon type={isIconType(node.icon) ? node.icon : 'AppstoreOutlined'}/>
+        return helper.isFunction(ctx.slots.iconRoot) ? ctx.slots.iconRoot(toRaw(unref(node.referenceSourceNode))) : <SIcon type={isIconType(node.icon) ? node.icon : 'AppstoreOutlined'}/>
       }
 
       if (node.scopedSlots.icon === 'iconParent') {
-        return helper.isFunction(ctx.slots.iconParent) ? ctx.slots.iconParent(node.referenceSourceNode) : <SIcon type={isIconType(node.icon) ? node.icon : 'ApartmentOutlined'}/>
+        return helper.isFunction(ctx.slots.iconParent) ? ctx.slots.iconParent(toRaw(unref(node.referenceSourceNode))) : <SIcon type={isIconType(node.icon) ? node.icon : 'ApartmentOutlined'}/>
       }
 
       if (node.scopedSlots.icon === 'iconLeaf') {
-        return helper.isFunction(ctx.slots.iconLeaf) ? ctx.slots.iconLeaf(node.referenceSourceNode) : <SIcon type={isIconType(node.icon) ? node.icon : 'ApartmentOutlined'}/>
+        return helper.isFunction(ctx.slots.iconLeaf) ? ctx.slots.iconLeaf(toRaw(unref(node.referenceSourceNode))) : <SIcon type={isIconType(node.icon) ? node.icon : 'ApartmentOutlined'}/>
       }
     }
 
@@ -1787,7 +1787,7 @@ export const STree = defineComponent({
                 limit={props.tooltip}
                 tooltip={props.tooltip > -1}
               >
-                { ctx.slots.titleRootLabel(node.referenceSourceNode) }
+                { ctx.slots.titleRootLabel(toRaw(unref(node.referenceSourceNode))) }
               </SEllipsis>
             </span>
           )
@@ -1809,7 +1809,7 @@ export const STree = defineComponent({
         if (helper.isFunction(ctx.slots.titleRootButton)) {
           return (
             <span class={['s-tree-title-button', { 'always-show-title-button': props.alwaysShowTitleButton === true || node.alwaysShowTitleButton === true }]}>
-              { ctx.slots.titleRootButton(node.referenceSourceNode) }
+              { ctx.slots.titleRootButton(toRaw(unref(node.referenceSourceNode))) }
             </span>
           )
         }
@@ -1825,7 +1825,7 @@ export const STree = defineComponent({
                 limit={props.tooltip ? props.tooltip - node.level * 2 : 0}
                 tooltip={props.tooltip > -1}
               >
-                { ctx.slots.titleParentLabel(node.referenceSourceNode) }
+                { ctx.slots.titleParentLabel(toRaw(unref(node.referenceSourceNode))) }
               </SEllipsis>
             </span>
           )
@@ -1847,7 +1847,7 @@ export const STree = defineComponent({
         if (helper.isFunction(ctx.slots.titleParentButton)) {
           return (
             <span class={['s-tree-title-button', { 'always-show-title-button': props.alwaysShowTitleButton === true || node.alwaysShowTitleButton === true }]}>
-              { ctx.slots.titleParentButton(node.referenceSourceNode) }
+              { ctx.slots.titleParentButton(toRaw(unref(node.referenceSourceNode))) }
             </span>
           )
         }
@@ -1863,7 +1863,7 @@ export const STree = defineComponent({
                 limit={props.tooltip ? props.tooltip - node.level * 2 : 0}
                 tooltip={props.tooltip > -1}
               >
-                { ctx.slots.titleLeafLabel(node.referenceSourceNode) }
+                { ctx.slots.titleLeafLabel(toRaw(unref(node.referenceSourceNode))) }
               </SEllipsis>
             </span>
           )
@@ -1885,7 +1885,7 @@ export const STree = defineComponent({
         if (helper.isFunction(ctx.slots.titleLeafButton)) {
           return (
             <span class={['s-tree-title-button', { 'always-show-title-button': props.alwaysShowTitleButton === true || node.alwaysShowTitleButton === true }]}>
-              { ctx.slots.titleLeafButton(node.referenceSourceNode) }
+              { ctx.slots.titleLeafButton(toRaw(unref(node.referenceSourceNode))) }
             </span>
           )
         }
@@ -1894,7 +1894,7 @@ export const STree = defineComponent({
       }
 
       if (node.scopedSlots.title === 'titleRoot') {
-        return helper.isFunction(ctx.slots.titleRoot) ? ctx.slots.titleRoot(node.referenceSourceNode) : (
+        return helper.isFunction(ctx.slots.titleRoot) ? ctx.slots.titleRoot(toRaw(unref(node.referenceSourceNode))) : (
           <span class='s-tree-title-container'>
             <RenderTreeNodeTitleRootLabel { ...node } key={undefined} v-slots={ctx.slots}/>
             <RenderTreeNodeTitleRootButton { ...node } key={undefined} v-slots={ctx.slots}/>
@@ -1903,7 +1903,7 @@ export const STree = defineComponent({
       }
 
       if (node.scopedSlots.title === 'titleParent') {
-        return helper.isFunction(ctx.slots.titleParent) ? ctx.slots.titleParent(node.referenceSourceNode) : (
+        return helper.isFunction(ctx.slots.titleParent) ? ctx.slots.titleParent(toRaw(unref(node.referenceSourceNode))) : (
           <span class='s-tree-title-container'>
             <RenderTreeNodeTitleParentLabel { ...node } key={undefined} v-slots={ctx.slots}/>
             <RenderTreeNodeTitleParentButton { ...node } key={undefined} v-slots={ctx.slots}/>
@@ -1912,7 +1912,7 @@ export const STree = defineComponent({
       }
 
       if (node.scopedSlots.title === 'titleLeaf') {
-        return helper.isFunction(ctx.slots.titleLeaf) ? ctx.slots.titleLeaf(node.referenceSourceNode) : (
+        return helper.isFunction(ctx.slots.titleLeaf) ? ctx.slots.titleLeaf(toRaw(unref(node.referenceSourceNode))) : (
           <span class='s-tree-title-container'>
             <RenderTreeNodeTitleLeafLabel { ...node } key={undefined} v-slots={ctx.slots}/>
             <RenderTreeNodeTitleLeafButton { ...node } key={undefined} v-slots={ctx.slots}/>
