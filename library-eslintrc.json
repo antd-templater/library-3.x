@@ -27,6 +27,7 @@
     "STreeTargeter": true,
     "STreeSourcer": true,
     "STreeStater": true,
+    "STreeCacher": true,
     "STreeKey": true,
     "STreeKeys": true,
     "STreeEmiterCheck": true,

@@ -49,6 +49,7 @@ declare global {
     STreeTargeter,
     STreeSourcer,
     STreeStater,
+    STreeCacher,
     STreeKey,
     STreeKeys,
     STreeEmiterCheck,
