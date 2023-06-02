@@ -56,7 +56,7 @@ export interface STreeFieldNames {
 }
 
 export interface STreeLoadData {
-  (treeNode: STreeSourceNode, options?: { checkedKeys?: STreeKeys; selectedKeys?: STreeKeys; expandedKeys?: STreeKeys }): Promise<STreeSourceNodes>;
+  (treeNode: STreeSourceNode, options: { checkedKeys: STreeKeys; halfCheckedKeys: STreeKeys; selectedKeys: STreeKeys; expandedKeys: STreeKeys; }): Promise<STreeSourceNodes>;
 }
 
 export interface STreeMethoder {
@@ -1923,8 +1923,15 @@ export const STree = defineComponent({
               loadKeys.splice(0, loadKeys.length, ...loadKeys.filter(filter))
             }
 
+            const options = {
+              checkedKeys: Stater.selfCheckedKeys,
+              halfCheckedKeys: Stater.halfCheckedKeys,
+              selectedKeys: Stater.selectedKeys,
+              expandedKeys: Stater.expandedKeys
+            }
+
             promises.push(
-              Promise.resolve(loadTreeNodes(loadNode))
+              Promise.resolve(loadTreeNodes(loadNode, options))
                 .then(nodes => {
                   const parentTrees = parentTreeNodes.value
                   const parentKeys = helper.isArray(parentTrees[key]) ? parentTrees[key] : []
