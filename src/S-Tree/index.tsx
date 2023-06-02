@@ -87,6 +87,8 @@ export interface STreeMethoder {
   doTreePushExpand: (keys: STreeKeys) => void;
   doTreePopExpand: (keys: STreeKeys) => void;
 
+  doTreeAllChecked: () => void;
+  doTreeAllUnChecked: () => void;
   doTreeToggleChecked: (keys: STreeKeys) => void;
   doTreeOnlyChecked: (keys: STreeKeys) => void;
   doTreePushChecked: (keys: STreeKeys) => void;
@@ -1449,6 +1451,30 @@ export const STree = defineComponent({
         }
       },
 
+      doTreeAllChecked() {
+        if (props.disabled === true) {
+          return
+        }
+
+        if (props.checkable !== true) {
+          return
+        }
+
+        Methoder.doTreePushChecked(Stater.linkTreeNodes.map(node => node.key))
+      },
+
+      doTreeAllUnChecked() {
+        if (props.disabled === true) {
+          return
+        }
+
+        if (props.checkable !== true) {
+          return
+        }
+
+        Methoder.doTreePopChecked(Stater.linkTreeNodes.map(node => node.key))
+      },
+
       doTreeToggleChecked(keys) {
         if (props.disabled === true) {
           return
@@ -1581,7 +1607,7 @@ export const STree = defineComponent({
         const flatTreeNodes = Stater.flatTreeNodes
         const childTreeNodes = Stater.childTreeNodes
 
-        const addCheckedNodes = flatTreeNodes.filter(every => !checkedKeys.some(key => every.key === key) && computeKeys.some(key => every.key === key))
+        const addCheckedNodes = flatTreeNodes.filter(every => computeKeys.some(key => every.key === key))
         const addCheckedKeys = addCheckedNodes.map(node => node.key)
 
         for (const addKey of [...addCheckedKeys]) {
@@ -1613,7 +1639,7 @@ export const STree = defineComponent({
         const flatTreeNodes = Stater.flatTreeNodes
         const childTreeNodes = Stater.childTreeNodes
 
-        const delCheckedNodes = flatTreeNodes.filter(every => checkedKeys.some(key => every.key === key) && computeKeys.some(key => every.key === key))
+        const delCheckedNodes = flatTreeNodes.filter(every => computeKeys.some(key => every.key === key))
         const delCheckedKeys = delCheckedNodes.map(node => node.key)
 
         for (const delKey of [...delCheckedKeys]) {
@@ -2393,6 +2419,8 @@ export const STree = defineComponent({
       doTreePushExpand: Methoder.doTreePushExpand,
       doTreePopExpand: Methoder.doTreePopExpand,
 
+      doTreeAllChecked: Methoder.doTreeAllChecked,
+      doTreeAllUnChecked: Methoder.doTreeAllUnChecked,
       doTreeToggleChecked: Methoder.doTreeToggleChecked,
       doTreeOnlyChecked: Methoder.doTreeOnlyChecked,
       doTreePushChecked: Methoder.doTreePushChecked,
