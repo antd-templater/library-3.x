@@ -59,7 +59,7 @@ export interface STreeFieldNames {
 }
 
 export interface STreeLoadData {
-  (treeNode: STreeSourceNode, options: { checkedKeys: STreeKeys; halfCheckedKeys: STreeKeys; selectedKeys: STreeKeys; expandedKeys: STreeKeys; }): Promise<STreeSourceNodes>;
+  (treeNode: STreeSourceNode, options: { checkedKeys: STreeKeys; halfCheckedKeys: STreeKeys; outCheckedKeys: STreeKeys; selectedKeys: STreeKeys; expandedKeys: STreeKeys; }): Promise<STreeSourceNodes>;
 }
 
 export interface STreeMethoder {
@@ -143,7 +143,6 @@ export interface STreeStater {
   selectedKeys: ShallowReactive<STreeKeys>;
   expandedKeys: ShallowReactive<STreeKeys>;
   outCheckedKeys: ShallowReactive<STreeKeys>;
-  selfCheckedKeys: ShallowReactive<STreeKeys>;
   halfCheckedKeys: ShallowReactive<STreeKeys>;
 
   parentTreeNodes: ShallowRef<Record<string, STreeTargetNodes>>;
@@ -254,7 +253,6 @@ export const STree = defineComponent({
       selectedKeys: shallowReactive([]),
       expandedKeys: shallowReactive([]),
       outCheckedKeys: shallowReactive([]),
-      selfCheckedKeys: shallowReactive([]),
       halfCheckedKeys: shallowReactive([]),
 
       parentTreeNodes: shallowRef({}),
@@ -347,7 +345,6 @@ export const STree = defineComponent({
           Stater.selectedKeys.splice(0, Stater.selectedKeys.length)
           Stater.expandedKeys.splice(0, Stater.expandedKeys.length)
           Stater.outCheckedKeys.splice(0, Stater.outCheckedKeys.length)
-          Stater.selfCheckedKeys.splice(0, Stater.selfCheckedKeys.length)
           Stater.halfCheckedKeys.splice(0, Stater.halfCheckedKeys.length)
 
           // Targeter
@@ -383,7 +380,6 @@ export const STree = defineComponent({
         const selectedKeys = Stater.selectedKeys
         const expandedKeys = Stater.expandedKeys
         const outCheckedKeys = Stater.outCheckedKeys
-        const selfCheckedKeys = Stater.selfCheckedKeys
         const halfCheckedKeys = Stater.halfCheckedKeys
         const allCheckedKeys = [...checkedKeys, ...outCheckedKeys]
         const flatTreeNodes = Stater.flatTreeNodes
@@ -397,7 +393,6 @@ export const STree = defineComponent({
         expandedKeys.splice(0, expandedKeys.length, ...expandedKeys.filter(key => flatTreeNodes.some(every => every.key === key && helper.isNotEmptyArray(every.children))))
         checkedKeys.splice(0, checkedKeys.length, ...allCheckedKeys.filter(key => flatTreeNodes.some(every => every.key === key && (every.disabled || every.disableCheckbox || every.checkable))))
         selectedKeys.splice(0, selectedKeys.length, ...selectedKeys.filter(key => flatTreeNodes.some(every => every.key === key && (!every.disabled && every.isSelectable))))
-        selfCheckedKeys.splice(0, selfCheckedKeys.length)
         halfCheckedKeys.splice(0, halfCheckedKeys.length)
 
         // 去重
@@ -424,7 +419,6 @@ export const STree = defineComponent({
         const flatTreeNodes = Stater.flatTreeNodes
         const childTreeNodes = Stater.childTreeNodes
         const parentTreeNodes = Stater.parentTreeNodes
-        const selfCheckedKeys = Stater.selfCheckedKeys
         const halfCheckedKeys = Stater.halfCheckedKeys
 
         const selectedNodes = Targeter.selectedNodes
@@ -439,7 +433,6 @@ export const STree = defineComponent({
         checkedHalfNodes.splice(0, checkedHalfNodes.length)
         checkedNodes.splice(0, checkedNodes.length)
 
-        selfCheckedKeys.splice(0, selfCheckedKeys.length)
         halfCheckedKeys.splice(0, halfCheckedKeys.length)
         expandedKeys.splice(0, expandedKeys.length, ...expandedKeys.filter(key => flatTreeNodes.some(every => every.key === key)))
         selectedKeys.splice(0, selectedKeys.length, ...selectedKeys.filter(key => flatTreeNodes.some(every => every.key === key)))
@@ -582,7 +575,6 @@ export const STree = defineComponent({
         // Stater
         Stater.checkedKeys.splice(0, Stater.checkedKeys.length, ...checkedNodes.map(node => node.key))
         Stater.selectedKeys.splice(0, Stater.selectedKeys.length, ...selectedNodes.map(node => node.key))
-        Stater.selfCheckedKeys.splice(0, Stater.selfCheckedKeys.length, ...checkedNodes.map(node => node.key))
         Stater.halfCheckedKeys.splice(0, Stater.halfCheckedKeys.length, ...checkedHalfNodes.map(node => node.key))
 
         // Targeter
@@ -1928,10 +1920,11 @@ export const STree = defineComponent({
             }
 
             const options = {
-              checkedKeys: Stater.selfCheckedKeys,
               halfCheckedKeys: Stater.halfCheckedKeys,
+              outCheckedKeys: Stater.outCheckedKeys,
+              expandedKeys: Stater.expandedKeys,
               selectedKeys: Stater.selectedKeys,
-              expandedKeys: Stater.expandedKeys
+              checkedKeys: Stater.checkedKeys
             }
 
             promises.push(
@@ -2119,7 +2112,7 @@ export const STree = defineComponent({
           treeData={[...Stater.linkTreeNodes]}
           expandedKeys={[...Stater.expandedKeys]}
           selectedKeys={[...Stater.selectedKeys]}
-          checkedKeys={{ checked: Stater.selfCheckedKeys, halfChecked: Stater.halfCheckedKeys }}
+          checkedKeys={{ checked: Stater.checkedKeys, halfChecked: Stater.halfCheckedKeys }}
           onExpand={Methoder.doEventExpand}
           onSelect={Methoder.doEventSelect}
           onCheck={Methoder.doEventCheck}
@@ -2306,16 +2299,16 @@ export const STree = defineComponent({
     }
 
     watch([
-      () => props.treeData,
       () => props.checkable,
       () => props.checkedMode,
       () => props.selectedMode,
-      () => props.checkedKeys,
-      () => props.selectedKeys,
-      () => props.expandedKeys
+      () => [...props.treeData],
+      () => [...props.checkedKeys],
+      () => [...props.selectedKeys],
+      () => [...props.expandedKeys]
     ], (
-      [newTreeNodes, newCheckable, newCheckedMode, newSelectedMode, newCheckedKeys, newSelectedKeys, newExpandedKeys]: [STreeSourceNodes, boolean, 'link' | 'default', 'link' | 'default', STreeKeys, STreeKeys, STreeKeys],
-      [oldTreeNodes, oldCheckable, oldCheckedMode, oldSelectedMode, oldCheckedKeys, oldSelectedKeys, oldExpandedKeys]: [STreeSourceNodes, boolean, 'link' | 'default', 'link' | 'default', STreeKeys, STreeKeys, STreeKeys]
+      [newCheckable, newCheckedMode, newSelectedMode, newTreeNodes, newCheckedKeys, newSelectedKeys, newExpandedKeys]: [boolean, 'link' | 'default', 'link' | 'default', STreeSourceNodes, STreeKeys, STreeKeys, STreeKeys],
+      [oldCheckable, oldCheckedMode, oldSelectedMode, oldTreeNodes, oldCheckedKeys, oldSelectedKeys, oldExpandedKeys]: [boolean, 'link' | 'default', 'link' | 'default', STreeSourceNodes, STreeKeys, STreeKeys, STreeKeys]
     ) => {
       let isReloadTreeNodes = false
       let isReloadTreeStater = false
@@ -2358,7 +2351,7 @@ export const STree = defineComponent({
         Methoder.cleanTreeStater(isForcedCleanStater)
         Methoder.resetTreeStater()
       }
-    }, { deep: true })
+    })
 
     watch(Stater.propTreeNodes, () => Transformer.resetPropTreeData())
     watch(Stater.expandedKeys, () => Transformer.resetPropExpandedKeys())
@@ -2373,7 +2366,6 @@ export const STree = defineComponent({
       selectedKeys: Stater.selectedKeys,
       expandedKeys: Stater.expandedKeys,
       outCheckedKeys: Stater.outCheckedKeys,
-      selfCheckedKeys: Stater.selfCheckedKeys,
       halfCheckedKeys: Stater.halfCheckedKeys,
 
       selectedNode: Sourcer.selectedNode,
