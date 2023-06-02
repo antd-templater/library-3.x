@@ -13,11 +13,14 @@ import helper from '@/helper'
 
 export interface STreeSourceNode extends Omit<DataNode, 'key'> {
   key?: Key;
-  title?: Key;
-  children?: STreeSourceNode[];
+  icon?: string;
+  title?: string;
+  disabled?: boolean;
+  disableCheckbox?: boolean;
   forceApplyDisableCheckbox?: boolean;
   alwaysShowTitleButton?: boolean;
   forceApplyDisabled?: boolean;
+  children?: STreeSourceNode[];
 }
 
 export interface STreeTargetNode extends STreeSourceNode {
@@ -83,6 +86,7 @@ export interface STreeMethoder {
   doTreeOnlyExpand: (keys: STreeKeys) => void;
   doTreePushExpand: (keys: STreeKeys) => void;
   doTreePopExpand: (keys: STreeKeys) => void;
+
   doTreeToggleChecked: (keys: STreeKeys) => void;
   doTreeOnlyChecked: (keys: STreeKeys) => void;
   doTreePushChecked: (keys: STreeKeys) => void;
@@ -95,7 +99,7 @@ export interface STreeMethoder {
 
   doTreeLoad: (keys: STreeKeys) => Promise<void[]>;
 
-  forceUpdate: (force?: boolean) => void;
+  forceUpdate: (clean?: boolean) => void;
 }
 
 export interface STreeTransformer {
@@ -1952,8 +1956,8 @@ export const STree = defineComponent({
         return Promise.all(promises)
       },
 
-      forceUpdate(force) {
-        Methoder.resetTreeNodes(undefined, force)
+      forceUpdate(clean) {
+        Methoder.resetTreeNodes([...Stater.propTreeNodes], clean)
       }
     }
 
@@ -2392,7 +2396,6 @@ export const STree = defineComponent({
 
       doTreeAllExpanded: Methoder.doTreeAllExpanded,
       doTreeAllCollapsed: Methoder.doTreeAllCollapsed,
-
       doTreeToggleExpand: Methoder.doTreeToggleExpand,
       doTreeOnlyExpand: Methoder.doTreeOnlyExpand,
       doTreePushExpand: Methoder.doTreePushExpand,
