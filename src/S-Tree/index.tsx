@@ -2137,11 +2137,13 @@ export const STree = defineComponent({
     }
 
     const RenderTreeSwitcherIcon = (node: STreeTargetNode, ctx: SetupContext) => {
+      const icon = Methoder.renderSwitcher(node)
       const onClick = (event: MouseEvent) => {
-        Methoder.triggerSwitcher(node)
+        if (icon !== 'LoadingOutlined') {
+          Methoder.triggerSwitcher(node)
+        }
         event.stopPropagation()
       }
-      const icon = Methoder.renderSwitcher(node)
       return isIconType(icon) ? <SIcon type={icon} style='cursor: pointer;' class={{ 'ant-tree-switcher-icon': icon === 'CaretDownOutlined' }} onClick={onClick}/> : null
     }
 
