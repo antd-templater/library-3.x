@@ -1,16 +1,16 @@
 import 'ant-design-vue/es/tooltip/style/index.less'
-
 import ATooltip from 'ant-design-vue/es/tooltip'
-import { defineComponent, reactive, toRefs } from 'vue'
+import { defineComponent, ref } from 'vue'
 import * as VueTypes from 'vue-types'
 
 export const SEllipsis = defineComponent({
   name: 'SEllipsis',
   props: {
-    limit: VueTypes.number().def(Infinity),
-    title: VueTypes.string().def(''),
-    tooltip: VueTypes.bool().def(false),
-    sheared: VueTypes.bool().def(true),
+    title: VueTypes.string().def(undefined),
+    visible: VueTypes.bool().def(undefined),
+    inspect: VueTypes.bool().def(true),
+    tooltip: VueTypes.bool().def(true),
+    ellipsis: VueTypes.bool().def(false),
     placement: VueTypes.string<
       | 'top'
       | 'left'
@@ -24,67 +24,61 @@ export const SEllipsis = defineComponent({
       | 'leftBottom'
       | 'rightTop'
       | 'rightBottom'
-    >().def('top')
+    >().def('top'),
+    mouseEnterDelay: VueTypes.number().def(0.2),
+    mouseLeaveDelay: VueTypes.number().def(0.2)
   },
-  setup(props, { slots }) {
-    const {
-      limit,
-      title,
-      tooltip,
-      sheared,
-      placement,
-      ...tooltipProps
-    } = toRefs(props)
+  emits: {
+    'update:visible': (visible: boolean) => typeof visible === 'boolean'
+  },
+  setup(props, { emit, slots }) {
+    const element: any = ref(null)
+    const visible: any = ref(false)
 
-    const getFullLength = (title = '') => {
-      return title.split('').reduce((pre, cur) => {
-        const charCode = cur.charCodeAt(0)
-        const isSingleChar = charCode >= 0 && charCode <= 128
-        return isSingleChar ? pre + 1 : pre + 2
-      }, 0)
-    }
-
-    const cutFullLength = (title = '', max = Infinity) => {
-      let len = 0
-      return title.split('').reduce((pre, cur) => {
-        const charCode = cur.charCodeAt(0)
-        const isSingleChar = charCode >= 0 && charCode <= 128
-        isSingleChar ? len = len + 1 : len = len + 2
-        return len <= max ? pre + cur : pre
-      }, '')
-    }
-
-    const RenderTextNode = ({ title = '', length = 0 }) => {
-      if (limit.value > 0 && sheared.value) {
-        const content = cutFullLength(title, limit.value)
-        const expand = length > limit.value ? '...' : ''
-
-        return slots.default
-          ? slots.default({ title: content + expand })
-          : content + expand
+    const updateVisible = (state: boolean) => {
+      if (state === true && props.inspect === true && element.value instanceof HTMLElement) {
+        const clientHeight = element.value.getBoundingClientRect().height
+        const clientWidth = element.value.getBoundingClientRect().width
+        const outHeight = element.value.scrollHeight > clientHeight
+        const outWidth = element.value.scrollWidth > clientWidth
+        return (visible.value = outHeight || outWidth)
       }
-
-      return slots.default
-        ? slots.default({ title })
-        : title
-    }
-
-    const RenderTooltip = ({ title = '', length = 0 }) => {
-      return (
-        <ATooltip
-          { ...reactive(tooltipProps) }
-          placement={placement.value}
-          title={title}
-        >
-          { RenderTextNode({ title, length }) }
-        </ATooltip>
-      )
+      return (visible.value = state)
     }
 
     return () => {
-      const length = getFullLength(title.value)
-      const isUseTooltip = tooltip.value && length > limit.value
-      return isUseTooltip ? RenderTooltip({ title: title.value, length }) : RenderTextNode({ title: title.value, length })
+      if (props.tooltip === true) {
+        const binds = {
+          ...props,
+          'visible': props.visible !== undefined ? props.visible : visible.value,
+          'onUpdate:visible': undefined,
+          'onVisibleChange': undefined
+        }
+
+        return (
+          <ATooltip
+            { ...binds }
+            { ...{ 'onUpdate:visible': visible => emit('update:visible', updateVisible(visible)) } }
+            v-slots={{ title: slots.title || slots.default }}
+          >
+            <div
+              ref={element}
+              style={{
+                width: '100%',
+                height: '100%',
+                display: 'block',
+                overflow: props.ellipsis === true ? 'hidden' : 'inherit',
+                whiteSpace: props.ellipsis === true ? 'nowrap' : 'inherit',
+                textOverflow: props.ellipsis === true ? 'ellipsis' : 'inherit'
+              }}
+            >
+              { slots.default?.() }
+            </div>
+          </ATooltip>
+        )
+      }
+
+      return slots.default?.()
     }
   }
 })

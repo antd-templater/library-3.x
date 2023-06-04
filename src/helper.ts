@@ -29,7 +29,7 @@ export function isBoolean(bool: unknown): bool is boolean {
 }
 
 export function isFunction(func: unknown): func is Function {
-  return itType(func) === 'Function'
+  return itType(func) === 'Function' || itType(func) === 'AsyncFunction' || itType(func) === 'GeneratorFunction'
 }
 
 export function isReference(val: unknown): val is any[] | Record<string, unknown> {

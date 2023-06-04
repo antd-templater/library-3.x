@@ -24,7 +24,7 @@ export const SEditCellTreeSelect = defineComponent({
     synced: VueTypes.bool().def(false),
     opened: VueTypes.bool().def(false),
     status: VueTypes.bool().def(false),
-    tooltip: VueTypes.object<{ enable?: boolean, limit?: number }>().def(() => ({ enable: true, limit: Infinity })),
+    tooltip: VueTypes.object<{ enable?: boolean, ellipsis?: boolean }>().def(() => ({ enable: true, ellipsis: false })),
     disabled: VueTypes.bool().def(false),
     treeData: VueTypes.array<SEditCellTreeSelectOptionType>().def(() => ([])),
     showArrow: VueTypes.bool().def(true),
@@ -145,8 +145,8 @@ export const SEditCellTreeSelect = defineComponent({
 
       return (
         <SEllipsis
-          title={title || title === 0 ? String(title) : undefined}
-          limit={props.tooltip.limit ? props.tooltip.limit : Infinity}
+          title={title || title === 0 ? String(title) : ''}
+          ellipsis={props.tooltip.ellipsis === true}
           tooltip={props.tooltip.enable !== false}
         >
           <div

@@ -28,10 +28,12 @@ export const SIcon = defineComponent({
     click: (event: MouseEvent) => true
   },
   setup(props, context) {
-    const type = props.type
-    const Icon = isIconType(type) ? AllIcons[type] : null
-    const binds = { ...props, type: undefined }
-    return () => Icon ? <Icon { ...binds } onClick={event => context.emit('click', event)}/> : null
+    return () => {
+      const type = props.type
+      const Icon = isIconType(type) ? AllIcons[type] : null
+      const binds = { ...props, type: undefined }
+      return Icon ? <Icon { ...binds } onClick={event => context.emit('click', event)}/> : null
+    }
   }
 })
 

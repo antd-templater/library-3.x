@@ -28,5 +28,5 @@
   "include": [
     "src/S-*/**/*.tsx",
     "src/index.ts"
-, "src/S-Form/library/input.tx", "src/S-Form/library/input.tx"  ]
+  ]
 }

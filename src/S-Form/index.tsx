@@ -47,7 +47,6 @@ export * from './form.helper'
 
 export const SForm = defineComponent({
   name: 'SForm',
-  inheritAttrs: false,
   props: {
     rules: {
       type: Object as PropType<GroupsRules<Rule>>,

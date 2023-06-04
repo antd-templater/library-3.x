@@ -32,7 +32,7 @@ export const SEditCellDatePicker = defineComponent({
     synced: VueTypes.bool().def(false),
     opened: VueTypes.bool().def(false),
     status: VueTypes.bool().def(false),
-    tooltip: VueTypes.object<{ enable?: boolean, limit?: number }>().def(() => ({ enable: true, limit: Infinity })),
+    tooltip: VueTypes.object<{ enable?: boolean, ellipsis?: boolean }>().def(() => ({ enable: true, ellipsis: false })),
     disabled: VueTypes.bool().def(false),
     allowClear: VueTypes.bool().def(false),
     placeholder: VueTypes.string().def(),
@@ -148,8 +148,8 @@ export const SEditCellDatePicker = defineComponent({
 
       return (
         <SEllipsis
-          title={props.text ? String(props.text) : undefined}
-          limit={props.tooltip.limit ? props.tooltip.limit : Infinity}
+          title={props.text ? String(props.text) : ''}
+          ellipsis={props.tooltip.ellipsis === true}
           tooltip={props.tooltip.enable !== false}
         >
           <div
