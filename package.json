@@ -3,7 +3,7 @@
   "description": "基于 Vue3.x Ant Design Vue 对Tree、Table、Form等组件二次封装",
   "homepage": "https://github.com/antd-templater/antd-template-lib3.x",
   "author": "lin pengteng <china.linpengteng@gmail.com>",
-  "version": "0.0.29",
+  "version": "0.0.30",
   "keywords": [
     "front-end",
     "vue-components",
@@ -42,6 +42,7 @@
   },
   "dependencies": {
     "@ant-design/icons-vue": "^6.1.0",
+    "@rollup/plugin-terser": "^0.4.3",
     "ant-design-vue": "^3.2.20",
     "dayjs": "^1.11.8",
     "less": "^4.1.3",
