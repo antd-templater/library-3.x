@@ -1255,7 +1255,7 @@ export const STree = defineComponent({
 
       doTreeAllExpanded() {
         if (Stater.expandedKeys.length !== Stater.flatTreeNodes.length || !Stater.flatTreeNodes.every(node => Stater.expandedKeys.includes(node.key))) {
-          Stater.expandedKeys.splice(0, Stater.expandedKeys.length, ...Stater.flatTreeNodes.filter(node => helper.isNotEmptyArray(node.children)).map(node => node.key))
+          Methoder.expandTreeNodes(Stater.flatTreeNodes.filter(node => helper.isNotEmptyArray(node.children) || (props.allowAutoExpanded && props.allowAutoExpandLoad && node.isLeaf === false)).map(node => node.key))
           Methoder.cleanTreeStater(false, ['expanded'])
           Methoder.resetTreeStater(false, ['expanded'])
         }
@@ -1263,7 +1263,7 @@ export const STree = defineComponent({
 
       doTreeAllCollapsed() {
         if (Stater.expandedKeys.length > 0) {
-          Stater.expandedKeys.splice(0, Stater.expandedKeys.length)
+          Methoder.collapseTreeNodes(Stater.expandedKeys)
           Methoder.cleanTreeStater(false, ['expanded'])
           Methoder.resetTreeStater(false, ['expanded'])
         }
