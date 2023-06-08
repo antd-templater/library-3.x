@@ -74,6 +74,7 @@ export interface STreeMethoder {
   reloadTreeNodes: (nodes: STreeSourceNodes, parent?: { key: STreeKey } | null, force?: boolean) => void;
   appendTreeNodes: (nodes: STreeSourceNodes, parent?: { key: STreeKey } | null, force?: boolean) => void;
   removeTreeNodes: (nodes: STreeSourceNodes, parent?: { key: STreeKey } | null, force?: boolean) => void;
+  changeTreeNodes: (nodes: STreeSourceNodes, parent?: { key: STreeKey } | null, force?: boolean) => void;
   createTreeNodes: (nodes: STreeSourceNodes, parent?: STreeTargetNode | null) => STreeTargetNodes;
   spreadTreeNodes: <T extends STreeSpreadNodes> (nodes: T, level?: number) => T;
 
@@ -190,22 +191,10 @@ export interface STreeEmiterExpand {
   addExpandedKeys: STreeKeys;
 }
 
-export interface STreeEmiterReload {
+export interface STreeEmiterSource {
   parentNode: STreeSourceNode | null;
   reloadNodes: STreeSourceNode[];
-  loadedKeys: STreeKeys;
-  loadKeys: STreeKeys;
-}
-
-export interface STreeEmiterAppend {
-  parentNode: STreeSourceNode | null;
   appendNodes: STreeSourceNode[];
-  loadedKeys: STreeKeys;
-  loadKeys: STreeKeys;
-}
-
-export interface STreeEmiterRemove {
-  parentNode: STreeSourceNode | null;
   removeNodes: STreeSourceNode[];
   loadedKeys: STreeKeys;
   loadKeys: STreeKeys;
@@ -240,10 +229,10 @@ export const STree = defineComponent({
     forceApplyDisabled: VueTypes.bool().def(false),
     alwaysShowTitleButton: VueTypes.bool().def(false),
     allowSelectToCheck: VueTypes.bool().def(false),
-    allowMultiExpanded: VueTypes.bool().def(true),
     allowAutoExpandLoad: VueTypes.bool().def(false),
     allowAutoCollapsed: VueTypes.bool().def(true),
     allowAutoExpanded: VueTypes.bool().def(true),
+    allowMultiExpanded: VueTypes.bool().def(true),
     defaultExpandAll: VueTypes.bool().def(false),
     allowUnExpanded: VueTypes.bool().def(false),
     allowUnSelected: VueTypes.bool().def(false),
@@ -251,6 +240,7 @@ export const STree = defineComponent({
     selectable: VueTypes.bool().def(true),
     checkable: VueTypes.bool().def(false),
     blockNode: VueTypes.bool().def(false),
+    draggable: VueTypes.bool().def(false),
     disabled: VueTypes.bool().def(false),
     showIcon: VueTypes.bool().def(false),
     showLine: VueTypes.bool().def(false),
@@ -263,9 +253,7 @@ export const STree = defineComponent({
     'check': (emiter: STreeEmiterCheck) => true,
     'select': (emiter: STreeEmiterSelect) => true,
     'expand': (emiter: STreeEmiterExpand) => true,
-    'reload': (emiter: STreeEmiterReload) => true,
-    'append': (emiter: STreeEmiterAppend) => true,
-    'remove': (emiter: STreeEmiterRemove) => true,
+    'source': (emiter: STreeEmiterSource) => true,
     'update:treeData': (trees: STreeSourceNode) => true,
     'update:expandedKeys': (keys: STreeKeys) => true,
     'update:selectedKeys': (keys: STreeKeys) => true,
@@ -715,24 +703,28 @@ export const STree = defineComponent({
       },
 
       reloadTreeNodes(nodes, parent, force) {
+        const linkTreeNodes = Stater.linkTreeNodes
         const flatTreeNodes = Stater.flatTreeNodes
+        const childTreeNodes = Stater.childTreeNodes
+        const parentTreeNodes = Stater.parentTreeNodes
         const parentTreeNode = helper.isNotEmptyObject(parent) ? flatTreeNodes.find(every => parent.key === every.key) : undefined
         const noReloadTreeNode = helper.isNotEmptyObject(parent) && !parentTreeNode
+        const replaceFieldChildren = props.replaceFields.children || 'children'
+        const replaceFieldKey = props.replaceFields.key || 'key'
 
         if (noReloadTreeNode) {
           return
         }
 
+        nodes = nodes.filter(node => !parentTreeNode || !parentTreeNodes.value[parentTreeNode.key] || !parentTreeNodes.value[parentTreeNode.key].some(parent => parent.key === node[replaceFieldKey]))
+        nodes = nodes.filter(node => !parentTreeNode || parentTreeNodes.value !== node[replaceFieldKey])
+        nodes = nodes.filter(node => !!node[replaceFieldKey] || node[replaceFieldKey] === 0)
         nodes = nodes.map(node => toRaw(node))
 
         const loadKeys = Stater.loadKeys
         const loadedKeys = Stater.loadedKeys
-        const linkTreeNodes = Stater.linkTreeNodes
-        const childTreeNodes = Stater.childTreeNodes
-        const parentTreeNodes = Stater.parentTreeNodes
         const resultTreeNodes = Methoder.createTreeNodes(nodes, parentTreeNode)
         const flatResultNodes = Methoder.spreadTreeNodes(resultTreeNodes, Infinity)
-        const replaceFieldChildren = props.replaceFields.children || 'children'
 
         const newTreeNodes = Methoder.spreadTreeNodes(nodes, Infinity)
         const oldTreeNodes = Methoder.spreadTreeNodes((parentTreeNode ? parentTreeNode.children : linkTreeNodes), Infinity)
@@ -810,10 +802,12 @@ export const STree = defineComponent({
 
           context.emit('update:treeData', [...Cacher.treeData])
 
-          context.emit('reload', {
+          context.emit('source', {
             loadKeys: [...loadKeys],
             loadedKeys: [...loadedKeys],
             parentNode: parentTreeNode?.referenceSourceNode || null,
+            appendNodes: [],
+            removeNodes: [],
             reloadNodes: [...nodes]
           })
         }
@@ -832,7 +826,10 @@ export const STree = defineComponent({
           return
         }
 
+        nodes = nodes.filter(node => !parentTreeNode || !parentTreeNodes.value[parentTreeNode.key] || !parentTreeNodes.value[parentTreeNode.key].some(parent => parent.key === node[replaceFieldKey]))
         nodes = nodes.filter(node => !(parentTreeNode ? parentTreeNode.children : linkTreeNodes).some(every => every.key === node[replaceFieldKey]))
+        nodes = nodes.filter(node => !parentTreeNode || parentTreeNodes.value !== node[replaceFieldKey])
+        nodes = nodes.filter(node => !!node[replaceFieldKey] || node[replaceFieldKey] === 0)
         nodes = nodes.map(node => toRaw(node))
 
         if (!helper.isNotEmptyArray(nodes)) {
@@ -910,11 +907,13 @@ export const STree = defineComponent({
 
           context.emit('update:treeData', [...Cacher.treeData])
 
-          context.emit('append', {
+          context.emit('source', {
             loadKeys: [...loadKeys],
             loadedKeys: [...loadedKeys],
             parentNode: parentTreeNode?.referenceSourceNode || null,
-            appendNodes: [...nodes]
+            appendNodes: [...nodes],
+            removeNodes: [],
+            reloadNodes: []
           })
         }
       },
@@ -922,6 +921,8 @@ export const STree = defineComponent({
       removeTreeNodes(nodes, parent, force) {
         const linkTreeNodes = Stater.linkTreeNodes
         const flatTreeNodes = Stater.flatTreeNodes
+        const childTreeNodes = Stater.childTreeNodes
+        const parentTreeNodes = Stater.parentTreeNodes
         const parentTreeNode = helper.isNotEmptyObject(parent) ? flatTreeNodes.find(every => parent.key === every.key) : undefined
         const noReloadTreeNode = helper.isNotEmptyObject(parent) && !parentTreeNode
         const replaceFieldChildren = props.replaceFields.children || 'children'
@@ -931,31 +932,37 @@ export const STree = defineComponent({
           return
         }
 
+        nodes = nodes.filter(node => !parentTreeNode || parentTreeNodes.value !== node[replaceFieldKey])
+        nodes = nodes.filter(node => (parentTreeNode ? parentTreeNode.children : linkTreeNodes).some(every => every.key === node[replaceFieldKey]))
+        nodes = nodes.map(node => flatTreeNodes.find(every => every.key === node[replaceFieldKey])!.referenceSourceNode)
+        nodes = nodes.map(node => toRaw(node))
+
+        if (!helper.isNotEmptyArray(nodes)) {
+          return
+        }
+
         const loadKeys = Stater.loadKeys
         const loadedKeys = Stater.loadedKeys
-        const childTreeNodes = Stater.childTreeNodes
-        const parentTreeNodes = Stater.parentTreeNodes
-        const filterRemoveNodes = nodes.filter(node => (parentTreeNode ? parentTreeNode.children : linkTreeNodes).some(every => every.key === node[replaceFieldKey]))
-        const rightRemoveNodes = filterRemoveNodes.map(node => flatTreeNodes.find(every => every.key === node[replaceFieldKey])!)
-        const flatRemoveNodes = Methoder.spreadTreeNodes(rightRemoveNodes, Infinity)
-        const isNeedEmitChange = helper.isNotEmptyArray(flatRemoveNodes)
+        const targetRemoveNodes = nodes.map(node => flatTreeNodes.find(every => every.key === node[replaceFieldKey])!)
+        const flatTargetRemoveNodes = Methoder.spreadTreeNodes(targetRemoveNodes, Infinity)
+        const isNeedEmitChange = helper.isNotEmptyArray(flatTargetRemoveNodes)
 
-        if (!helper.isNotEmptyArray(flatRemoveNodes)) {
+        if (!helper.isNotEmptyArray(flatTargetRemoveNodes)) {
           return
         }
 
         if (!helper.isNotEmptyObject(parentTreeNode)) {
-          Cacher.treeData.splice(0, Cacher.treeData.length, ...Cacher.treeData.filter(every => !flatRemoveNodes.some(remove => remove.key === every[replaceFieldKey])))
-          Stater.propTreeNodes.splice(0, Stater.propTreeNodes.length, ...Stater.propTreeNodes.filter(every => !flatRemoveNodes.some(remove => remove.key === every[replaceFieldKey])))
+          Cacher.treeData.splice(0, Cacher.treeData.length, ...Cacher.treeData.filter(every => !flatTargetRemoveNodes.some(remove => remove.key === every[replaceFieldKey])))
+          Stater.propTreeNodes.splice(0, Stater.propTreeNodes.length, ...Stater.propTreeNodes.filter(every => !flatTargetRemoveNodes.some(remove => remove.key === every[replaceFieldKey])))
 
-          loadKeys.splice(0, loadKeys.length, ...loadKeys.filter(key => !flatRemoveNodes.some(node => node.key === key)))
-          loadedKeys.splice(0, loadedKeys.length, ...loadedKeys.filter(key => !flatRemoveNodes.some(node => node.key === key)))
+          loadKeys.splice(0, loadKeys.length, ...loadKeys.filter(key => !flatTargetRemoveNodes.some(node => node.key === key)))
+          loadedKeys.splice(0, loadedKeys.length, ...loadedKeys.filter(key => !flatTargetRemoveNodes.some(node => node.key === key)))
           loadKeys.sort((a, b) => flatTreeNodes.findIndex(node => node.key === a) - flatTreeNodes.findIndex(node => node.key === b))
           loadedKeys.sort((a, b) => flatTreeNodes.findIndex(node => node.key === a) - flatTreeNodes.findIndex(node => node.key === b))
         }
 
         if (helper.isNotEmptyObject(parentTreeNode)) {
-          for (const removeNode of rightRemoveNodes) {
+          for (const removeNode of targetRemoveNodes) {
             const removeKey = removeNode.key
             const childNodes = childTreeNodes.value[removeKey] || []
             loadedKeys.splice(0, loadedKeys.length, ...loadedKeys.filter(key => key !== removeKey && !childNodes.some(child => child.key === key)))
@@ -963,7 +970,7 @@ export const STree = defineComponent({
           }
 
           if (helper.isNotEmptyArray(parentTreeNode.referenceSourceNode[replaceFieldChildren])) {
-            parentTreeNode.referenceSourceNode[replaceFieldChildren] = parentTreeNode.referenceSourceNode[replaceFieldChildren].filter((child: any) => !rightRemoveNodes.some(node => node.key === child.key))
+            parentTreeNode.referenceSourceNode[replaceFieldChildren] = parentTreeNode.referenceSourceNode[replaceFieldChildren].filter((child: any) => !targetRemoveNodes.some(node => node.key === child.key))
           }
 
           if (!helper.isNotEmptyArray(parentTreeNode.referenceSourceNode[replaceFieldChildren])) {
@@ -975,17 +982,17 @@ export const STree = defineComponent({
           loadKeys.sort((a, b) => flatTreeNodes.findIndex(node => node.key === a) - flatTreeNodes.findIndex(node => node.key === b))
           loadedKeys.sort((a, b) => flatTreeNodes.findIndex(node => node.key === a) - flatTreeNodes.findIndex(node => node.key === b))
 
-          parentTreeNode.children.splice(0, parentTreeNode.children.length, ...parentTreeNode.children.filter(every => !rightRemoveNodes.some(node => node.key === every.key)))
+          parentTreeNode.children.splice(0, parentTreeNode.children.length, ...parentTreeNode.children.filter(every => !targetRemoveNodes.some(node => node.key === every.key)))
           parentTreeNode.isLeaf = parentTreeNode.children.length === 0
         }
 
         if (helper.isNotEmptyObject(parentTreeNode)) {
-          flatTreeNodes.splice(0, flatTreeNodes.length, ...flatTreeNodes.filter(every => !flatRemoveNodes.some(remove => remove.key === every.key)))
+          flatTreeNodes.splice(0, flatTreeNodes.length, ...flatTreeNodes.filter(every => !flatTargetRemoveNodes.some(remove => remove.key === every.key)))
           linkTreeNodes.splice(0, linkTreeNodes.length, ...flatTreeNodes.filter(node => node.level === 1))
         }
 
         if (!helper.isNotEmptyObject(parentTreeNode)) {
-          flatTreeNodes.splice(0, flatTreeNodes.length, ...flatTreeNodes.filter(every => !flatRemoveNodes.some(remove => remove.key === every.key)))
+          flatTreeNodes.splice(0, flatTreeNodes.length, ...flatTreeNodes.filter(every => !flatTargetRemoveNodes.some(remove => remove.key === every.key)))
           linkTreeNodes.splice(0, linkTreeNodes.length, ...flatTreeNodes.filter(node => node.level === 1))
         }
 
@@ -1016,11 +1023,79 @@ export const STree = defineComponent({
 
           context.emit('update:treeData', [...Cacher.treeData])
 
-          context.emit('remove', {
+          context.emit('source', {
             loadKeys: [...loadKeys],
             loadedKeys: [...loadedKeys],
             parentNode: parentTreeNode?.referenceSourceNode || null,
-            removeNodes: [...rightRemoveNodes]
+            appendNodes: [],
+            removeNodes: [...nodes],
+            reloadNodes: []
+          })
+        }
+      },
+
+      changeTreeNodes(nodes, parent, force) {
+        const linkTreeNodes = Stater.linkTreeNodes
+        const flatTreeNodes = Stater.flatTreeNodes
+        const childTreeNodes = Stater.childTreeNodes
+        const parentTreeNodes = Stater.parentTreeNodes
+        const parentTreeNode = helper.isNotEmptyObject(parent) ? flatTreeNodes.find(every => parent.key === every.key) : undefined
+        const noReloadTreeNode = helper.isNotEmptyObject(parent) && !parentTreeNode
+        const replaceFieldKey = props.replaceFields.key || 'key'
+
+        if (noReloadTreeNode) {
+          return
+        }
+
+        nodes = nodes.filter(node => !(parentTreeNode ? parentTreeNode.children : linkTreeNodes).some(every => every.key === node[replaceFieldKey]))
+        nodes = nodes.filter(node => !parentTreeNode || parentTreeNodes.value !== node[replaceFieldKey])
+        nodes = nodes.map(node => toRaw(node))
+
+        if (!helper.isNotEmptyArray(nodes)) {
+          return
+        }
+
+        const loadKeys = Stater.loadKeys
+        const loadedKeys = Stater.loadedKeys
+        const appendNodes: STreeSourceNodes = []
+        const removeNodes: STreeSourceNodes = []
+
+        const isNeedEmitChange = false
+
+        if (isNeedEmitChange) {
+          childTreeNodes.value = {}
+          parentTreeNodes.value = {}
+
+          for (const every of flatTreeNodes) {
+            let parent = every.parentNode
+
+            if (!parentTreeNodes.value[every.key]) {
+              parentTreeNodes.value[every.key] = []
+            }
+
+            if (!childTreeNodes.value[every.key]) {
+              childTreeNodes.value[every.key] = []
+            }
+
+            while (parent) {
+              parentTreeNodes.value[every.key].unshift(parent)
+              childTreeNodes.value[parent.key].push(every)
+              parent = parent.parentNode
+            }
+          }
+
+          Methoder.cleanTreeStater(force)
+          Methoder.checkTreeStater(force)
+
+          context.emit('update:treeData', [...Cacher.treeData])
+
+          context.emit('source', {
+            loadKeys: [...loadKeys],
+            loadedKeys: [...loadedKeys],
+            parentNode: parentTreeNode?.referenceSourceNode || null,
+            appendNodes: appendNodes,
+            removeNodes: removeNodes,
+            reloadNodes: []
           })
         }
       },
@@ -2286,12 +2361,12 @@ export const STree = defineComponent({
           selectable={props.selectable}
           checkable={props.checkable}
           blockNode={props.blockNode}
+          draggable={props.draggable}
           disabled={props.disabled}
           showIcon={props.showIcon}
           showLine={props.showLine}
           virtual={props.virtual}
           checkStrictly={true}
-          draggable={false}
           multiple={false}
           v-slots={slots}
         />
@@ -2571,6 +2646,7 @@ export const STree = defineComponent({
       reloadTreeNodes: Methoder.reloadTreeNodes,
       appendTreeNodes: Methoder.appendTreeNodes,
       removeTreeNodes: Methoder.removeTreeNodes,
+      changeTreeNodes: Methoder.changeTreeNodes,
       spreadTreeNodes: Methoder.spreadTreeNodes,
 
       pickupUpperTreeNodes: Methoder.pickupUpperTreeNodes,
