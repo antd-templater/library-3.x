@@ -241,6 +241,7 @@ export const STree = defineComponent({
     alwaysShowTitleButton: VueTypes.bool().def(false),
     allowSelectToCheck: VueTypes.bool().def(false),
     allowMultiExpanded: VueTypes.bool().def(true),
+    allowAutoExpandLoad: VueTypes.bool().def(false),
     allowAutoCollapsed: VueTypes.bool().def(true),
     allowAutoExpanded: VueTypes.bool().def(true),
     defaultExpandAll: VueTypes.bool().def(false),
@@ -338,13 +339,13 @@ export const STree = defineComponent({
         }
 
         if (props.showLine) {
-          if (helper.isNotEmptyArray(node.children)) {
+          if (helper.isNotEmptyArray(node.children) || (isAsyncedNode && !isLoadingNode)) {
             return !expandedKeys.includes(node.key) ? 'PlusSquareOutlined' : 'MinusSquareOutlined'
           }
           return 'FileOutlined'
         }
 
-        if (helper.isNotEmptyArray(node.children)) {
+        if (helper.isNotEmptyArray(node.children) || (isAsyncedNode && !isLoadingNode)) {
           return 'CaretDownOutlined'
         }
 
@@ -1299,24 +1300,21 @@ export const STree = defineComponent({
 
         if (helper.isNotEmptyArray(addExpandedKeys)) {
           for (const addKey of addExpandedKeys) {
-            const firstNode = flatTreeNodes.find(node => node.key === addKey)!
             const parentNodes = parentTreeNodes.value[addKey] || []
-            const childNodes = childTreeNodes.value[addKey] || []
+            const parentKeys = parentNodes.map(node => node.key)
 
-            newExpandedKeys.push(addKey, ...parentNodes.map(node => node.key))
+            newExpandedKeys.push(addKey, ...parentKeys)
 
-            if (helper.isNotEmptyArray(childNodes) && firstNode.children.length === 1) {
-              if (props.allowAutoExpanded) {
-                let firstChildNode = firstNode.children[0]
-                let firstChildCount = firstChildNode?.children.length
-                let firstChildKey = firstChildNode?.key
+            if (props.allowAutoExpanded) {
+              let isExpandFirstNode = true
+              let isExpandAsyncNode = true
+              let onlyFirstChildNode = flatTreeNodes.find(node => node.key === addKey)
 
-                while (firstChildNode && firstChildCount === 1 && firstChildKey) {
-                  newExpandedKeys.push(firstChildKey)
-                  firstChildNode = firstChildNode.children[0]
-                  firstChildCount = firstChildNode?.children.length
-                  firstChildKey = firstChildNode?.key
-                }
+              while (onlyFirstChildNode && (isExpandAsyncNode || isExpandFirstNode)) {
+                newExpandedKeys.push(onlyFirstChildNode.key)
+                onlyFirstChildNode = onlyFirstChildNode.children.length === 1 ? onlyFirstChildNode.children[0] : undefined
+                isExpandAsyncNode = !!onlyFirstChildNode && !helper.isNotEmptyArray(onlyFirstChildNode.children) && props.allowAutoExpandLoad && onlyFirstChildNode.isLeaf === false && helper.isFunction(props.loadData)
+                isExpandFirstNode = !!onlyFirstChildNode && helper.isNotEmptyArray(onlyFirstChildNode.children)
               }
             }
           }
@@ -1473,24 +1471,21 @@ export const STree = defineComponent({
 
         if (helper.isNotEmptyArray(addExpandedKeys)) {
           for (const addKey of addExpandedKeys) {
-            const firstNode = flatTreeNodes.find(node => node.key === addKey)!
             const parentNodes = parentTreeNodes.value[addKey] || []
-            const childNodes = childTreeNodes.value[addKey] || []
+            const parentKeys = parentNodes.map(node => node.key)
 
-            newExpandedKeys.push(addKey, ...parentNodes.map(node => node.key))
+            newExpandedKeys.push(addKey, ...parentKeys)
 
-            if (helper.isNotEmptyArray(childNodes) && firstNode.children.length === 1) {
-              if (props.allowAutoExpanded) {
-                let firstChildNode = firstNode.children[0]
-                let firstChildCount = firstChildNode?.children.length
-                let firstChildKey = firstChildNode?.key
+            if (props.allowAutoExpanded) {
+              let isExpandFirstNode = true
+              let isExpandAsyncNode = true
+              let onlyFirstChildNode = flatTreeNodes.find(node => node.key === addKey)
 
-                while (firstChildNode && firstChildCount === 1 && firstChildKey) {
-                  newExpandedKeys.push(firstChildKey)
-                  firstChildNode = firstChildNode.children[0]
-                  firstChildCount = firstChildNode?.children.length
-                  firstChildKey = firstChildNode?.key
-                }
+              while (onlyFirstChildNode && (isExpandAsyncNode || isExpandFirstNode)) {
+                newExpandedKeys.push(onlyFirstChildNode.key)
+                onlyFirstChildNode = onlyFirstChildNode.children.length === 1 ? onlyFirstChildNode.children[0] : undefined
+                isExpandAsyncNode = !!onlyFirstChildNode && !helper.isNotEmptyArray(onlyFirstChildNode.children) && props.allowAutoExpandLoad && onlyFirstChildNode.isLeaf === false && helper.isFunction(props.loadData)
+                isExpandFirstNode = !!onlyFirstChildNode && helper.isNotEmptyArray(onlyFirstChildNode.children)
               }
             }
           }
