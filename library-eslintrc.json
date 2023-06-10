@@ -33,7 +33,7 @@
     "STreeEmiterCheck": true,
     "STreeEmiterSelect": true,
     "STreeEmiterExpand": true,
-    "STreeEmiterSource": true,
+    "STreeEmiterChange": true,
     "STreeSourceNodes": true,
     "STreeTargetNodes": true,
     "STreeSpreadNodes": true,

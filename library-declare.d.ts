@@ -55,7 +55,7 @@ declare global {
     STreeEmiterCheck,
     STreeEmiterSelect,
     STreeEmiterExpand,
-    STreeEmiterSource,
+    STreeEmiterChange,
     STreeSourceNodes,
     STreeTargetNodes,
     STreeSpreadNodes,
