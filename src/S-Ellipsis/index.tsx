@@ -39,8 +39,8 @@ export const SEllipsis = defineComponent({
       if (state === true && props.inspect === true && element.value instanceof HTMLElement) {
         const clientHeight = element.value.getBoundingClientRect().height
         const clientWidth = element.value.getBoundingClientRect().width
-        const outHeight = element.value.scrollHeight > clientHeight
-        const outWidth = element.value.scrollWidth > clientWidth
+        const outHeight = element.value.scrollHeight > clientHeight + 2
+        const outWidth = element.value.scrollWidth > clientWidth + 2
         return (visible.value = outHeight || outWidth)
       }
       return (visible.value = state)

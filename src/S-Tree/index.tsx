@@ -229,10 +229,10 @@ export const STree = defineComponent({
     forceApplyDisabled: VueTypes.bool().def(false),
     alwaysShowTitleButton: VueTypes.bool().def(false),
     allowSelectToCheck: VueTypes.bool().def(false),
-    allowAutoExpandLoad: VueTypes.bool().def(false),
     allowAutoCollapsed: VueTypes.bool().def(true),
-    allowAutoExpanded: VueTypes.bool().def(true),
     allowMultiExpanded: VueTypes.bool().def(true),
+    allowAutoExpandLoad: VueTypes.bool().def(false),
+    allowAutoExpanded: VueTypes.bool().def(true),
     defaultExpandAll: VueTypes.bool().def(false),
     allowUnExpanded: VueTypes.bool().def(false),
     allowUnSelected: VueTypes.bool().def(false),
@@ -742,11 +742,8 @@ export const STree = defineComponent({
 
         if (helper.isNotEmptyObject(parentTreeNode)) {
           const childNodes = childTreeNodes.value[parentTreeNode.key]
-          const isLoadedNode = loadedKeys.includes(parentTreeNode.key)
-          const isLeafedNode = parentTreeNode.isLeaf = findAppendNodes.length === 0
-          const isAsyncedNode = !isLeafedNode && helper.isFunction(props.loadData)
 
-          isAsyncedNode && !isLoadedNode && loadedKeys.push(parentTreeNode.key)
+          parentTreeNode.isLeaf = findAppendNodes.length === 0
           parentTreeNode.referenceSourceNode[replaceFieldChildren] = nodes
           parentTreeNode.children = findAppendNodes
 
@@ -770,7 +767,7 @@ export const STree = defineComponent({
         }
 
         if (helper.isNotEmptyObject(parentTreeNode)) {
-          const presetTreeNodes = childTreeNodes.value[parentTreeNode.key] || []
+          const presetTreeNodes = (childTreeNodes.value[parentTreeNode.key] || []).filter(child => flatTreeNodes.some(every => every === child))
           flatTreeNodes.splice(0, flatTreeNodes.length, ...flatTreeNodes.filter(every => !presetTreeNodes.some(child => child === every)))
           flatTreeNodes.splice(flatTreeNodes.findIndex(every => every === parentTreeNode) + 1, 0, ...flatAppendNodes)
           linkTreeNodes.splice(0, linkTreeNodes.length, ...flatTreeNodes.filter(every => every.level === 1))
@@ -856,11 +853,7 @@ export const STree = defineComponent({
         }
 
         if (helper.isNotEmptyObject(parentTreeNode)) {
-          const isLoadedNode = loadedKeys.includes(parentTreeNode.key)
-          const isLeafedNode = parentTreeNode.isLeaf = parentTreeNode.children.length === 0 && findAppendNodes.length === 0
-          const isAsyncedNode = !isLeafedNode && helper.isFunction(props.loadData)
-
-          isAsyncedNode && !isLoadedNode && loadedKeys.push(parentTreeNode.key)
+          parentTreeNode.isLeaf = parentTreeNode.children.length === 0 && findAppendNodes.length === 0
           parentTreeNode.referenceSourceNode[replaceFieldChildren] = parentTreeNode.referenceSourceNode[replaceFieldChildren] || []
           parentTreeNode.referenceSourceNode[replaceFieldChildren].push(...nodes)
           parentTreeNode.children.push(...findAppendNodes)
@@ -876,7 +869,7 @@ export const STree = defineComponent({
         }
 
         if (helper.isNotEmptyObject(parentTreeNode)) {
-          const presetTreeNodes = childTreeNodes.value[parentTreeNode.key] || []
+          const presetTreeNodes = (childTreeNodes.value[parentTreeNode.key] || []).filter(child => flatTreeNodes.some(every => every === child))
           flatTreeNodes.splice(0, flatTreeNodes.length, ...flatTreeNodes.filter(every => !presetTreeNodes.some(child => child === every)))
           flatTreeNodes.splice(flatTreeNodes.findIndex(every => every === parentTreeNode) + 1, 0, ...presetTreeNodes, ...flatAppendNodes)
           linkTreeNodes.splice(0, linkTreeNodes.length, ...flatTreeNodes.filter(every => every.level === 1))
@@ -1061,9 +1054,8 @@ export const STree = defineComponent({
           return
         }
 
-        nodes = nodes.filter(node => !parentTreeNode || parentTreeNodes.value !== node[replaceFieldKey])
-        nodes = nodes.filter(node => !(parentTreeNode ? parentTreeNode.children : linkTreeNodes).some(every => every.key === node[replaceFieldKey]))
         nodes = nodes.map(node => flatTreeNodes.find(every => every.key === node[replaceFieldKey])?.referenceSourceNode || node)
+        nodes = nodes.filter(node => !parentTreeNode || parentTreeNodes.value !== node[replaceFieldKey])
         nodes = nodes.map(node => toRaw(node))
 
         // fix bug: update isLeaf
@@ -1147,11 +1139,7 @@ export const STree = defineComponent({
           }
 
           if (helper.isNotEmptyObject(parentTreeNode)) {
-            const isLoadedNode = loadedKeys.includes(parentTreeNode.key)
-            const isLeafedNode = parentTreeNode.isLeaf = parentTreeNode.children.length === 0 && findAppendNodes.length === 0
-            const isAsyncedNode = !isLeafedNode && helper.isFunction(props.loadData)
-
-            isAsyncedNode && !isLoadedNode && loadedKeys.push(parentTreeNode.key)
+            parentTreeNode.isLeaf = parentTreeNode.children.length === 0 && findAppendNodes.length === 0
             parentTreeNode.referenceSourceNode[replaceFieldChildren] = parentTreeNode.referenceSourceNode[replaceFieldChildren] || []
             parentTreeNode.referenceSourceNode[replaceFieldChildren].push(...nodes)
             parentTreeNode.children.push(...findAppendNodes)
@@ -1167,7 +1155,7 @@ export const STree = defineComponent({
           }
 
           if (helper.isNotEmptyObject(parentTreeNode)) {
-            const presetTreeNodes = childTreeNodes.value[parentTreeNode.key] || []
+            const presetTreeNodes = (childTreeNodes.value[parentTreeNode.key] || []).filter(child => flatTreeNodes.some(every => every === child))
             flatTreeNodes.splice(0, flatTreeNodes.length, ...flatTreeNodes.filter(every => !presetTreeNodes.some(child => child === every)))
             flatTreeNodes.splice(flatTreeNodes.findIndex(every => every === parentTreeNode) + 1, 0, ...presetTreeNodes, ...flatAppendNodes)
             linkTreeNodes.splice(0, linkTreeNodes.length, ...flatTreeNodes.filter(every => every.level === 1))
@@ -2523,7 +2511,7 @@ export const STree = defineComponent({
         }
         event.stopPropagation()
       }
-      return isIconType(icon) ? <SIcon type={icon} style='cursor: pointer;' class={{ 'ant-tree-switcher-icon': icon === 'CaretDownOutlined' }} onClick={onClick}/> : null
+      return isIconType(icon) ? <SIcon type={icon} style='cursor: pointer;' class={{ [node.switcherCls]: icon === 'CaretDownOutlined' }} onClick={onClick}/> : null
     }
 
     const RenderTreeNodeIcon = (node: STreeTargetNode, ctx: SetupContext) => {
