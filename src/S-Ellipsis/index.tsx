@@ -25,8 +25,8 @@ export const SEllipsis = defineComponent({
       | 'rightTop'
       | 'rightBottom'
     >().def('top'),
-    mouseEnterDelay: VueTypes.number().def(0.2),
-    mouseLeaveDelay: VueTypes.number().def(0.2)
+    mouseEnterDelay: VueTypes.number().def(0.3),
+    mouseLeaveDelay: VueTypes.number().def(0.1)
   },
   emits: {
     'update:visible': (visible: boolean) => typeof visible === 'boolean'
