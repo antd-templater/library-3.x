@@ -8,6 +8,7 @@ import { SEditCellSelect } from './S-EditCell/select'
 import { SEditCellInput } from './S-EditCell/input'
 import { SIconSelect } from './S-IconSelect/index'
 import { SEllipsis } from './S-Ellipsis/index'
+import { STable } from './S-Table/index'
 import { STree } from './S-Tree/index'
 
 export {
@@ -21,6 +22,7 @@ export {
   SEditCellDatePicker,
   SIconSelect,
   SEllipsis,
+  STable,
   STree,
   SForm,
   SIcon
@@ -35,6 +37,7 @@ export default {
     app.component('SEditCellDatePicker', SEditCellDatePicker)
     app.component('SIconSelect', SIconSelect)
     app.component('SEllipsis', SEllipsis)
+    app.component('STable', STable)
     app.component('STree', STree)
     app.component('SForm', SForm)
     app.component('SIcon', SIcon)
