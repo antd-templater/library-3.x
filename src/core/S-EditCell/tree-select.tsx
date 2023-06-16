@@ -1,18 +1,30 @@
-import './textarea.less'
-import 'ant-design-vue/es/input/style/index.less'
+import './tree-select.less'
+import 'ant-design-vue/es/empty/style/index.less'
 import 'ant-design-vue/es/button/style/index.less'
+import 'ant-design-vue/es/tree-select/style/index.less'
 
 import * as VueTypes from 'vue-types'
 import SEllipsis from '../S-Ellipsis/index'
 import { CheckOutlined, EditOutlined } from '@ant-design/icons-vue'
-import { defineComponent, reactive, toRaw, watch, watchEffect, inject } from 'vue'
 import { defaultConfigProvider } from 'ant-design-vue/es/config-provider'
+import { SlotsType, defineComponent, reactive, toRaw, watch, watchEffect, inject } from 'vue'
+import { DefaultOptionType } from 'ant-design-vue/es/vc-tree-select/TreeSelect'
+import ATreeSelect from 'ant-design-vue/es/tree-select'
 import AButton from 'ant-design-vue/es/button'
-import AInput from 'ant-design-vue/es/input'
+import helper from '@/helper'
 
-export const SEditCellTextarea = defineComponent({
-  name: 'SEditCellTextarea',
-  inheritAttrs: false,
+export type SEditCellTreeSelectOptionType = DefaultOptionType
+
+type SEditCellDefineSlots = SlotsType<{
+  editableCellText: {
+    editable: boolean;
+    value: string;
+    text: string;
+  };
+}>
+
+export const SEditCellTreeSelect = defineComponent({
+  name: 'SEditCellTreeSelect',
   props: {
     text: VueTypes.string().def(''),
     edit: VueTypes.bool().def(true),
@@ -22,19 +34,24 @@ export const SEditCellTextarea = defineComponent({
     status: VueTypes.bool().def(false),
     tooltip: VueTypes.object<{ enable?: boolean, ellipsis?: boolean }>().def(() => ({ enable: true, ellipsis: false })),
     disabled: VueTypes.bool().def(false),
-    autoSize: VueTypes.oneOfType([VueTypes.bool(), VueTypes.object()]).def(true),
+    treeData: VueTypes.array<SEditCellTreeSelectOptionType>().def(() => ([])),
+    showArrow: VueTypes.bool().def(true),
     allowClear: VueTypes.bool().def(false),
+    showSearch: VueTypes.bool().def(false),
+    fieldNames: VueTypes.object<{ label?: string; value?: string; children?: string; }>().def(() => ({ label: 'title', value: 'value', children: 'children' })),
     placeholder: VueTypes.string().def(),
+    treeNodeFilterProp: VueTypes.string().def(),
+    treeDefaultExpandAll: VueTypes.bool().def(true),
     cellStyle: VueTypes.object().def(() => ({}))
   },
   emits: {
-    'edit': (proxy: { editable: boolean, value: string }) => true,
-    'blur': (proxy: { editable: boolean, value: string }) => true,
-    'focus': (proxy: { editable: boolean, value: string }) => true,
-    'change': (proxy: { editable: boolean, value: string }) => true,
-    'confirm': (proxy: { editable: boolean, value: string }) => true,
+    'edit': (proxy: { editable: boolean, value: any }) => true,
+    'blur': (proxy: { editable: boolean, value: any }) => true,
+    'focus': (proxy: { editable: boolean, value: any }) => true,
+    'change': (proxy: { editable: boolean, value: any }) => true,
+    'confirm': (proxy: { editable: boolean, value: any }) => true,
     'update:status': (status: boolean) => true,
-    'update:text': (text: string) => true
+    'update:text': (text: any) => true
   },
   setup(props, { emit, slots }) {
     const doEdit = (event: Event) => {
@@ -55,10 +72,9 @@ export const SEditCellTextarea = defineComponent({
       event.stopPropagation()
     }
 
-    const doChange = (event: Event) => {
+    const doChange = (value: any) => {
       emit('update:text', proxy.value)
       emit('change', toRaw(proxy))
-      event.stopPropagation()
     }
 
     const doConfirm = (event: Event) => {
@@ -105,16 +121,21 @@ export const SEditCellTextarea = defineComponent({
             class={['s-editable-cell-input-wrapper', { 'disabled-icon': props.disabled || !props.check }]}
             style={props.cellStyle.inputWrapper}
           >
-            <AInput.TextArea
+            <ATreeSelect
               v-model={[proxy.value, 'value']}
               class='s-editable-cell-input'
               style={props.cellStyle.input}
               size={provider.componentSize}
-              autoSize={props.autoSize}
+              treeData={props.treeData}
+              showArrow={props.showArrow}
               allowClear={props.allowClear}
+              showSearch={props.showSearch}
+              fieldNames={props.fieldNames}
               placeholder={props.placeholder}
-              onPressEnter={(event: Event) => doConfirm(event)}
-              onChange={(event: Event) => doChange(event)}
+              treeNodeFilterProp={props.treeNodeFilterProp}
+              treeDefaultExpandAll={props.treeDefaultExpandAll}
+              dropdownStyle={{ maxHeight: '400px', overflow: 'auto', padding: '0 18px 0 0', ...props.cellStyle.dropdown }}
+              onChange={(value: any) => doChange(value)}
               onFocus={(event: Event) => doFocus(event)}
               onBlur={(event: Event) => doBlur(event)}
             />
@@ -122,9 +143,17 @@ export const SEditCellTextarea = defineComponent({
           </div>
         )
       }
+
+      const text = props.text
+      const fieldLabel = props.fieldNames.label || 'label'
+      const fieldValue = props.fieldNames.value || 'value'
+      const fieldChildren = props.fieldNames.children || 'children'
+      const isPrimitive = typeof text === 'string' || typeof text === 'number'
+      const title = isPrimitive ? helper.takeLabelByKey(props.treeData, text, fieldLabel, fieldValue, fieldChildren) || props.text : undefined
+
       return (
         <SEllipsis
-          title={props.text ? String(props.text) : ''}
+          title={title || title === 0 ? String(title) : ''}
           ellipsis={props.tooltip.ellipsis === true}
           tooltip={props.tooltip.enable !== false}
         >
@@ -141,9 +170,15 @@ export const SEditCellTextarea = defineComponent({
     }
 
     const RenderEditableCellText = () => {
+      const text = props.text
+      const fieldLabel = props.fieldNames.label
+      const fieldValue = props.fieldNames.value
+      const fieldChildren = props.fieldNames.children
+      const isPrimitive = typeof text === 'string' || typeof text === 'number'
+
       return slots.editableCellText
         ? slots.editableCellText({ text: props.text, ...toRaw(proxy) })
-        : props.text
+        : isPrimitive ? helper.takeLabelByKey(props.treeData, text, fieldLabel, fieldValue, fieldChildren) || props.text : props.text
     }
 
     const provider = inject('configProvider', defaultConfigProvider)
@@ -171,7 +206,8 @@ export const SEditCellTextarea = defineComponent({
         <RenderEditableContainer/>
       </div>
     )
-  }
+  },
+  slots: {} as SEditCellDefineSlots
 })
 
-export default SEditCellTextarea
+export default SEditCellTreeSelect

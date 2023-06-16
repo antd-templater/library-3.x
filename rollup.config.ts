@@ -3,9 +3,12 @@ import { nodeResolve } from '@rollup/plugin-node-resolve'
 import typescript from 'rollup-plugin-typescript2'
 import commonjs from '@rollup/plugin-commonjs'
 import postcss from 'rollup-plugin-postcss'
-import babel from '@rollup/plugin-babel'
+import VueJsx from '@vitejs/plugin-vue-jsx'
 import alias from '@rollup/plugin-alias'
-import vue from 'rollup-plugin-vue'
+import Vue from '@vitejs/plugin-vue'
+
+// import babel from '@rollup/plugin-babel'
+// import vue from 'rollup-plugin-vue'
 
 /**
  * Rollup Configuration
@@ -13,19 +16,19 @@ import vue from 'rollup-plugin-vue'
 export default defineConfig([
   {
     input: [
-      'src/S-EditCell/input.tsx',
-      'src/S-EditCell/select.tsx',
-      'src/S-EditCell/textarea.tsx',
-      'src/S-EditCell/tree-select.tsx',
-      'src/S-EditCell/date-picker.tsx',
-      'src/S-IconSelect/index.tsx',
-      'src/S-Ellipsis/index.tsx',
-      'src/S-Table/index.tsx',
-      'src/S-Tree/index.tsx',
-      'src/S-Form/index.tsx',
-      'src/S-Icon/index.tsx',
-      'src/helper.ts',
-      'src/index.ts'
+      'src/core/S-EditCell/input.tsx',
+      'src/core/S-EditCell/select.tsx',
+      'src/core/S-EditCell/textarea.tsx',
+      'src/core/S-EditCell/tree-select.tsx',
+      'src/core/S-EditCell/date-picker.tsx',
+      'src/core/S-IconSelect/index.tsx',
+      'src/core/S-Ellipsis/index.tsx',
+      'src/core/S-Table/index.tsx',
+      'src/core/S-Tree/index.tsx',
+      'src/core/S-Form/index.tsx',
+      'src/core/S-Icon/index.tsx',
+      'src/core/helper.ts',
+      'src/core/index.ts'
     ],
     output: [
       {
@@ -34,7 +37,7 @@ export default defineConfig([
         hoistTransitiveImports: false,
         entryFileNames: chunk => {
           const id = chunk.facadeModuleId
-          const dir = id?.replace(/.+\/src\/(([^./]+)\/)?[^./]+(\.vue|\.tsx|\.ts)/, '$2')
+          const dir = id?.replace(/.+\/src\/core\/(([^./]+)\/)?[^./]+(\.vue|\.tsx|\.ts)/, '$2')
           return dir ? `${dir}/[name].mjs` : `[name].mjs`
         }
       },
@@ -45,7 +48,7 @@ export default defineConfig([
         hoistTransitiveImports: false,
         entryFileNames: chunk => {
           const id = chunk.facadeModuleId
-          const dir = id?.replace(/.+\/src\/(([^./]+)\/)?[^./]+(\.vue|\.tsx|\.ts)/, '$2')
+          const dir = id?.replace(/.+\/src\/core\/(([^./]+)\/)?[^./]+(\.vue|\.tsx|\.ts)/, '$2')
           return dir ? `${dir}/[name].cjs` : `[name].cjs`
         }
       }
@@ -54,7 +57,7 @@ export default defineConfig([
       alias({
         entries: [{
           find: '@',
-          replacement: new URL('./src', import.meta.url).pathname
+          replacement: new URL('./src/core', import.meta.url).pathname
         }]
       }),
       nodeResolve(),
@@ -62,12 +65,13 @@ export default defineConfig([
       typescript({
         check: false
       }),
-      vue(),
-      postcss(),
-      babel({
-        babelHelpers: 'bundled',
-        extensions: ['.js', 'tsx', '.vue']
-      })
+      Vue(),
+      VueJsx(),
+      postcss()
+      // babel({
+      //   babelHelpers: 'bundled',
+      //   extensions: ['.js', 'tsx', '.vue']
+      // })
     ],
     external: [
       /^vue(\/.+|$)/,

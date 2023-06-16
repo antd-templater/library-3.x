@@ -1,7 +1,7 @@
-import { NormalizeType } from './form.declare'
-import dayjs from '../dayjs'
+import { SFormNormalizeType } from './form.declare'
+import dayjs from '@/dayjs'
 
-export const Normalize: NormalizeType = {
+export const SFormNormalize: SFormNormalizeType = {
   ARate: {
     type: 'ARate',
     slot: '',
@@ -647,4 +647,4 @@ export const Normalize: NormalizeType = {
   }
 }
 
-export default Normalize
+export default SFormNormalize

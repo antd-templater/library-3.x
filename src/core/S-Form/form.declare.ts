@@ -1,6 +1,6 @@
 import { DeepReadonly, VNode, Ref } from 'vue'
 import { Rule } from 'ant-design-vue/es/form'
-import helper from '../helper'
+import helper from '@/helper'
 
 export type SFormType =
   | 'ARate'
@@ -157,7 +157,7 @@ export type SFormGroupPartItem = {
   show?: Ref<boolean> | boolean;
 }
 
-export type NormalizeType = Record<SFormType, SFormColItem>
-export type ValidatorRule = Omit<Rule, 'message' | 'validator'> & { message: string, validator: Rule['validator'] | string }
-export type FormGroupsDefiner = (config: Array<SFormGroupPartItem | SFormRowPartItem | SFormColPartItem>) => Array<SFormGroupPartItem | SFormRowPartItem | SFormColPartItem>
-export type ValidatorManager = Record<string, (options: ValidatorRule) => ValidatorRule>
+export type SFormNormalizeType = Record<SFormType, SFormColItem>
+export type SFormValidatorRule = Omit<Rule, 'message' | 'validator'> & { message: string, validator: Rule['validator'] | string }
+export type SFormGroupsDefiner = (config: Array<SFormGroupPartItem | SFormRowPartItem | SFormColPartItem>) => Array<SFormGroupPartItem | SFormRowPartItem | SFormColPartItem>
+export type SFormValidatorManager = Record<string, (options: SFormValidatorRule) => SFormValidatorRule>

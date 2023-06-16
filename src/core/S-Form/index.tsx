@@ -7,7 +7,7 @@ import * as VueTypes from 'vue-types'
 import Normalize from './form.normalize'
 import SFormComponent from './index.component'
 import { SFormGrid, SFormColItem, SFormColPartItem, SFormRowItem, SFormRowPartItem, SFormGroupItem, SFormGroupPartItem } from './form.declare'
-import { Ref, defineComponent, watchEffect, watch, shallowRef, toRaw, unref, ref, readonly, PropType, SetupContext, inject } from 'vue'
+import { SlotsType, Ref, defineComponent, watchEffect, watch, shallowRef, toRaw, unref, ref, readonly, PropType, inject } from 'vue'
 import { Rule, NamePath, InternalNamePath, ValidateOptions } from 'ant-design-vue/es/form/interface'
 import { defaultConfigProvider } from 'ant-design-vue/es/config-provider'
 import AForm, { FormItem as AFormItem } from 'ant-design-vue/es/form'
@@ -16,7 +16,7 @@ import ARow from 'ant-design-vue/es/row'
 import ACol from 'ant-design-vue/es/col'
 import helper from '@/helper'
 
-interface FormProps {
+interface SFormProps {
   grid: SFormGrid;
   model: Record<string, any>;
   border?: string | boolean;
@@ -24,23 +24,40 @@ interface FormProps {
   readonly: boolean;
 }
 
-interface GroupProps {
+interface SFormGroupProps {
   group: SFormGroupItem;
 }
 
-interface GroupsProps {
+interface SFormGroupsProps {
   groups: SFormGroupItem[];
 }
 
-interface GroupsRules<T> {
-  [key: string]: T | T[] | GroupsRules<T>
+interface SFormGroupsRules<T> {
+  [key: string]: T | T[] | SFormGroupsRules<T>
 }
 
-type FormWatchHandler = () => void
-type FormItemsHandler = (groups: Array<SFormColPartItem | SFormRowPartItem | SFormGroupPartItem>) => SFormColItem[]
-type FormGroupsHandler = (groups: Array<SFormGroupPartItem | SFormRowPartItem | SFormColPartItem>) => SFormGroupItem[]
-type FormModelHandler = (item: SFormColItem, options: { first: boolean, oldModel: Record<string, any>, newModel: Record<string, any>, refModel: Ref<Record<string, any>> }) => void
-type FormSyncHandler = (item: SFormColItem, options: { syncModel: Record<string, any>, refModel: Ref<Record<string, any>> }) => void
+type SFormWatchHandler = () => void
+type SFormItemsHandler = (groups: Array<SFormColPartItem | SFormRowPartItem | SFormGroupPartItem>) => SFormColItem[]
+type SFormGroupsHandler = (groups: Array<SFormGroupPartItem | SFormRowPartItem | SFormColPartItem>) => SFormGroupItem[]
+type SFormModelHandler = (item: SFormColItem, options: { first: boolean, oldModel: Record<string, any>, newModel: Record<string, any>, refModel: Ref<Record<string, any>> }) => void
+type SFormSyncHandler = (item: SFormColItem, options: { syncModel: Record<string, any>, refModel: Ref<Record<string, any>> }) => void
+
+type SFormDefineMethods = {
+  resetFields: (name?: NamePath) => void;
+  clearValidate: (name?: NamePath) => void;
+  getFieldsValue: (nameList?: InternalNamePath[] | true) => { [key: string]: any; };
+  validateFields: (nameList?: NamePath[] | string, options?: ValidateOptions) => Promise<{ [key: string]: any; }>;
+  validate: (nameList?: NamePath[] | string, options?: ValidateOptions) => Promise<{ [key: string]: any; }>;
+  scrollToField: (name: NamePath, options?: {}) => void;
+}
+
+type SFormDefineSlots = SlotsType<{
+  after: void;
+  before: void;
+  [slot: `s-header-${string}`]: { className: string; group: SFormGroupItem; disabled: boolean; readonly: boolean; };
+  [slot: `s-component-${string}`]: { col: SFormColItem; row: SFormRowItem; group: SFormGroupItem; attrs: Record<string, any>; slots: Record<string, any>; disabled: boolean; readonly: boolean; source: Record<string, any>; field: string; };
+  [slot: string]: any;
+}>
 
 export * from './form.declare'
 export * from './form.helper'
@@ -49,7 +66,7 @@ export const SForm = defineComponent({
   name: 'SForm',
   props: {
     rules: {
-      type: Object as PropType<GroupsRules<Rule>>,
+      type: Object as PropType<SFormGroupsRules<Rule>>,
       default: () => ({})
     },
     grid: VueTypes.object<Partial<SFormGrid>>().def(() => ({})),
@@ -62,7 +79,7 @@ export const SForm = defineComponent({
     spinning: VueTypes.bool().def(false)
   },
   setup(props, context) {
-    const watchHandler: FormWatchHandler = () => {
+    const watchHandler: SFormWatchHandler = () => {
       const propModel = props.modelValue
       const syncModel = unref(propModel)
 
@@ -75,7 +92,7 @@ export const SForm = defineComponent({
       }
     }
 
-    const itemsHandler: FormItemsHandler = parts => {
+    const itemsHandler: SFormItemsHandler = parts => {
       return (parts.filter(node => node.type !== 'AGroup' && node.type !== 'ARow') as SFormColPartItem[]).map(node => {
         return {
           type: node.type,
@@ -108,7 +125,7 @@ export const SForm = defineComponent({
       })
     }
 
-    const groupsHandler: FormGroupsHandler = parts => {
+    const groupsHandler: SFormGroupsHandler = parts => {
       const groups: SFormGroupItem[] = []
 
       let group: SFormGroupItem = {
@@ -204,7 +221,7 @@ export const SForm = defineComponent({
       return groups
     }
 
-    const modelHandler: FormModelHandler = (item, options) => {
+    const modelHandler: SFormModelHandler = (item, options) => {
       const oldModel = options.oldModel
       const newModel = options.newModel
       const refModel = options.refModel
@@ -239,7 +256,7 @@ export const SForm = defineComponent({
       }
     }
 
-    const syncHandler: FormSyncHandler = (item, options) => {
+    const syncHandler: SFormSyncHandler = (item, options) => {
       const refModel = options.refModel
       const syncModel = options.syncModel
 
@@ -280,13 +297,13 @@ export const SForm = defineComponent({
     const refModel: Ref<Record<string, any>> = ref({})
     const refGroups: Ref<SFormGroupItem[]> = ref([])
 
-    const GroupHeaderRender = (opt: FormProps & GroupProps, ctx: SetupContext) => {
+    const GroupHeaderRender = (opt: SFormProps & SFormGroupProps, ctx: typeof context) => {
       const group = opt.group
       const border = opt.border === 'no' || opt.border === false ? opt.border : unref(group.border)
       const disabled = [unref(opt.disabled), unref(group.disabled)].includes(true)
       const readonly = [unref(opt.readonly), unref(group.readonly)].includes(true)
       const className = 's-form-group-item-header-title'
-      const slotRender = ctx.slots[group.slot]
+      const slotRender = ctx.slots[`s-header-${group.slot.replace(/^s-header-/, '')}`]
 
       const attrs = {
         border: border !== false && border !== 'no'
@@ -309,7 +326,7 @@ export const SForm = defineComponent({
       return <div/>
     }
 
-    const GroupContentRender = (opt: FormProps & GroupProps, ctx: SetupContext) => {
+    const GroupContentRender = (opt: SFormProps & SFormGroupProps, ctx: typeof context) => {
       const handleRowBind = (row: SFormRowItem, group: SFormGroupItem) => {
         return {
           type: row.grid.type || group.grid.type || opt.grid.type,
@@ -397,7 +414,7 @@ export const SForm = defineComponent({
                         const disabled = opt.disabled
                         const readonly = opt.readonly
                         const provider = inject('configProvider', defaultConfigProvider)
-                        const slotRender = ctx.slots[col.slot]
+                        const slotRender = ctx.slots[`s-component-${col.slot.replace(/^s-component-/, '')}`]
 
                         const type = col.type
                         const slots = col.slots
@@ -435,7 +452,7 @@ export const SForm = defineComponent({
       )
     }
 
-    const GroupContainerRender = (opt: FormProps & GroupsProps, ctx: SetupContext) => {
+    const GroupContainerRender = (opt: SFormProps & SFormGroupsProps, ctx: typeof context) => {
       return (
         <div>
           {
@@ -494,8 +511,8 @@ export const SForm = defineComponent({
     context.expose({
       resetFields: (name?: NamePath) => form.value.resetFields(name),
       clearValidate: (name?: NamePath) => form.value.clearValidate(name),
-      scrollToField: (name: NamePath, options?: {}) => form.value.scrollToField(name, options),
       getFieldsValue: (nameList?: InternalNamePath[] | true) => form.value.getFieldsValue(nameList),
+      scrollToField: (name: NamePath, options?: ['auto' | 'smooth' | Function]) => form.value.scrollToField(name, options),
       validateFields: (nameList?: NamePath[] | string, options?: ValidateOptions) => form.value.validateFields(nameList, options),
       validate: (nameList?: NamePath[] | string, options?: ValidateOptions) => form.value.validate(nameList, options)
     })
@@ -535,7 +552,9 @@ export const SForm = defineComponent({
         </div>
       )
     }
-  }
+  },
+  slots: {} as SFormDefineSlots,
+  methods: {} as SFormDefineMethods
 })
 
 export default SForm

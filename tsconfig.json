@@ -21,12 +21,19 @@
     ],
     "paths": {
       "@/*": [
-        "src/*"
+        "src/core/*"
       ]
     }
   },
   "include": [
-    "src/S-*/**/*.tsx",
-    "src/index.ts"
+    "src/core/S-*/**/*.vue",
+    "src/core/S-*/**/*.tsx",
+    "src/core/S-*/**/*.ts",
+    "src/core/index.ts"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
   ]
 }

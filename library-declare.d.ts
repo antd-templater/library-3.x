@@ -18,12 +18,23 @@ declare module '@vue/runtime-core' {
   }
 }
 
-
 declare global {
+  export type SEditCellDatePicker = typeof import('./dist/S-EditCell/date-picker')['default']
+  export type SEditCellTreeSelect = typeof import('./dist/S-EditCell/tree-select')['default']
+  export type SEditCellTextarea = typeof import('./dist/S-EditCell/textarea')['default']
+  export type SEditCellSelect = typeof import('./dist/S-EditCell/select')['default']
+  export type SEditCellInput = typeof import('./dist/S-EditCell/input')['default']
+  export type SIconSelect = typeof import('./dist/S-IconSelect')['default']
+  export type SEllipsis = typeof import('./dist/S-Ellipsis')['default']
+  export type STable = typeof import('./dist/S-Table')['default']
+  export type STree = typeof import('./dist/S-Tree')['default']
+  export type SForm = typeof import('./dist/S-Form')['default']
+  export type SIcon = typeof import('./dist/S-Icon')['default']
+
   export type { SEditCellSelectValueType, SEditCellSelectOptionType } from './dist/S-EditCell/select'
   export type { SEditCellPanelMode, SEditCellPickerMode } from './dist/S-EditCell/date-picker'
   export type { SEditCellTreeSelectOptionType } from './dist/S-EditCell/tree-select'
-  export type {  SIconSelectOptionType } from './dist/S-IconSelect'
+  export type {  SIconSelectOptions } from './dist/S-IconSelect'
 
   export type  {
     SFormType, 
@@ -34,10 +45,10 @@ declare global {
     SFormRowItem, 
     SFormGroupItem,
     SFormGroupPartItem,
-    NormalizeType,
-    ValidatorRule,
-    FormGroupsDefiner,
-    ValidatorManager,
+    SFormNormalizeType,
+    SFormValidatorRule,
+    SFormGroupsDefiner,
+    SFormValidatorManager,
   } from './dist/S-Form'
 
   export type  {
@@ -63,8 +74,8 @@ declare global {
     STreeSourceNodes,
     STreeTargetNodes,
     STreeSpreadNodes,
-    SPartTargetNode,
-    SPartSourceNode,
+    STreePartTargetNode,
+    STreePartSourceNode,
   } from './dist/S-Tree'
 }
 

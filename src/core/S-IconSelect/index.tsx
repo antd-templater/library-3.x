@@ -8,10 +8,10 @@ import 'ant-design-vue/es/select/style/index.less'
 import SIcon, { isIconType } from '../S-Icon'
 import defaultOptions from './icons'
 
-export type SIconSelectOptionType = {
-  label?: any;
-  value?: string | number | null;
-  options?: Omit<SIconSelectOptionType, 'options'>[];
+export type SIconSelectOptions = {
+  label?: string;
+  value?: string | number;
+  options?: Omit<SIconSelectOptions, 'options'>[];
   disabled?: boolean;
   [name: string]: any;
 }
@@ -28,7 +28,7 @@ export const SIconSelect = defineComponent({
     showArrow: VueTypes.bool().def(true),
     multiple: VueTypes.bool().def(true),
     disabled: VueTypes.bool().def(false),
-    options: VueTypes.array<SIconSelectOptionType>().def(() => defaultOptions),
+    options: VueTypes.array<SIconSelectOptions>().def(() => defaultOptions),
     value: VueTypes.any<string | number | string[] | number[]>().def(),
     mode: VueTypes.string<'multiple' | 'tags'>().def(),
     size: VueTypes.string<'large' | 'middle' | 'small'>().def()

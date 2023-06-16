@@ -1,31 +1,27 @@
-import './date-picker.less'
-import 'ant-design-vue/es/empty/style/index.less'
+import './input.less'
+import 'ant-design-vue/es/input/style/index.less'
 import 'ant-design-vue/es/button/style/index.less'
-import 'ant-design-vue/es/date-picker/style/index.less'
 
 import * as VueTypes from 'vue-types'
 import SEllipsis from '../S-Ellipsis/index'
 import { CheckOutlined, EditOutlined } from '@ant-design/icons-vue'
-import { defineComponent, reactive, toRaw, watch, watchEffect, inject } from 'vue'
-import { PanelMode, PickerMode } from 'ant-design-vue/es/vc-picker/interface'
+import { SlotsType, defineComponent, reactive, toRaw, watch, watchEffect, inject } from 'vue'
 import { defaultConfigProvider } from 'ant-design-vue/es/config-provider'
-import ADatePicker from 'ant-design-vue/es/date-picker'
 import AButton from 'ant-design-vue/es/button'
-import dayjs from 'dayjs'
+import AInput from 'ant-design-vue/es/input'
 
-export type SEditCellPanelMode = PanelMode
-export type SEditCellPickerMode = PickerMode
+type SEditCellDefineSlots = SlotsType<{
+  editableCellText: {
+    editable: boolean;
+    value: string;
+    text: string;
+  };
+}>
 
-export const SEditCellDatePicker = defineComponent({
-  name: 'SEditCellDatePicker',
+export const SEditCellInput = defineComponent({
+  name: 'SEditCellInput',
   inheritAttrs: false,
   props: {
-    mode: VueTypes.string<SEditCellPanelMode>().def('date'),
-    picker: VueTypes.string<SEditCellPickerMode>().def('date'),
-    format: VueTypes.string().def(),
-    showTime: VueTypes.bool().def(false),
-    valueFormat: VueTypes.string().def(),
-    inputReadOnly: VueTypes.bool().def(false),
     text: VueTypes.string().def(''),
     edit: VueTypes.bool().def(true),
     check: VueTypes.bool().def(true),
@@ -48,18 +44,9 @@ export const SEditCellDatePicker = defineComponent({
     'update:text': (text: string) => true
   },
   setup(props, { emit, slots }) {
-    const doDayjs = (date: any) => {
-      return date ? dayjs(date) : null
-    }
-
-    const doFormat = (date: any) => {
-      return date ? dayjs(date).format(props.valueFormat || props.format || (props.showTime === true ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD')) : ''
-    }
-
     const doEdit = (event: Event) => {
       proxy.editable = true
       proxy.value = props.text
-      proxy.date = doDayjs(props.text)
       emit('update:status', true)
       emit('edit', toRaw(proxy))
       event.stopPropagation()
@@ -75,10 +62,10 @@ export const SEditCellDatePicker = defineComponent({
       event.stopPropagation()
     }
 
-    const doChange = (date: dayjs.Dayjs | string) => {
-      proxy.value = doFormat(proxy.date)
+    const doChange = (event: Event) => {
       emit('update:text', proxy.value)
       emit('change', toRaw(proxy))
+      event.stopPropagation()
     }
 
     const doConfirm = (event: Event) => {
@@ -125,19 +112,15 @@ export const SEditCellDatePicker = defineComponent({
             class={['s-editable-cell-input-wrapper', { 'disabled-icon': props.disabled || !props.check }]}
             style={props.cellStyle.inputWrapper}
           >
-            <ADatePicker
-              v-model={[proxy.date, 'value']}
+            <AInput
+              v-model={[proxy.value, 'value']}
               class='s-editable-cell-input'
               style={props.cellStyle.input}
               size={provider.componentSize}
-              mode={props.mode}
-              picker={props.picker}
-              format={props.format}
               allowClear={props.allowClear}
-              valueFormat={props.valueFormat}
               placeholder={props.placeholder}
-              inputReadOnly={props.inputReadOnly}
-              onChange={(date: dayjs.Dayjs | string) => doChange(date)}
+              onPressEnter={(event: Event) => doConfirm(event)}
+              onChange={(event: Event) => doChange(event)}
               onFocus={(event: Event) => doFocus(event)}
               onBlur={(event: Event) => doBlur(event)}
             />
@@ -145,7 +128,6 @@ export const SEditCellDatePicker = defineComponent({
           </div>
         )
       }
-
       return (
         <SEllipsis
           title={props.text ? String(props.text) : ''}
@@ -173,7 +155,6 @@ export const SEditCellDatePicker = defineComponent({
     const provider = inject('configProvider', defaultConfigProvider)
 
     const proxy = reactive({
-      date: doDayjs(props.text),
       value: props.text,
       editable: false
     })
@@ -184,7 +165,6 @@ export const SEditCellDatePicker = defineComponent({
     })
 
     watch(() => props.text, () => !props.disabled && props.synced && (proxy.value = props.text))
-    watch(() => props.text, () => !props.disabled && props.synced && (proxy.date = doDayjs(props.text)))
     watch(() => props.status, () => !props.disabled && props.status === false && (proxy.editable = false))
 
     return () => (
@@ -197,7 +177,8 @@ export const SEditCellDatePicker = defineComponent({
         <RenderEditableContainer/>
       </div>
     )
-  }
+  },
+  slots: {} as SEditCellDefineSlots
 })
 
-export default SEditCellDatePicker
+export default SEditCellInput

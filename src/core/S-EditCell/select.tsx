@@ -1,17 +1,30 @@
-import './input.less'
-import 'ant-design-vue/es/input/style/index.less'
+import './select.less'
+import 'ant-design-vue/es/empty/style/index.less'
 import 'ant-design-vue/es/button/style/index.less'
+import 'ant-design-vue/es/select/style/index.less'
 
 import * as VueTypes from 'vue-types'
 import SEllipsis from '../S-Ellipsis/index'
 import { CheckOutlined, EditOutlined } from '@ant-design/icons-vue'
-import { defineComponent, reactive, toRaw, watch, watchEffect, inject } from 'vue'
 import { defaultConfigProvider } from 'ant-design-vue/es/config-provider'
+import { SlotsType, defineComponent, reactive, toRaw, watch, watchEffect, inject } from 'vue'
+import ASelect, { SelectValue, DefaultOptionType } from 'ant-design-vue/es/select'
 import AButton from 'ant-design-vue/es/button'
-import AInput from 'ant-design-vue/es/input'
+import helper from '@/helper'
 
-export const SEditCellInput = defineComponent({
-  name: 'SEditCellInput',
+export type SEditCellSelectValueType = SelectValue
+export type SEditCellSelectOptionType = DefaultOptionType
+
+type SEditCellDefineSlots = SlotsType<{
+  editableCellText: {
+    editable: boolean;
+    value: string;
+    text: string;
+  };
+}>
+
+export const SEditCellSelect = defineComponent({
+  name: 'SEditCellSelect',
   inheritAttrs: false,
   props: {
     text: VueTypes.string().def(''),
@@ -22,18 +35,23 @@ export const SEditCellInput = defineComponent({
     status: VueTypes.bool().def(false),
     tooltip: VueTypes.object<{ enable?: boolean, ellipsis?: boolean }>().def(() => ({ enable: true, ellipsis: false })),
     disabled: VueTypes.bool().def(false),
+    options: VueTypes.array<SEditCellSelectOptionType>().def(() => ([])),
+    showArrow: VueTypes.bool().def(true),
     allowClear: VueTypes.bool().def(false),
+    showSearch: VueTypes.bool().def(false),
+    fieldNames: VueTypes.object<{ label?: string; value?: string; options?: string; }>().def(() => ({ label: 'label', value: 'value', options: 'options' })),
     placeholder: VueTypes.string().def(),
+    optionFilterProp: VueTypes.string().def(),
     cellStyle: VueTypes.object().def(() => ({}))
   },
   emits: {
-    'edit': (proxy: { editable: boolean, value: string }) => true,
-    'blur': (proxy: { editable: boolean, value: string }) => true,
-    'focus': (proxy: { editable: boolean, value: string }) => true,
-    'change': (proxy: { editable: boolean, value: string }) => true,
-    'confirm': (proxy: { editable: boolean, value: string }) => true,
-    'update:status': (status: boolean) => true,
-    'update:text': (text: string) => true
+    'edit': (proxy: { editable: boolean, value: SEditCellSelectValueType }) => true,
+    'blur': (proxy: { editable: boolean, value: SEditCellSelectValueType }) => true,
+    'focus': (proxy: { editable: boolean, value: SEditCellSelectValueType }) => true,
+    'change': (proxy: { editable: boolean, value: SEditCellSelectValueType }) => true,
+    'confirm': (proxy: { editable: boolean, value: SEditCellSelectValueType }) => true,
+    'update:text': (text: SEditCellSelectValueType) => true,
+    'update:status': (status: boolean) => true
   },
   setup(props, { emit, slots }) {
     const doEdit = (event: Event) => {
@@ -54,10 +72,9 @@ export const SEditCellInput = defineComponent({
       event.stopPropagation()
     }
 
-    const doChange = (event: Event) => {
+    const doChange = (option: SEditCellSelectOptionType) => {
       emit('update:text', proxy.value)
       emit('change', toRaw(proxy))
-      event.stopPropagation()
     }
 
     const doConfirm = (event: Event) => {
@@ -104,15 +121,19 @@ export const SEditCellInput = defineComponent({
             class={['s-editable-cell-input-wrapper', { 'disabled-icon': props.disabled || !props.check }]}
             style={props.cellStyle.inputWrapper}
           >
-            <AInput
+            <ASelect
               v-model={[proxy.value, 'value']}
               class='s-editable-cell-input'
               style={props.cellStyle.input}
               size={provider.componentSize}
+              options={props.options}
+              showArrow={props.showArrow}
               allowClear={props.allowClear}
+              showSearch={props.showSearch}
+              fieldNames={props.fieldNames}
               placeholder={props.placeholder}
-              onPressEnter={(event: Event) => doConfirm(event)}
-              onChange={(event: Event) => doChange(event)}
+              optionFilterProp={props.optionFilterProp}
+              onChange={(_: any, option: SEditCellSelectOptionType) => doChange(option)}
               onFocus={(event: Event) => doFocus(event)}
               onBlur={(event: Event) => doBlur(event)}
             />
@@ -120,9 +141,17 @@ export const SEditCellInput = defineComponent({
           </div>
         )
       }
+
+      const text = props.text
+      const fieldLabel = props.fieldNames.label || 'label'
+      const fieldValue = props.fieldNames.value || 'value'
+      const fieldOptions = props.fieldNames.options || 'options'
+      const isPrimitive = typeof text === 'string' || typeof text === 'number'
+      const title = isPrimitive ? helper.takeLabelByKey(props.options, text, fieldLabel, fieldValue, fieldOptions) || props.text : undefined
+
       return (
         <SEllipsis
-          title={props.text ? String(props.text) : ''}
+          title={title || title === 0 ? String(title) : ''}
           ellipsis={props.tooltip.ellipsis === true}
           tooltip={props.tooltip.enable !== false}
         >
@@ -139,9 +168,15 @@ export const SEditCellInput = defineComponent({
     }
 
     const RenderEditableCellText = () => {
+      const text = props.text
+      const fieldLabel = props.fieldNames.label
+      const fieldValue = props.fieldNames.value
+      const fieldOptions = props.fieldNames.options
+      const isPrimitive = typeof text === 'string' || typeof text === 'number'
+
       return slots.editableCellText
         ? slots.editableCellText({ text: props.text, ...toRaw(proxy) })
-        : props.text
+        : isPrimitive ? helper.takeLabelByKey(props.options, text, fieldLabel, fieldValue, fieldOptions) || props.text : props.text
     }
 
     const provider = inject('configProvider', defaultConfigProvider)
@@ -169,7 +204,8 @@ export const SEditCellInput = defineComponent({
         <RenderEditableContainer/>
       </div>
     )
-  }
+  },
+  slots: {} as SEditCellDefineSlots
 })
 
-export default SEditCellInput
+export default SEditCellSelect

@@ -1,9 +1,9 @@
-import helper from '../helper'
-import { ValidatorManager, FormGroupsDefiner } from './form.declare'
+import helper from '@/helper'
+import { SFormValidatorManager, SFormGroupsDefiner } from './form.declare'
 
-export const formGroupsDefiner: FormGroupsDefiner = groups => groups
+export const formGroupsDefiner: SFormGroupsDefiner = groups => groups
 
-export const formValidator: ValidatorManager = {
+export const formValidator: SFormValidatorManager = {
   password(rule) {
     const message = rule.message
     const pattern = rule.pattern

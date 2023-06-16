@@ -1,7 +1,12 @@
 import 'ant-design-vue/es/tooltip/style/index.less'
+import { SlotsType, defineComponent, ref } from 'vue'
 import ATooltip from 'ant-design-vue/es/tooltip'
-import { defineComponent, ref } from 'vue'
 import * as VueTypes from 'vue-types'
+
+type SEllipsisDefineSlots = SlotsType<{
+  title: void;
+  default: void;
+}>
 
 export const SEllipsis = defineComponent({
   name: 'SEllipsis',
@@ -80,7 +85,8 @@ export const SEllipsis = defineComponent({
 
       return slots.default?.()
     }
-  }
+  },
+  slots: {} as SEllipsisDefineSlots
 })
 
 export default SEllipsis

@@ -1,4 +1,4 @@
-import dayjs from './dayjs'
+import dayjs from '@/dayjs'
 
 export function itType(val: unknown) {
   return Object.prototype.toString.call(val).replace(/^\[[^\s\]]+\s*([^\s\]]+)]$/, '$1')

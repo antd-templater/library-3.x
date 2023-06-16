@@ -32,7 +32,7 @@ import ATreeSelect from 'ant-design-vue/es/tree-select'
 import AInputNumber from 'ant-design-vue/es/input-number'
 import AAutoComplete from 'ant-design-vue/es/auto-complete'
 
-const Components: Record<string, any> = {
+const AComponents: Record<string, any> = {
   ARate: ARate,
   AInput: AInput,
   ASwitch: ASwitch,
@@ -70,7 +70,7 @@ export const SFormComponent = defineComponent({
       const type = props.type
       const field = props.field
       const source = props.source
-      const Component = Components[type]
+      const Component = AComponents[type]
 
       let attrs: any = {}
 
