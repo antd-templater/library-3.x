@@ -7,9 +7,6 @@ import VueJsx from '@vitejs/plugin-vue-jsx'
 import alias from '@rollup/plugin-alias'
 import Vue from '@vitejs/plugin-vue'
 
-// import babel from '@rollup/plugin-babel'
-// import vue from 'rollup-plugin-vue'
-
 /**
  * Rollup Configuration
  */
@@ -68,10 +65,6 @@ export default defineConfig([
       Vue(),
       VueJsx(),
       postcss()
-      // babel({
-      //   babelHelpers: 'bundled',
-      //   extensions: ['.js', 'tsx', '.vue']
-      // })
     ],
     external: [
       /^vue(\/.+|$)/,
