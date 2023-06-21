@@ -52,9 +52,10 @@ declare global {
   } from './dist/S-Form'
 
   export type  {
+    STreeFilterProps,
+    STreeFieldNames,
     STreeSourceNode,
     STreeTargetNode,
-    STreeFieldNames,
     STreeLoadData,
     STreeMethoder,
     STreeTransformer,
