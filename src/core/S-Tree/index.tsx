@@ -1,5 +1,3 @@
-/* eslint-disable func-call-spacing */
-
 import './index.less'
 import 'ant-design-vue/es/tree/style/index.less'
 import 'ant-design-vue/es/spin/style/index.less'
@@ -811,7 +809,7 @@ export const STree = defineComponent({
           for (const node of flatTreeNodes) {
             const key = node.key
             const title = node.title.trim()
-            const regexp = new RegExp(`(.*)(${propFilterValue})(.*)`)
+            const regexp = new RegExp(`(.*?)(${propFilterValue})(.*)`)
 
             if (propFilterField === 'key') {
               const isMatched = propFilterValue === key || +propFilterValue === key
@@ -3057,7 +3055,7 @@ export const STree = defineComponent({
       }
     })
 
-    watch(() => [Stater.filterField, Stater.filterValue], () => Transformer.resetPropFilters())
+    watch(() => [Stater.filterField.value, Stater.filterValue.value], () => Transformer.resetPropFilters())
     watch(() => [...Stater.checkedKeys, ...Stater.outCheckedKeys], () => Transformer.resetPropCheckedKeys())
     watch(() => [...Stater.selectedKeys], () => Transformer.resetPropSelectedKeys())
     watch(() => [...Stater.expandedKeys], () => Transformer.resetPropExpandedKeys())

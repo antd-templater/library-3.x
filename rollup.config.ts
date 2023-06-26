@@ -60,7 +60,8 @@ export default defineConfig([
       nodeResolve(),
       commonjs(),
       typescript({
-        check: false
+        check: false,
+        exclude: ['**/_.tsx']
       }),
       Vue(),
       VueJsx(),
