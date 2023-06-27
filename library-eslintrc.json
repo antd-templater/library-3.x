@@ -1,5 +1,9 @@
 {
   "globals": {
+    "isIconType": false,
+    "forIconType": false,
+    "formValidator": false,
+    "formGroupsDefiner": false,
     "SEditCellDatePicker": false,
     "SEditCellTreeSelect": false,
     "SEditCellTextarea": false,

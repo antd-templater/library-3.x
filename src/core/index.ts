@@ -1,5 +1,5 @@
 import { App } from 'vue'
-import { SIcon, isIconType } from './S-Icon/index'
+import { SIcon, isIconType, forIconType } from './S-Icon/index'
 import { SForm, formGroupsDefiner, formValidator } from './S-Form/index'
 import { SEditCellDatePicker } from './S-EditCell/date-picker'
 import { SEditCellTreeSelect } from './S-EditCell/tree-select'
@@ -13,8 +13,10 @@ import { STree } from './S-Tree/index'
 
 export {
   isIconType,
-  formGroupsDefiner,
+  forIconType,
   formValidator,
+  formGroupsDefiner,
+
   SEditCellInput,
   SEditCellSelect,
   SEditCellTextarea,
@@ -30,6 +32,11 @@ export {
 
 export default {
   install(app: App) {
+    app.provide('isIconType', isIconType)
+    app.provide('forIconType', forIconType)
+    app.provide('formValidator', formValidator)
+    app.provide('formGroupsDefiner', formGroupsDefiner)
+
     app.component('SEditCellInput', SEditCellInput)
     app.component('SEditCellSelect', SEditCellSelect)
     app.component('SEditCellTextarea', SEditCellTextarea)

@@ -61,7 +61,7 @@ export default defineConfig([
       commonjs(),
       typescript({
         check: false,
-        exclude: ['**/_.tsx']
+        exclude: ['**/_.tsx', '**/def.*.tsx']
       }),
       Vue(),
       VueJsx(),

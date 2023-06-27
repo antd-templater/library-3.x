@@ -19,6 +19,11 @@ declare module '@vue/runtime-core' {
 }
 
 declare global {
+  export type isIconType = typeof import('./dist/S-Icon')['isIconType']
+  export type forIconType = typeof import('./dist/S-Icon')['forIconType']
+  export type formValidator = typeof import('./dist/S-Form')['formValidator']
+  export type formGroupsDefiner = typeof import('./dist/S-Form')['formGroupsDefiner']
+  
   export type SEditCellDatePicker = typeof import('./dist/S-EditCell/date-picker')['default']
   export type SEditCellTreeSelect = typeof import('./dist/S-EditCell/tree-select')['default']
   export type SEditCellTextarea = typeof import('./dist/S-EditCell/textarea')['default']
@@ -34,10 +39,10 @@ declare global {
   export type { SEditCellSelectValueType, SEditCellSelectOptionType } from './dist/S-EditCell/select'
   export type { SEditCellPanelMode, SEditCellPickerMode } from './dist/S-EditCell/date-picker'
   export type { SEditCellTreeSelectOptionType } from './dist/S-EditCell/tree-select'
-  export type {  SIconSelectOptions } from './dist/S-IconSelect'
+  export type { SIconSelectOptions } from './dist/S-IconSelect'
 
-  export type  {
-    SFormType, 
+  export type {
+    SFormType,
     SFormGridGutter,
     SFormGrid, 
     SFormColItem, 
