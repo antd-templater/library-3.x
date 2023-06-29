@@ -333,7 +333,7 @@ export const STable = defineComponent({
   emits: {
     'update:selectedRowKeys': (keys: Array<string | number>) => true,
     'update:expandedRowKeys': (keys: Array<string | number>) => true,
-    'sorter': (options: Array<{ field: string; value: '' | 'asc' | 'desc' | 'ascend' | 'descend'; }>) => true,
+    'sorter': (options: Array<{ field: string; value: 'asc' | 'desc' | 'ascend' | 'descend'; }>) => true,
     'filter': (options: Array<{ field: string; value: Array<string | number>; }>) => true,
     'expand': (keys: Array<string | number>) => true,
     'select': (keys: Array<string | number>) => true,
