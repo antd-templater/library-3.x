@@ -56,6 +56,39 @@ declare global {
     SFormValidatorManager,
   } from './dist/S-Form'
 
+
+  export type  {
+    STableLocaleNames,
+    STableFieldNames,
+    STableStickyType,
+    STableScrollType,
+    STableRecordType,
+    STablePagination,
+    STableLoadData,
+    STableTitleRender,
+    STableFooterRender,
+    STableSummaryRender,
+    STableExpanderRender,
+    STableHeaderCellRender,
+    STableBodyerCellRender,
+    STableFilterDropdownProps,
+    STableFilterDropdownRender,
+    STableFilterDropdownIconRender,
+    STableCustomHeaderRowAttrs,
+    STableCustomBodyerRowAttrs,
+    STableMergeColumnHandler,
+    STableApplyStagesHandler,
+    STablePartColumnType,
+    STableColumnType,
+    STableSize,
+    STableSortDirections,
+    STablePartStickyType,
+    STablePartScrollType,
+    STablePartPagination,
+    STablePartFieldNames,
+    STablePartLocaleNames
+  } from './dist/S-Table'
+
   export type  {
     STreeFilterProps,
     STreeFieldNames,
