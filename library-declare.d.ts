@@ -58,35 +58,30 @@ declare global {
 
 
   export type  {
-    STableLocaleNames,
-    STableFieldNames,
+    STableSettingsType,
     STableStickyType,
     STableScrollType,
-    STableRecordType,
     STablePagination,
-    STableLoadData,
-    STableTitleRender,
+    STableRecordType,
+    STableRowKey,
+    STableRowChildren,
+    STableLoadSources,
     STableFooterRender,
-    STableSummaryRender,
-    STableExpanderRender,
     STableHeaderCellRender,
     STableBodyerCellRender,
-    STableFilterDropdownProps,
-    STableFilterDropdownRender,
-    STableFilterDropdownIconRender,
+    STableBodyerExpandRender,
     STableCustomHeaderRowAttrs,
     STableCustomBodyerRowAttrs,
-    STableMergeColumnHandler,
-    STableApplyStagesHandler,
+    STableCustomBodyerRowStates,
     STablePartColumnType,
     STableColumnType,
+    STableKey,
     STableSize,
     STableSortDirections,
     STablePartStickyType,
     STablePartScrollType,
     STablePartPagination,
-    STablePartFieldNames,
-    STablePartLocaleNames
+    STableColumnTypes
   } from './dist/S-Table'
 
   export type  {
