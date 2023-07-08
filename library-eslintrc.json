@@ -33,6 +33,7 @@
     "STableCustomHeaderRowAttrs": false,
     "STableCustomBodyerRowAttrs": false,
     "STableCustomBodyerRowStates": false,
+    "STableWrapRecordTypes": false,
     "STablePartColumnType": false,
     "STableColumnType": false,
     "STableKey": false,

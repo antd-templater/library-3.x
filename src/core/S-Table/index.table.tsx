@@ -47,11 +47,11 @@ export interface STableRecordType {
 }
 
 export interface STableRowKey<RecordType = STableRecordType> {
-  (record: RecordType): string
+  (record: DeepReadonly<RecordType>): string
 }
 
-export interface STableRowChildren<RecordType = STableRecordType> {
-  (record: RecordType): string
+export interface STableTreeKey<RecordType = STableRecordType> {
+  (record: DeepReadonly<RecordType>): string
 }
 
 export interface STableLoadSources<RecordType = STableRecordType> {
@@ -67,6 +67,7 @@ export interface STableLoadSources<RecordType = STableRecordType> {
     total: number;
   };
 }
+
 export interface STableFooterRender<RecordType = STableRecordType> {
   (options: { currentDataSource: RecordType[]; pagination: { pageTotal: number; pageCount: number; pageSize: number; pageNo: number; }; }): VNode;
 }
@@ -92,7 +93,7 @@ export interface STableHeaderCellRender<RecordType = STableRecordType> {
 }
 
 export interface STableBodyerCellRender<RecordType = STableRecordType> {
-  (option: { value: any; record: RecordType; rowIndex: number; column: DeepReadonly<STableColumnType<RecordType>>; }): VNode | {
+  (option: { value: any; record: DeepReadonly<RecordType>; column: DeepReadonly<STableColumnType<RecordType>>; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: number[]; globalIndex: number; }): VNode | {
     props?: {
       align?: 'left' | 'center' | 'right';
       ellipsis?: boolean;
@@ -102,7 +103,7 @@ export interface STableBodyerCellRender<RecordType = STableRecordType> {
 }
 
 export interface STableBodyerExpandRender<RecordType = STableRecordType> {
-  (option: { record: RecordType; rowIndex: number; expanded: boolean; }): VNode;
+  (option: { record: DeepReadonly<RecordType>; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: number[]; globalIndex: number; expanded: boolean; }): VNode;
 }
 
 export interface STableCustomHeaderRowAttrs<RecordType = STableRecordType> {
@@ -110,15 +111,29 @@ export interface STableCustomHeaderRowAttrs<RecordType = STableRecordType> {
 }
 
 export interface STableCustomBodyerRowAttrs<RecordType = STableRecordType> {
-  (options: { record: RecordType; rowIndex: number; }): HTMLAttributes;
+  (options: { record: DeepReadonly<RecordType>; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: number[]; globalIndex: number; }): HTMLAttributes;
 }
 
 export interface STableCustomBodyerRowStates<RecordType = STableRecordType> {
-  (options: { record: RecordType; rowIndex: number; }): {
+  (options: { record: DeepReadonly<RecordType>; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: number[]; globalIndex: number; }): {
     draggable?: boolean;
     selectable?: boolean;
     expandable?: boolean;
   };
+}
+
+export interface STableWrapRecordType<RecordType = STableRecordType> {
+  key: STableKey;
+  childKeys: STableKey[];
+  parentKeys: STableKey[];
+  rowGroupLevel: number;
+  rowGroupIndex: number;
+  rowGroupIndexs: number[];
+  rowGlobalIndex: number;
+  rowRecordSource: DeepReadonly<RecordType>;
+  rowTreeKeyField: string;
+  rowKeyField: string;
+  rowHeight: number;
 }
 
 export interface STablePartColumnType<RecordType = STableRecordType> {
@@ -141,7 +156,7 @@ export interface STablePartColumnType<RecordType = STableRecordType> {
   defaultSorterValue?: 'ascend'| 'descend';
   sorterValueChange?: (option: { value: 'ascend'| 'descend' | ''; values: Array<{ field: string | string[]; value: 'ascend'| 'descend' }>; }) => void;
   customHeaderCellAttrs?: (option: { column: DeepReadonly<STableColumnType<RecordType>>; rowIndex: number; colIndex: number; }) => HTMLAttributes;
-  customBodyerCellAttrs?: (option: { record: RecordType, rowIndex: number; column: DeepReadonly<STableColumnType<RecordType>>; }) => HTMLAttributes;
+  customBodyerCellAttrs?: (option: { record: DeepReadonly<RecordType>, column: DeepReadonly<STableColumnType<RecordType>>; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: number[]; globalIndex: number; }) => HTMLAttributes;
   customHeaderCellRender?: STableHeaderCellRender;
   customBodyerCellRender?: STableBodyerCellRender;
 }
@@ -174,7 +189,7 @@ export interface STableColumnType<RecordType = STableRecordType> {
   activedSorterValues: Array<{ field: string | string[]; value: 'ascend'| 'descend' }>;
   sorterValueChange?: (option: { value: 'ascend'| 'descend' | ''; values: Array<{ field: string | string[]; value: 'ascend'| 'descend' }>; }) => void;
   customHeaderCellAttrs?: (option: { column: DeepReadonly<STableColumnType<RecordType>>; rowIndex: number; colIndex: number; }) => HTMLAttributes;
-  customBodyerCellAttrs?: (option: { record: RecordType, rowIndex: number; column: DeepReadonly<STableColumnType<RecordType>>; }) => HTMLAttributes;
+  customBodyerCellAttrs?: (option: { record: DeepReadonly<RecordType>, column: DeepReadonly<STableColumnType<RecordType>>; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: number[]; globalIndex: number; }) => HTMLAttributes;
   customHeaderCellRender?: STableHeaderCellRender;
   customBodyerCellRender?: STableBodyerCellRender;
 }
@@ -193,7 +208,7 @@ export const STable = defineComponent({
     size: VueTypes.string<STableSize>().def(undefined),
     layout: VueTypes.string<'auto' | 'fixed'>().def('auto'),
     rowKey: VueTypes.any<string | STableRowKey>().def('key'),
-    rowChildren: VueTypes.any<string | STableRowChildren>().def('children'),
+    treeKey: VueTypes.any<string | STableTreeKey>().def('children'),
     headerCell: VueTypes.func<STableHeaderCellRender>().def(undefined),
     bodyerCell: VueTypes.func<STableBodyerCellRender>().def(undefined),
     sticky: VueTypes.object<STablePartStickyType>().def(() => ({})),
@@ -203,14 +218,14 @@ export const STable = defineComponent({
     dataSource: VueTypes.array<STableRecordType>().def(() => []),
     pagination: VueTypes.any<STablePartPagination | boolean>().def(false),
     customHeaderRowAttrs: VueTypes.func<STableCustomHeaderRowAttrs>().def(undefined),
-    custombodyerRowAttrs: VueTypes.func<STableCustomBodyerRowAttrs>().def(undefined),
+    customBodyerRowAttrs: VueTypes.func<STableCustomBodyerRowAttrs>().def(undefined),
     customBodyerRowStates: VueTypes.func<STableCustomBodyerRowStates>().def(undefined),
-    selectedRowMode: VueTypes.string<'Radio' | 'Checkbox'>().def('Checkbox'),
+    selectedMode: VueTypes.string<'Radio' | 'Checkbox'>().def('Checkbox'),
     selectedRowKeys: VueTypes.array<STableKey>().def(() => []),
     expandedRowKeys: VueTypes.array<STableKey>().def(() => []),
+    selectedStrictly: VueTypes.bool().def(true),
     preserveSelectedRowKeys: VueTypes.bool().def(false),
     preserveExpandedRowKeys: VueTypes.bool().def(false),
-    defaultSelectStrictly: VueTypes.bool().def(true),
     defaultSelectAllRows: VueTypes.bool().def(false),
     defaultExpandAllRows: VueTypes.bool().def(false),
     columnSorterMultiple: VueTypes.bool().def(false),
@@ -235,28 +250,30 @@ export const STable = defineComponent({
   setup(props, context) {
     const watchDeepOptions = { immediate: true, deep: true }
     const renderRowPresets = reactive({ minBuffer: 5, maxBuffer: 10, minHeight: 32 })
-    const renderRowRanger = reactive({ rowOffset: [0, 0], rowBuffer: [0, 0] })
+    const renderRowRanger = reactive({ renderOffset: [0, ~~(window.innerHeight / renderRowPresets.minHeight)], renderBuffer: [0, 10] })
     const configProvider = inject('configProvider', defaultConfigProvider)
 
     const columnRowAttrs: Ref<HTMLAttributes[]> = ref([])
     const columnCellAttrs: Ref<HTMLAttributes[][]> = ref([])
     const columnCellRender: Ref<Array<Array<any>>> = ref([])
 
+    const dataColumns: Ref<DeepReadonly<STableColumnType>[]> = ref([])
+    const tempColumns: Ref<STablePartColumnType[]> = ref([])
     const listColumns: Ref<STableColumnTypes[]> = ref([])
     const treeColumns: Ref<STableColumnType[]> = ref([])
-    const dataColumns: Ref<STableColumnType[]> = ref([])
 
     const recordRowAttrs: Ref<Array<HTMLAttributes>> = ref([])
     const recordRowStates: Ref<ReturnType<STableCustomBodyerRowStates>[]> = ref([])
     const recordCellProps: Ref<Record<string, Exclude<ReturnType<STableBodyerCellRender>, VNode>['props']>[]> = ref([])
     const recordCellAttrs: Ref<Record<string, HTMLAttributes>[]> = ref([])
-    const recordCellRender: Ref<Record<string, any>[]> = ref([])
-    const recordDataSources: Ref<STableRecordType[]> = ref([])
+    const recordCellRender: Ref<Array<Record<string, any>>> = ref([])
+    const cacherDataSources: Ref<Array<STableRecordType>> = ref([])
+    const recordDataSources: Ref<STableWrapRecordType[]> = ref([])
     const recordDataRowKeys: Ref<STableKey[]> = ref([])
 
-    const columnSettingsAllKeys: Ref<string[]> = ref([])
-    const columnSettingsCheckKeys: Ref<string[]> = ref([])
-    const columnSettingsCheckTrees: Ref<STableSettingsType[]> = ref([])
+    const columnSettingAllKeys: Ref<string[]> = ref([])
+    const columnSettingAllTrees: Ref<STableSettingsType[]> = ref([])
+    const columnSettingCheckKeys: Ref<string[]> = ref([])
 
     const selectedRowKeys: Ref<Array<STableKey>> = ref(props.selectedRowKeys)
     const expandedRowKeys: Ref<Array<STableKey>> = ref(props.expandedRowKeys)
@@ -422,13 +439,31 @@ export const STable = defineComponent({
         }
 
         return 'auto'
+      }),
+      filterRangeSources: computed(() => {
+        const renderBufferOne = renderRowRanger.renderBuffer[0]
+        const renderBufferTwo = renderRowRanger.renderBuffer[1]
+        const renderOffsetOne = renderRowRanger.renderOffset[0]
+        const renderOffsetTwo = renderRowRanger.renderOffset[1]
+        const renderRangerOne = renderOffsetOne - renderBufferOne > 0 ? renderOffsetOne - renderBufferOne : 0
+        const renderRangerTwo = renderOffsetTwo + renderBufferTwo < recordDataSources.value.length ? renderOffsetTwo + renderBufferTwo : recordDataSources.value.length
+
+        const filterByExpaned = (record: STableWrapRecordType) => {
+          return record.parentKeys.every(key => expandedRowKeys.value.includes(key))
+        }
+
+        const filterByRangeBuf = (record: STableWrapRecordType, index: number) => {
+          return index >= renderRangerOne && index <= renderRangerTwo
+        }
+
+        return recordDataSources.value.filter(filterByExpaned).filter(filterByRangeBuf)
       })
     }
 
     const Methoder = {
-      isOwnProperty(obj: Record<string, any>, keys: string[]) {
+      isOwnProperty(obj: Record<string, any>, keys: Array<string | number>) {
         for (const key of keys) {
-          if (!helper.isNotEmptyObject(obj)) {
+          if (!helper.isNotEmptyArray(obj) && !helper.isNotEmptyObject(obj)) {
             return false
           }
 
@@ -436,10 +471,85 @@ export const STable = defineComponent({
             return false
           }
 
-          obj = obj[key] as any
+          obj = (obj as any)[key]
         }
 
-        return helper.isNotEmptyArray(keys)
+        return true
+      },
+
+      isColumnChanged(propColumns: STablePartColumnType[], tempColumns: STablePartColumnType[]) {
+        return !helper.toDeepEqual(propColumns, tempColumns, {
+          filter: [
+            'key',
+            'title',
+            'dataIndex',
+            'children',
+            'align',
+            'fixed',
+            'width',
+            'minWidth',
+            'maxWidth',
+            'resizable',
+            'ellipsis',
+            'colSpan',
+            'rowSpan',
+            'sorter',
+            'sorterField',
+            'sortDirections',
+            'defaultSorterValue',
+            'sorterValueChange',
+            'customHeaderCellAttrs',
+            'customBodyerCellAttrs',
+            'customHeaderCellRender',
+            'customBodyerCellRender'
+          ]
+        })
+      },
+
+      isSourcesChanged(propSources: STableRecordType[], cacheSources: STableRecordType[]) {
+        if (propSources.length !== cacheSources.length) {
+          return true
+        }
+
+        for (const index of propSources.keys()) {
+          let chenged = false
+          let treeKey = 'children'
+          let rowKey = 'key'
+
+          const propSource = propSources[index]
+          const cacheSource = propSources[index]
+
+          treeKey = helper.isFunction(props.treeKey) ? props.treeKey(propSource) : treeKey
+          treeKey = helper.isNotEmptyString(props.treeKey) ? props.treeKey : treeKey
+          treeKey = helper.isNotEmptyString(treeKey) ? treeKey.trim() : 'children'
+
+          rowKey = helper.isFunction(props.rowKey) ? props.rowKey(propSource) : rowKey
+          rowKey = helper.isNotEmptyString(props.rowKey) ? props.rowKey : rowKey
+          rowKey = helper.isNotEmptyString(rowKey) ? rowKey.trim() : 'key'
+
+          if (propSource[rowKey] !== cacheSource[rowKey]) {
+            return true
+          }
+
+          if (Array.isArray(propSource[treeKey]) && Array.isArray(cacheSource[treeKey])) {
+            chenged = Methoder.isSourcesChanged(propSource[treeKey], cacheSource[treeKey])
+          }
+
+          if (!Array.isArray(propSource[treeKey]) || !Array.isArray(cacheSource[treeKey])) {
+            const propChildrenIsNullable = propSource[treeKey] === null || propSource[treeKey] === undefined
+            const cacheChildrenIsNullable = cacheSource[treeKey] === null || cacheSource[treeKey] === undefined
+
+            if (!propChildrenIsNullable || !cacheChildrenIsNullable) {
+              chenged = propSource[treeKey] !== cacheSource[treeKey]
+            }
+          }
+
+          if (chenged) {
+            return true
+          }
+        }
+
+        return false
       },
 
       normalizeTreeColumns(columns: STablePartColumnType[], parent?: STableColumnType) {
@@ -487,31 +597,6 @@ export const STable = defineComponent({
         })
       },
 
-      normalizeTreeSettings(columns: STableColumnType[], settings?: STableSettingsType[]) {
-        settings = settings || columnSettingsCheckTrees.value
-
-        for (const column of columns) {
-          const setting = {
-            key: column.key,
-            title: column.title,
-            children: []
-          }
-
-          if (helper.isNotEmptyArray(column.children)) {
-            Methoder.normalizeTreeSettings(column.children, setting.children)
-          }
-
-          if (!columnSettingsAllKeys.value.includes(column.key)) {
-            columnSettingsCheckKeys.value.push(column.key)
-            columnSettingsAllKeys.value.push(column.key)
-          }
-
-          settings.push(setting)
-        }
-
-        return settings
-      },
-
       normalizeListColumns(columns: STableColumnType[], arrays: STableColumnTypes[] = []) {
         for (const column of columns) {
           const colIndex = column.colIndex - 1
@@ -528,33 +613,38 @@ export const STable = defineComponent({
         return arrays
       },
 
-      normalizeListSources(sources: STableRecordType[], records: STableRecordType[] = []) {
-        for (const record of sources) {
-          let childrenField = 'children'
-          let childrenValue = null
+      normalizeTreeSetting(columns: STableColumnType[], settings?: STableSettingsType[]) {
+        settings = settings || columnSettingAllTrees.value
 
-          records.push(record)
-
-          childrenField = helper.isFunction(props.rowChildren) ? props.rowChildren(record) || 'children' : childrenField
-          childrenField = helper.isNotEmptyString(props.rowChildren) ? props.rowChildren : childrenField
-          childrenField = helper.isNotEmptyString(childrenField) ? childrenField.trim() : 'children'
-          childrenValue = record[childrenField]
-
-          if (helper.isNotEmptyArray(childrenValue)) {
-            Methoder.normalizeListSources(childrenValue, records)
+        for (const column of columns) {
+          const setting = {
+            key: column.key,
+            title: column.title,
+            children: []
           }
+
+          if (helper.isNotEmptyArray(column.children)) {
+            Methoder.normalizeTreeSetting(column.children, setting.children)
+          }
+
+          if (!columnSettingAllKeys.value.includes(column.key)) {
+            columnSettingCheckKeys.value.push(column.key)
+            columnSettingAllKeys.value.push(column.key)
+          }
+
+          settings.push(setting)
         }
 
-        return records
+        return settings
       },
 
       normalizeDataColumns(arrays: STableColumnTypes[]) {
-        const dataColumns: STableColumnType[] = []
+        const dataColumns: DeepReadonly<STableColumnType>[] = []
 
         for (const columns of arrays) {
           for (const column of columns) {
             if (column.rowIndex === column.colMax) {
-              dataColumns[column.colIndex] = column
+              dataColumns[column.colIndex] = readonly(column)
             }
           }
         }
@@ -562,7 +652,103 @@ export const STable = defineComponent({
         return dataColumns
       },
 
+      normalizeTempColumns(arrays: STablePartColumnType[]) {
+        const tempColumns: STablePartColumnType[] = []
+
+        for (const column of arrays) {
+          tempColumns.push({
+            ...column,
+            children: helper.isArray(column.children)
+              ? Methoder.normalizeTempColumns(column.children)
+              : []
+          })
+        }
+
+        return tempColumns
+      },
+
+      normalizeRecordSources(sources: STableRecordType[], wrapRecords: STableWrapRecordType[] = [], parent?: STableWrapRecordType) {
+        const TempCacher = {
+          offset: 0,
+          childKeys: [] as STableKey[]
+        }
+
+        for (const [index, source] of sources.entries()) {
+          let rowKey = 'key'
+          let treeKey = 'children'
+
+          TempCacher.offset = TempCacher.offset + index
+
+          rowKey = helper.isFunction(props.rowKey) ? props.rowKey(source) : rowKey
+          rowKey = helper.isNotEmptyString(props.rowKey) ? props.rowKey : rowKey
+          rowKey = helper.isNotEmptyString(rowKey) ? rowKey.trim() : 'key'
+
+          treeKey = helper.isFunction(props.treeKey) ? props.treeKey(source) : treeKey
+          treeKey = helper.isNotEmptyString(props.treeKey) ? props.treeKey : treeKey
+          treeKey = helper.isNotEmptyString(treeKey) ? treeKey.trim() : 'children'
+
+          const cacheRecord = recordDataSources.value.find(wrap => wrap.rowRecordSource === source)
+
+          const wrapRecord: STableWrapRecordType = {
+            key: source[rowKey],
+            childKeys: [],
+            parentKeys: parent ? [...parent.parentKeys, parent.key] : [],
+            rowGroupLevel: parent ? parent.rowGroupLevel + 1 : 1,
+            rowGroupIndex: parent ? parent.rowGroupIndex : index,
+            rowGroupIndexs: parent ? [...parent.rowGroupIndexs, index] : [index],
+            rowGlobalIndex: TempCacher.offset,
+            rowRecordSource: readonly(source),
+            rowTreeKeyField: treeKey,
+            rowKeyField: rowKey,
+            rowHeight: cacheRecord ? cacheRecord.rowHeight : renderRowPresets.minHeight
+          }
+
+          if (helper.isNotEmptyArray(source[wrapRecord.rowTreeKeyField])) {
+            const trees = Methoder.normalizeRecordSources(source[wrapRecord.rowTreeKeyField], wrapRecords, wrapRecord)
+            const childKeys = [...trees.map(tree => tree.key), ...trees.map(tree => tree.childKeys).flat()]
+
+            TempCacher.offset = wrapRecord.rowGlobalIndex + childKeys.length
+            TempCacher.childKeys = [...TempCacher.childKeys, ...childKeys]
+            wrapRecord.childKeys = childKeys
+          }
+
+          if (!recordDataRowKeys.value.includes(wrapRecord.key)) {
+            props.defaultSelectAllRows && !selectedRowKeys.value.includes(wrapRecord.key) && selectedRowKeys.value.push(wrapRecord.key)
+            props.defaultExpandAllRows && !expandedRowKeys.value.includes(wrapRecord.key) && expandedRowKeys.value.push(wrapRecord.key)
+            recordDataRowKeys.value.push(wrapRecord.key)
+          }
+
+          wrapRecords.push(wrapRecord)
+        }
+
+        return wrapRecords
+      },
+
+      normalizeCacherSources(records: STableRecordType[] = []) {
+        const cacherColumns: STableRecordType[] = []
+
+        for (const record of records) {
+          const cacheRecord = recordDataSources.value.find(wrap => wrap.rowRecordSource === record)
+          const cacheTreeKey = cacheRecord ? cacheRecord.rowTreeKeyField : 'children'
+
+          cacherColumns.push({
+            ...record,
+            [cacheTreeKey]: helper.isArray(record[cacheTreeKey])
+              ? Methoder.normalizeTempColumns(record[cacheTreeKey])
+              : record[cacheTreeKey]
+          })
+        }
+
+        return cacherColumns
+      },
+
       normalizeInitColumns(arrays: STableColumnTypes[]) {
+        for (const [rowIndex, columns] of arrays.entries()) {
+          if (helper.isFunction(props.customHeaderRowAttrs)) {
+            columnRowAttrs.value[rowIndex] = columnRowAttrs.value[rowIndex] || props.customHeaderRowAttrs({ columns: readonly(columns), rowIndex })
+          }
+        }
+
         for (const [rowIndex, columns] of arrays.entries()) {
           for (const [colIndex, column] of columns.entries()) {
             column.colSpan = Number.isFinite(column.colSpan) ? column.colSpan : column.colMax
@@ -570,95 +756,158 @@ export const STable = defineComponent({
 
             if (helper.isFunction(column.customHeaderCellAttrs)) {
               columnCellAttrs.value[rowIndex] = columnCellAttrs.value[rowIndex] || []
-              columnCellAttrs.value[rowIndex][colIndex] = column.customHeaderCellAttrs({ column: readonly(column), rowIndex, colIndex })
+              columnCellAttrs.value[rowIndex][colIndex] = columnCellAttrs.value[rowIndex][colIndex] || column.customHeaderCellAttrs({ column: readonly(column), rowIndex, colIndex })
             }
 
             if (helper.isFunction(column.customHeaderCellRender)) {
-              const renderNode = column.customHeaderCellRender({ title: column.title, column: readonly(column), rowIndex, colIndex })
-              columnCellRender.value[rowIndex] = helper.isArray(columnCellRender.value[rowIndex]) ? columnCellRender.value[rowIndex] : []
-              columnCellRender.value[rowIndex][colIndex] = helper.isObject(renderNode) ? (isVNode(renderNode) ? renderNode : renderNode.children) : undefined
+              if (!Methoder.isOwnProperty(columnCellRender.value, [rowIndex, colIndex])) {
+                const renderNode = column.customHeaderCellRender({ title: column.title, column: readonly(column), rowIndex, colIndex })
+                columnCellRender.value[rowIndex] = helper.isArray(columnCellRender.value[rowIndex]) ? columnCellRender.value[rowIndex] : []
+                columnCellRender.value[rowIndex][colIndex] = helper.isObject(renderNode) ? (isVNode(renderNode) ? renderNode : renderNode.children) : undefined
 
-              if (helper.isObject(renderNode) && !isVNode(renderNode) && helper.isNotEmptyObject(renderNode.props)) {
-                column.align = Object.hasOwn(renderNode.props, 'align') ? renderNode.props.align || 'left' : column.align
-                column.fixed = Object.hasOwn(renderNode.props, 'fixed') ? renderNode.props.fixed || false : column.fixed
-                column.width = Object.hasOwn(renderNode.props, 'width') ? renderNode.props.width || undefined : column.width
-                column.minWidth = Object.hasOwn(renderNode.props, 'minWidth') ? renderNode.props.minWidth || undefined : column.minWidth
-                column.maxWidth = Object.hasOwn(renderNode.props, 'maxWidth') ? renderNode.props.maxWidth || undefined : column.maxWidth
-                column.resizable = Object.hasOwn(renderNode.props, 'resizable') ? renderNode.props.resizable || false : column.resizable
-                column.ellipsis = Object.hasOwn(renderNode.props, 'ellipsis') ? renderNode.props.ellipsis || false : column.ellipsis
-                column.colSpan = Object.hasOwn(renderNode.props, 'colSpan') ? helper.isFiniteNumber(renderNode.props.colSpan) ? renderNode.props.colSpan : column.colSpan : column.colSpan
-                column.rowSpan = Object.hasOwn(renderNode.props, 'rowSpan') ? helper.isFiniteNumber(renderNode.props.rowSpan) ? renderNode.props.rowSpan : column.rowSpan : column.rowSpan
-                column.sorter = Object.hasOwn(renderNode.props, 'sorter') ? renderNode.props.sorter || false : column.sorter
-                column.sorterField = Object.hasOwn(renderNode.props, 'sorterField') ? renderNode.props.sorterField || '' : column.sorterField
-                column.sortDirections = Object.hasOwn(renderNode.props, 'sortDirections') ? renderNode.props.sortDirections || undefined : column.sortDirections
+                if (helper.isObject(renderNode) && !isVNode(renderNode) && helper.isNotEmptyObject(renderNode.props)) {
+                  column.align = Object.hasOwn(renderNode.props, 'align') ? renderNode.props.align || 'left' : column.align
+                  column.fixed = Object.hasOwn(renderNode.props, 'fixed') ? renderNode.props.fixed || false : column.fixed
+                  column.width = Object.hasOwn(renderNode.props, 'width') ? renderNode.props.width || undefined : column.width
+                  column.minWidth = Object.hasOwn(renderNode.props, 'minWidth') ? renderNode.props.minWidth || undefined : column.minWidth
+                  column.maxWidth = Object.hasOwn(renderNode.props, 'maxWidth') ? renderNode.props.maxWidth || undefined : column.maxWidth
+                  column.resizable = Object.hasOwn(renderNode.props, 'resizable') ? renderNode.props.resizable || false : column.resizable
+                  column.ellipsis = Object.hasOwn(renderNode.props, 'ellipsis') ? renderNode.props.ellipsis || false : column.ellipsis
+                  column.colSpan = Object.hasOwn(renderNode.props, 'colSpan') ? helper.isFiniteNumber(renderNode.props.colSpan) ? renderNode.props.colSpan : column.colSpan : column.colSpan
+                  column.rowSpan = Object.hasOwn(renderNode.props, 'rowSpan') ? helper.isFiniteNumber(renderNode.props.rowSpan) ? renderNode.props.rowSpan : column.rowSpan : column.rowSpan
+                  column.sorter = Object.hasOwn(renderNode.props, 'sorter') ? renderNode.props.sorter || false : column.sorter
+                  column.sorterField = Object.hasOwn(renderNode.props, 'sorterField') ? renderNode.props.sorterField || '' : column.sorterField
+                  column.sortDirections = Object.hasOwn(renderNode.props, 'sortDirections') ? renderNode.props.sortDirections || undefined : column.sortDirections
+                }
               }
             }
-          }
-
-          if (helper.isFunction(props.customHeaderRowAttrs)) {
-            columnRowAttrs.value[rowIndex] = props.customHeaderRowAttrs({ columns: readonly(columns), rowIndex })
           }
         }
 
         return arrays
       },
 
-      normalizeInitSources(sources: STableRecordType[]) {
-        for (const column of dataColumns.value) {
-          for (const [rowIndex, record] of sources.entries()) {
-            if (helper.isFunction(column.customBodyerCellAttrs)) {
-              recordCellAttrs.value[rowIndex] = recordCellAttrs.value[rowIndex] || []
-              recordCellAttrs.value[rowIndex][column.key] = column.customBodyerCellAttrs({ record, rowIndex, column: readonly(column) })
-            }
+      normalizeInitSources(sources: STableWrapRecordType[]) {
+        for (const option of sources) {
+          const record = option.rowRecordSource
+          const rowIndex = option.rowGroupIndex
+          const groupLevel = option.rowGroupLevel
+          const groupIndex = option.rowGroupIndex
+          const groupIndexs = option.rowGroupIndexs
+          const globalIndex = option.rowGlobalIndex
 
-            if (helper.isFunction(column.customBodyerCellRender)) {
-              let index = 0
-              let value = helper.isArray(column.dataIndex)
-                ? helper.isObject(record) ? record : undefined
-                : record[column.dataIndex]
-
-              if (helper.isArray(column.dataIndex)) {
-                while (index < column.dataIndex.length) {
-                  if (!helper.isObject(value)) {
-                    value = undefined
-                    break
-                  }
-                  value = value[column.dataIndex[index++]]
-                }
-              }
-
-              const renderNode = column.customBodyerCellRender({ value, record, rowIndex, column: readonly(column) })
-              recordCellProps.value[rowIndex] = helper.isObject(recordCellProps.value[rowIndex]) ? recordCellProps.value[rowIndex] : {}
-              recordCellRender.value[rowIndex] = helper.isObject(columnCellRender.value[rowIndex]) ? columnCellRender.value[rowIndex] : {}
-              recordCellRender.value[rowIndex][column.key] = helper.isObject(renderNode) ? (isVNode(renderNode) ? renderNode : renderNode.children) : undefined
-              recordCellProps.value[rowIndex][column.key] = helper.isObject(renderNode) ? (!isVNode(renderNode) && renderNode.props || undefined) : undefined
-            }
-          }
-        }
-
-        for (const [rowIndex, record] of sources.entries()) {
-          if (helper.isFunction(props.custombodyerRowAttrs)) {
-            recordRowAttrs.value[rowIndex] = props.custombodyerRowAttrs({ record, rowIndex })
+          if (helper.isFunction(props.customBodyerRowAttrs)) {
+            recordRowAttrs.value[globalIndex] = recordRowAttrs.value[globalIndex] || props.customBodyerRowAttrs({ record, rowIndex, groupIndex, groupLevel, groupIndexs, globalIndex })
           }
 
           if (helper.isFunction(props.customBodyerRowStates)) {
-            recordRowStates.value[rowIndex] = props.customBodyerRowStates({ record, rowIndex })
+            recordRowStates.value[globalIndex] = recordRowStates.value[globalIndex] || props.customBodyerRowStates({ record, rowIndex, groupIndex, groupLevel, groupIndexs, globalIndex })
           }
+        }
 
-          if (props.defaultSelectAllRows || props.defaultExpandAllRows) {
-            let keyField = 'key'
-            let keyValue = ''
+        for (const column of dataColumns.value) {
+          const columnKey = column.key
+          const dataIndex = column.dataIndex
 
-            keyField = helper.isFunction(props.rowKey) ? props.rowKey(record) || 'key' : keyField
-            keyField = helper.isNotEmptyString(props.rowKey) ? props.rowKey : keyField
-            keyField = helper.isNotEmptyString(keyField) ? keyField.trim() : 'key'
-            keyValue = record[keyField] || ''
+          for (const option of sources) {
+            const record = option.rowRecordSource
+            const rowIndex = option.rowGroupIndex
+            const groupLevel = option.rowGroupLevel
+            const groupIndex = option.rowGroupIndex
+            const groupIndexs = option.rowGroupIndexs
+            const globalIndex = option.rowGlobalIndex
 
-            if (!recordDataRowKeys.value.includes(keyValue)) {
-              props.defaultSelectAllRows && !selectedRowKeys.value.includes(keyValue) && selectedRowKeys.value.push(keyValue)
-              props.defaultExpandAllRows && !expandedRowKeys.value.includes(keyValue) && expandedRowKeys.value.push(keyValue)
+            if (helper.isFunction(column.customBodyerCellAttrs)) {
+              recordCellAttrs.value[globalIndex] = recordCellAttrs.value[globalIndex] || []
+              recordCellAttrs.value[globalIndex][columnKey] = recordCellAttrs.value[globalIndex][columnKey] || column.customBodyerCellAttrs({ record, column, rowIndex, groupIndex, groupLevel, groupIndexs, globalIndex })
+            }
+
+            if (helper.isFunction(column.customBodyerCellRender)) {
+              if (!Methoder.isOwnProperty(recordCellProps.value, [globalIndex, columnKey])) {
+                let index = 0
+                let value
+
+                value = helper.isArray(dataIndex) && helper.isObject(option.rowRecordSource) ? record[dataIndex[index++]] : value
+                value = helper.isNotEmptyString(dataIndex) ? record[dataIndex] : value
+
+                if (helper.isArray(dataIndex)) {
+                  while (index < dataIndex.length) {
+                    if (!helper.isArray(value) || !helper.isObject(value)) {
+                      value = undefined
+                      break
+                    }
+                    value = value[column.dataIndex[index++]]
+                  }
+                }
+
+                const renderNode = column.customBodyerCellRender({
+                  value,
+                  record,
+                  column,
+                  rowIndex,
+                  groupIndex,
+                  groupLevel,
+                  groupIndexs,
+                  globalIndex
+                })
+
+                recordCellProps.value[globalIndex] = helper.isObject(recordCellProps.value[globalIndex]) ? recordCellProps.value[globalIndex] : {}
+                recordCellRender.value[globalIndex] = helper.isObject(columnCellRender.value[globalIndex]) ? columnCellRender.value[globalIndex] : {}
+                recordCellRender.value[globalIndex][columnKey] = helper.isObject(renderNode) ? (isVNode(renderNode) ? renderNode : renderNode.children) : undefined
+                recordCellProps.value[globalIndex][columnKey] = helper.isObject(renderNode) ? (!isVNode(renderNode) && renderNode.props || undefined) : undefined
+              }
             }
           }
+        }
+      },
+
+      updatePropSelectedRowKeys(keys: STableKey[]) {
+        keys = Array.from(new Set(keys))
+
+        if (!keys.every(key => props.selectedRowKeys.includes(key)) || !props.selectedRowKeys.every(key => keys.includes(key))) {
+          context.emit('update:selectedRowKeys', keys)
+        }
+      },
+
+      updatePropExpandedRowKeys(keys: STableKey[]) {
+        keys = Array.from(new Set(keys))
+
+        if (!keys.every(key => props.expandedRowKeys.includes(key)) || !props.expandedRowKeys.every(key => keys.includes(key))) {
+          context.emit('update:expandedRowKeys', keys)
+        }
+      },
+
+      updateSelectedRowKeys(keys: STableKey[]) {
+        keys = Array.from(new Set(keys))
+
+        if (!keys.every(key => selectedRowKeys.value.includes(key)) || !selectedRowKeys.value.every(key => keys.includes(key))) {
+          selectedRowKeys.value = keys
+          Methoder.cleanSelectedRowKeys()
+        }
+      },
+
+      updateExpandedRowKeys(keys: STableKey[]) {
+        keys = Array.from(new Set(keys))
+
+        if (!keys.every(key => expandedRowKeys.value.includes(key)) || !expandedRowKeys.value.every(key => keys.includes(key))) {
+          expandedRowKeys.value = keys
+          Methoder.cleanExpandedRowKeys()
+        }
+      },
+
+      cleanSelectedRowKeys() {
+        if (props.selectedMode === 'Radio' && selectedRowKeys.value.length > 1) {
+          selectedRowKeys.value = selectedRowKeys.value.filter(key => props.preserveSelectedRowKeys || recordDataRowKeys.value.includes(key)).filter((_, index) => index < 1)
+        }
+
+        if (!props.preserveSelectedRowKeys && !selectedRowKeys.value.every(key => recordDataRowKeys.value.includes(key))) {
+          selectedRowKeys.value = selectedRowKeys.value.filter(key => recordDataRowKeys.value.includes(key))
+        }
+      },
+
+      cleanExpandedRowKeys() {
+        if (!props.preserveExpandedRowKeys && !expandedRowKeys.value.every(key => recordDataRowKeys.value.includes(key))) {
+          expandedRowKeys.value = expandedRowKeys.value.filter(key => recordDataRowKeys.value.includes(key))
         }
       },
 
@@ -669,6 +918,34 @@ export const STable = defineComponent({
           Optionser.scrollResizeWidth.value = clientRect ? clientRect.width : 0
           Optionser.scrollResizeHeight.value = clientRect ? clientRect.height : 0
         }
+      },
+
+      forceUpdate() {
+        // Update Columns
+        columnRowAttrs.value = []
+        columnCellAttrs.value = []
+        columnCellRender.value = []
+        columnSettingAllTrees.value = []
+        treeColumns.value = Methoder.normalizeTreeColumns(props.columns)
+        listColumns.value = Methoder.normalizeListColumns(treeColumns.value)
+        dataColumns.value = Methoder.normalizeDataColumns(listColumns.value)
+        tempColumns.value = Methoder.normalizeTempColumns(props.columns)
+        Methoder.normalizeTreeSetting(treeColumns.value)
+        Methoder.normalizeInitColumns(listColumns.value)
+
+        // Update DataSources
+        recordRowAttrs.value = []
+        recordRowStates.value = []
+        recordCellProps.value = []
+        recordCellAttrs.value = []
+        recordCellRender.value = []
+        recordDataSources.value = Methoder.normalizeRecordSources(props.dataSource, [])
+        cacherDataSources.value = Methoder.normalizeCacherSources(props.dataSource)
+        Methoder.normalizeInitSources(Computer.filterRangeSources.value)
+
+        // Update Clean
+        Methoder.cleanSelectedRowKeys()
+        Methoder.cleanExpandedRowKeys()
       }
     }
 
@@ -686,31 +963,46 @@ export const STable = defineComponent({
       })
     }
 
-    renderRowRanger.rowOffset = [0, ~~(Optionser.windowInnerHeight.value / renderRowPresets.minHeight)]
-    renderRowRanger.rowBuffer = [renderRowPresets.maxBuffer, renderRowPresets.maxBuffer]
+    watch([() => props.columns, () => props.dataSource], () => {
+      const columnsChanged = Methoder.isColumnChanged(props.columns, tempColumns.value)
+      const sourcesChanged = Methoder.isSourcesChanged(props.dataSource, cacherDataSources.value)
+      const sourcesReseted = sourcesChanged && Methoder.isSourcesChanged(props.dataSource.slice(0, cacherDataSources.value.length), cacherDataSources.value)
 
-    watch(() => props.columns, () => {
-      columnRowAttrs.value = []
-      columnCellAttrs.value = []
-      columnCellRender.value = []
-      treeColumns.value = Methoder.normalizeTreeColumns(props.columns)
-      listColumns.value = Methoder.normalizeListColumns(treeColumns.value)
-      dataColumns.value = Methoder.normalizeDataColumns(listColumns.value)
-      Methoder.normalizeTreeSettings(treeColumns.value)
-      Methoder.normalizeInitColumns(listColumns.value)
+      if (columnsChanged) {
+        columnRowAttrs.value = []
+        columnCellAttrs.value = []
+        columnCellRender.value = []
+        columnSettingAllTrees.value = []
+        treeColumns.value = Methoder.normalizeTreeColumns(props.columns)
+        listColumns.value = Methoder.normalizeListColumns(treeColumns.value)
+        dataColumns.value = Methoder.normalizeDataColumns(listColumns.value)
+        tempColumns.value = Methoder.normalizeTempColumns(props.columns)
+        Methoder.normalizeTreeSetting(treeColumns.value)
+        Methoder.normalizeInitColumns(listColumns.value)
+      }
+
+      if (sourcesReseted) {
+        recordRowAttrs.value = []
+        recordRowStates.value = []
+        recordCellProps.value = []
+        recordCellAttrs.value = []
+        recordCellRender.value = []
+      }
+
+      if (sourcesChanged) {
+        recordDataSources.value = Methoder.normalizeRecordSources(props.dataSource, [])
+        cacherDataSources.value = Methoder.normalizeCacherSources(props.dataSource)
+        Methoder.cleanSelectedRowKeys()
+        Methoder.cleanExpandedRowKeys()
+      }
     }, watchDeepOptions)
 
-    watch(() => [...props.dataSource], () => {
-      recordRowAttrs.value = []
-      recordRowStates.value = []
-      recordCellProps.value = []
-      recordCellAttrs.value = []
-      recordCellRender.value = []
-      recordDataRowKeys.value = []
-      recordDataSources.value = []
-      Methoder.normalizeListSources(props.dataSource, recordDataSources.value)
-      Methoder.normalizeInitSources(recordDataSources.value)
-    }, watchDeepOptions)
+    watch(() => props.selectedMode, () => { selectedRowKeys.value = [] })
+    watch(() => [...props.selectedRowKeys], () => { Methoder.updateSelectedRowKeys(props.selectedRowKeys) })
+    watch(() => [...props.expandedRowKeys], () => { Methoder.updateExpandedRowKeys(props.expandedRowKeys) })
+    watch(() => [...selectedRowKeys.value], () => { Methoder.updatePropSelectedRowKeys(selectedRowKeys.value) })
+    watch(() => [...expandedRowKeys.value], () => { Methoder.updatePropExpandedRowKeys(expandedRowKeys.value) })
+    watch(() => [...Computer.filterRangeSources.value], () => { Methoder.normalizeInitSources(Computer.filterRangeSources.value) })
 
     onMounted(() => {
       Observer.resizeObserver.observe(Normalizer.scroll.value.getScrollResizeContainer?.() || document.documentElement)

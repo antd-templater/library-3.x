@@ -190,7 +190,7 @@ export function toDeepClone<T = unknown>(any: T, ...args: unknown[]): T {
   return target as T
 }
 
-export function toDeepEqual<T = unknown>(any: T, other: unknown): boolean {
+export function toDeepEqual<T = unknown>(any: T, other: unknown, options?: { strict?: string[], filter?: string[] }): boolean {
   if (any === other) {
     return true
   }
@@ -216,10 +216,21 @@ export function toDeepEqual<T = unknown>(any: T, other: unknown): boolean {
 
   if (isObject(any) && isObject(other) && Object.keys(any).length === Object.keys(other).length) {
     for (const key of Object.keys(any)) {
-      const reuslt = toDeepEqual(any[key], other[key])
+      const strict = isObject(options) && isArray(options.strict) ? options.strict.includes(key) : false
+      const filter = isObject(options) && isArray(options.filter) ? options.filter.includes(key) : true
 
-      if (!reuslt) {
-        return false
+      if (strict) {
+        if (any[key] !== other[key]) {
+          return false
+        }
+      }
+
+      if (!strict && filter) {
+        const reuslt = toDeepEqual(any[key], other[key])
+
+        if (!reuslt) {
+          return false
+        }
       }
     }
     return true

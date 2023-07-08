@@ -73,6 +73,7 @@ declare global {
     STableCustomHeaderRowAttrs,
     STableCustomBodyerRowAttrs,
     STableCustomBodyerRowStates,
+    STableWrapRecordTypes,
     STablePartColumnType,
     STableColumnType,
     STableKey,
