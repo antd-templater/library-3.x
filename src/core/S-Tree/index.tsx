@@ -180,10 +180,6 @@ export interface STreeTransformer {
   resetStaterLinkTreeNodes: (force?: boolean) => void;
 }
 
-export interface STreeDraggableHandler {
-  (node: STreeSourceNode): boolean | void;
-}
-
 export interface STreeEventDropHandler {
   (options: {
     reloadNodes: Array<{ parentNode?: STreePartSourceNode | null; rootChildNodes: STreeSourceNodes; oldChildNodes: STreeSourceNodes; newChildNodes: STreeSourceNodes; }>;
@@ -297,7 +293,6 @@ export const STree = defineComponent({
     bgColor: VueTypes.string().def('transparent'),
     loadData: VueTypes.func<STreeLoadData>().def(undefined),
     treeData: VueTypes.array<STreeSourceNode>().def(undefined),
-    draggable: VueTypes.any<STreeDraggableHandler | boolean>().def(false),
     dropHandler: VueTypes.func<STreeEventDropHandler>().def(undefined),
     checkedKeys: VueTypes.array<string | number>().def(() => []),
     selectedKeys: VueTypes.array<string | number>().def(() => []),
@@ -326,6 +321,7 @@ export const STree = defineComponent({
     selectable: VueTypes.bool().def(true),
     checkable: VueTypes.bool().def(false),
     blockNode: VueTypes.bool().def(false),
+    draggable: VueTypes.bool().def(false),
     disabled: VueTypes.bool().def(false),
     showIcon: VueTypes.bool().def(false),
     showLine: VueTypes.bool().def(false),
@@ -2726,10 +2722,6 @@ export const STree = defineComponent({
         icon: helper.isFunction(ctx.slots.icon) ? (node: STreeTargetNode) => ctx.slots.icon!({ ...node.referenceSourceNode }) : (node: STreeTargetNode) => RenderTreeNodeIcon(node, ctx)
       }
 
-      const draggabler = helper.isFunction(props.draggable)
-        ? (node: STreeTargetNode) => (props.draggable as any)({ ...node.referenceSourceNode })
-        : props.draggable === true
-
       return (
         <ATree
           class={context.attrs.class}
@@ -2746,11 +2738,11 @@ export const STree = defineComponent({
           selectable={props.selectable}
           checkable={props.checkable}
           blockNode={props.blockNode}
+          draggable={props.draggable}
           disabled={props.disabled}
           showIcon={props.showIcon}
           showLine={props.showLine}
-          virtual={props.virtual} // @ts-ignore support draggabler
-          draggable={draggabler}
+          virtual={props.virtual}
           checkStrictly={true}
           multiple={false}
           v-slots={slots}

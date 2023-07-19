@@ -58,22 +58,24 @@ declare global {
 
 
   export type  {
-    STableSettingsType,
     STableStickyType,
     STableScrollType,
-    STablePagination,
     STableRecordType,
+    STablePaginateType,
     STableRowKey,
-    STableRowChildren,
-    STableLoadSources,
-    STableFooterRender,
+    STableTreeKey,
+    STableLoadSource,
+    STableSettingsType,
+    STableExpanderRender,
     STableHeaderCellRender,
     STableBodyerCellRender,
-    STableBodyerExpandRender,
+    STableFooterCellRender,
     STableCustomHeaderRowAttrs,
     STableCustomBodyerRowAttrs,
     STableCustomBodyerRowStates,
-    STableWrapRecordTypes,
+    STableCustomFooterRowAttrs,
+    STableWrapRecordType,
+    STableWrapColumnType,
     STablePartColumnType,
     STableColumnType,
     STableKey,
@@ -81,8 +83,8 @@ declare global {
     STableSortDirections,
     STablePartStickyType,
     STablePartScrollType,
-    STablePartPagination,
-    STableColumnTypes
+    STablePartPaginate,
+    STableRefWrapper,
   } from './dist/S-Table'
 
   export type  {
@@ -99,9 +101,9 @@ declare global {
     STreeCacher,
     STreeKey,
     STreeKeys,
-    STreeEventDrop,
     STreeEventDropHandler,
     STreeEventDragstart,
+    STreeEventDrop,
     STreeEmiterCheck,
     STreeEmiterSelect,
     STreeEmiterExpand,
