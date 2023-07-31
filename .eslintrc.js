@@ -205,7 +205,8 @@ module.exports = {
   overrides: [
     {
       files: [
-        '**/*.vue'
+        '**/*.vue',
+        '**/*.tsx'
       ],
       rules: {
         'vue/max-attributes-per-line': ['error', {
@@ -216,7 +217,8 @@ module.exports = {
           ignores: ['index', 'Index', 'home', 'Home', 'test', 'Test']
         }],
         'vue/attribute-hyphenation': ['error', 'never', { ignore: ['vcoder-*'] }],
-        'vue/v-on-event-hyphenation': ['error', 'never']
+        'vue/v-on-event-hyphenation': ['error', 'never'],
+        'vue/no-setup-props-destructure': ['off']
       }
     },
     {

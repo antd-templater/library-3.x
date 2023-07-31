@@ -1,4 +1,4 @@
-import { VNode, HTMLAttributes, SlotsType, DeepReadonly, ComputedRef, Ref, isVNode, defineComponent, onMounted, computed, reactive, ref, inject, watch, readonly, toRaw, UnwrapRef, unref } from 'vue'
+import { VNode, HTMLAttributes, SlotsType, DeepReadonly, ComputedRef, Ref, isVNode, defineComponent, onMounted, computed, reactive, ref, inject, watch, readonly, toRaw, UnwrapRef, unref, nextTick } from 'vue'
 import { defaultConfigProvider } from 'ant-design-vue/es/config-provider'
 import * as VueTypes from 'vue-types'
 import helper from '@/helper'
@@ -206,14 +206,16 @@ export interface STableColumnType<RecordType = STableRecordType> {
   maxWidth?: number;
   resizable: boolean;
   ellipsis: boolean;
-  colMax: number;
-  rowMax: number;
-  colSpan: number;
-  rowSpan: number;
   colIndex: number;
   rowIndex: number;
   colOffset: number;
   rowOffset: number;
+  colInitSpan: number;
+  rowInitSpan: number;
+  colMaxSpan: number;
+  rowMaxSpan: number;
+  colSpan: number;
+  rowSpan: number;
   sorter: boolean;
   sortered: boolean;
   sorterField: string | string[];
@@ -281,24 +283,24 @@ export const STable = defineComponent({
     defaultSelectAllRows: VueTypes.bool().def(false),
     defaultExpandAllRows: VueTypes.bool().def(false),
     columnSorterMultiple: VueTypes.bool().def(false),
-    columnSorterTooltip: VueTypes.bool().def(false),
+    columnSorterTooltip: VueTypes.bool().def(true),
     expandRowByClick: VueTypes.bool().def(false),
     selectIndentSize: VueTypes.number().def(15),
     expandIndentSize: VueTypes.number().def(15),
     loadOnScroll: VueTypes.bool().def(false),
-    showHeader: VueTypes.bool().def(false),
+    showHeader: VueTypes.bool().def(true),
     showFooter: VueTypes.bool().def(true),
-    bordered: VueTypes.bool().def(false),
     loading: VueTypes.bool().def(false),
-    virtual: VueTypes.bool().def(true)
+    virtual: VueTypes.bool().def(true),
+    border: VueTypes.bool().def(false)
   },
   emits: {
     'update:loading': (loading: boolean) => true,
     'update:columns': (columns: STablePartColumnType[]) => true,
-    'update:sources': (sources: STableRecordType[]) => true,
-    'update:paginate': (paginate: STablePartPaginate) => true,
     'update:selectedRowKeys': (keys: Array<STableKey>) => true,
     'update:expandedRowKeys': (keys: Array<STableKey>) => true,
+    'update:paginate': (paginate: STablePaginateType) => true,
+    'update:sources': (sources: STableRecordType[]) => true,
     'sorter': (options: Array<{ field: string | string[]; value: 'ascend'| 'descend' }>) => true,
     'expand': (keys: Array<STableKey>) => true,
     'select': (keys: Array<STableKey>) => true,
@@ -315,8 +317,8 @@ export const STable = defineComponent({
     const dataColumns: Ref<Array<STableColumnType>> = ref([])
 
     const columnSettingsAllKeys: Ref<string[]> = ref([])
-    const columnSettingsCheckKeys: Ref<string[]> = ref([])
     const columnSettingsAllTrees: Ref<STableSettingsType[]> = ref([])
+    const columnSettingsCheckKeys: Ref<string[]> = ref([])
 
     const columnRowAttrs: Ref<STableRefWrapper<HTMLAttributes>[]> = ref([])
     const columnCellAttrs: Ref<STableRefWrapper<HTMLAttributes>[][]> = ref([])
@@ -340,6 +342,81 @@ export const STable = defineComponent({
     const sourceRowKeys: Ref<Array<STableKey>> = ref([])
     const loading: Ref<boolean> = ref(props.loading)
 
+    const Optionser = {
+      // column - scrollable
+      srcollTop: ref(0),
+      scrollLeft: ref(0),
+      srcollRight: ref(0),
+      srcollBottom: ref(0),
+      refTableWrapper: ref(null) as Ref<HTMLElement | null>,
+      windowInnerWidth: ref(window.innerWidth),
+      windowInnerHeight: ref(window.innerHeight),
+      scrollResizeWidth: ref(0),
+      scrollResizeHeight: ref(0),
+      tableTheadSizes: ref([]) as Ref<Array<{
+        colOffset: number;
+        rowOffset: number;
+        colIndex: number;
+        rowIndex: number;
+        colSpan: number;
+        rowSpan: number;
+        height: number;
+        width: number;
+      }>>,
+
+      // column - resizable
+      resizeRcordX: 0,
+      resizeRcordScoll: 0,
+      resizeRcordBound: 0,
+      resizeRcordWidth: 0,
+      resizeRcordColumn: null as STableColumnType | null
+
+      // column - draggable
+    }
+
+    const Paginator = {
+      paginate: reactive({
+        showTotal: helper.isFunction(props.paginate.showTotal) ? props.paginate.showTotal : undefined,
+        hideOnSinglePage: helper.isBoolean(props.paginate.hideOnSinglePage) ? props.paginate.hideOnSinglePage : true,
+        defaultPageSize: helper.isFiniteNumber(props.paginate.defaultPageSize) && props.paginate.defaultPageSize > 0 ? ~~props.paginate.defaultPageSize : 20,
+        pageSizeOptions: helper.isNotEmptyArray(props.paginate.pageSizeOptions) ? props.paginate.pageSizeOptions : [10, 15, 20, 25, 30, 50, 100, 200, 300, 500],
+        showSizeChanger: helper.isBoolean(props.paginate.showSizeChanger) ? props.paginate.showSizeChanger : undefined,
+        showQuickJumper: helper.isBoolean(props.paginate.showQuickJumper) ? props.paginate.showQuickJumper : false,
+        showLessItems: helper.isBoolean(props.paginate.showLessItems) ? props.paginate.showLessItems : false,
+        loadPageSize: helper.isFiniteNumber(props.paginate.loadPageSize) && props.paginate.loadPageSize > 0 ? ~~props.paginate.loadPageSize : undefined,
+        loadPageNo: helper.isFiniteNumber(props.paginate.loadPageNo) && props.paginate.loadPageNo > 0 ? ~~props.paginate.loadPageNo : undefined,
+        totalSize: helper.isFiniteNumber(props.paginate.totalSize) && props.paginate.totalSize > 0 ? ~~props.paginate.totalSize : 0,
+        totalPage: helper.isFiniteNumber(props.paginate.totalPage) && props.paginate.totalPage > 0 ? ~~props.paginate.totalPage : 0,
+        pageSize: helper.isFiniteNumber(props.paginate.pageSize) && props.paginate.pageSize > 0 ? ~~props.paginate.pageSize : (helper.isFiniteNumber(props.paginate.defaultPageSize) && props.paginate.defaultPageSize > 0 ? ~~props.paginate.defaultPageSize : 20),
+        pageNo: helper.isFiniteNumber(props.paginate.pageNo) && props.paginate.pageNo > 0 ? ~~props.paginate.pageNo : 1,
+        simple: helper.isBoolean(props.paginate.simple) ? props.paginate.simple : false,
+        visible: helper.isBoolean(props.paginate.visible) ? props.paginate.visible : false,
+        size: props.paginate.size && ['small', 'default'].includes(props.paginate.size) ? props.paginate.size : ((props.size || (configProvider.componentSize === 'large' ? 'default' : configProvider.componentSize)) === 'small' ? 'small' : 'default'),
+        mode: (props.paginate.mode === 'local' ? 'local' : 'remote') as 'local' | 'remote'
+      }),
+      update: (paginate: STablePartPaginate) => {
+        Paginator.paginate.mode = !Methoder.isOwnProperty(paginate, ['mode']) ? Paginator.paginate.mode : paginate.mode === 'local' ? 'local' : 'remote'
+        Paginator.paginate.size = !Methoder.isOwnProperty(paginate, ['size']) ? Paginator.paginate.size : paginate.size === 'small' ? 'small' : 'default'
+        Paginator.paginate.simple = !Methoder.isOwnProperty(paginate, ['simple']) ? Paginator.paginate.simple : paginate.simple === true
+        Paginator.paginate.visible = !Methoder.isOwnProperty(paginate, ['visible']) ? Paginator.paginate.visible : paginate.visible === true
+        Paginator.paginate.showTotal = !Methoder.isOwnProperty(paginate, ['showTotal']) ? Paginator.paginate.showTotal : helper.isFunction(paginate.showTotal) ? paginate.showTotal : undefined
+        Paginator.paginate.showLessItems = !Methoder.isOwnProperty(paginate, ['showLessItems']) ? Paginator.paginate.showLessItems : paginate.showLessItems === true
+        Paginator.paginate.defaultPageSize = !Methoder.isOwnProperty(paginate, ['defaultPageSize']) ? Paginator.paginate.defaultPageSize : helper.isFiniteNumber(paginate.defaultPageSize) && paginate.defaultPageSize > 0 ? paginate.defaultPageSize : 20
+        Paginator.paginate.pageSizeOptions = !Methoder.isOwnProperty(paginate, ['pageSizeOptions']) ? Paginator.paginate.pageSizeOptions : helper.isNotEmptyArray(paginate.pageSizeOptions) ? paginate.pageSizeOptions : [10, 15, 20, 25, 30, 50, 100, 200, 300, 500]
+        Paginator.paginate.showSizeChanger = !Methoder.isOwnProperty(paginate, ['showSizeChanger']) ? Paginator.paginate.showSizeChanger : helper.isBoolean(paginate.showSizeChanger) ? paginate.showSizeChanger : undefined
+        Paginator.paginate.showQuickJumper = !Methoder.isOwnProperty(paginate, ['showQuickJumper']) ? Paginator.paginate.showQuickJumper : paginate.showQuickJumper === true
+        Paginator.paginate.hideOnSinglePage = !Methoder.isOwnProperty(paginate, ['hideOnSinglePage']) ? Paginator.paginate.hideOnSinglePage : paginate.hideOnSinglePage !== false
+        Paginator.paginate.pageNo = !Methoder.isOwnProperty(paginate, ['pageNo']) ? Paginator.paginate.pageNo : helper.isFiniteNumber(paginate.pageNo) && paginate.pageNo > 0 ? ~~paginate.pageNo : 1
+        Paginator.paginate.pageSize = !Methoder.isOwnProperty(paginate, ['pageSize']) ? Paginator.paginate.pageSize : helper.isFiniteNumber(paginate.pageSize) && paginate.pageSize > 0 ? ~~paginate.pageSize : 20
+        Paginator.paginate.totalSize = !Methoder.isOwnProperty(paginate, ['totalSize']) ? Paginator.paginate.totalSize : helper.isFiniteNumber(paginate.totalSize) && paginate.totalSize > 0 ? ~~paginate.totalSize : 0
+        Paginator.paginate.totalPage = !Methoder.isOwnProperty(paginate, ['totalPage']) ? (~~(Paginator.paginate.totalSize / Paginator.paginate.pageSize) + (Paginator.paginate.totalSize % Paginator.paginate.pageSize ? 1 : 0)) : helper.isFiniteNumber(paginate.totalPage) && paginate.totalPage > 0 ? ~~paginate.totalPage : 0
+        Paginator.paginate.loadPageNo = !Methoder.isOwnProperty(paginate, ['loadPageNo']) ? Paginator.paginate.loadPageNo : helper.isFiniteNumber(paginate.loadPageNo) && paginate.loadPageNo > 0 ? ~~paginate.loadPageNo : undefined
+        Paginator.paginate.loadPageSize = !Methoder.isOwnProperty(paginate, ['loadPageSize']) ? Paginator.paginate.loadPageSize : helper.isFiniteNumber(paginate.loadPageSize) && paginate.loadPageSize > 0 ? ~~paginate.loadPageSize : undefined
+        Paginator.paginate.pageNo = Paginator.paginate.pageNo <= Paginator.paginate.totalPage ? Paginator.paginate.pageNo : Paginator.paginate.totalPage
+        Paginator.paginate.pageNo = Paginator.paginate.pageNo > 0 ? Paginator.paginate.pageNo : 1
+      }
+    }
+
     const Normalizer = {
       size: computed(() => {
         return props.size || (configProvider.componentSize === 'large' ? 'default' : configProvider.componentSize)
@@ -362,74 +439,10 @@ export const STable = defineComponent({
         getScrollResizeContainer: props.scroll.getScrollResizeContainer
       })),
 
-      loadOnScroll: computed(() => {
-        return helper.isBoolean(props.loadOnScroll) ? props.loadOnScroll : props.paginate.mode === 'local'
-      })
-    }
-
-    const Paginator = {
-      paginate: reactive({
-        showTotal: helper.isFunction(props.paginate.showTotal) ? props.paginate.showTotal : undefined,
-        hideOnSinglePage: helper.isBoolean(props.paginate.hideOnSinglePage) ? props.paginate.hideOnSinglePage : true,
-        defaultPageSize: helper.isFiniteNumber(props.paginate.defaultPageSize) && props.paginate.defaultPageSize > 0 ? ~~props.paginate.defaultPageSize : 20,
-        pageSizeOptions: helper.isNotEmptyArray(props.paginate.pageSizeOptions) ? props.paginate.pageSizeOptions : [10, 20, 25, 30, 50, 100, 200, 300, 500],
-        showSizeChanger: helper.isBoolean(props.paginate.showSizeChanger) ? props.paginate.showSizeChanger : undefined,
-        showQuickJumper: helper.isBoolean(props.paginate.showQuickJumper) ? props.paginate.showQuickJumper : false,
-        showLessItems: helper.isBoolean(props.paginate.showLessItems) ? props.paginate.showLessItems : false,
-        loadPageSize: helper.isFiniteNumber(props.paginate.loadPageSize) && props.paginate.loadPageSize > 0 ? ~~props.paginate.loadPageSize : undefined,
-        loadPageNo: helper.isFiniteNumber(props.paginate.loadPageNo) && props.paginate.loadPageNo > 0 ? ~~props.paginate.loadPageNo : undefined,
-        totalSize: helper.isFiniteNumber(props.paginate.totalSize) && props.paginate.totalSize > 0 ? ~~props.paginate.totalSize : 0,
-        totalPage: helper.isFiniteNumber(props.paginate.totalPage) && props.paginate.totalPage > 0 ? ~~props.paginate.totalPage : 0,
-        pageSize: helper.isFiniteNumber(props.paginate.pageSize) && props.paginate.pageSize > 0 ? ~~props.paginate.pageSize : (helper.isFiniteNumber(props.paginate.defaultPageSize) && props.paginate.defaultPageSize > 0 ? ~~props.paginate.defaultPageSize : 20),
-        pageNo: helper.isFiniteNumber(props.paginate.pageNo) && props.paginate.pageNo > 0 ? ~~props.paginate.pageNo : 1,
-        simple: helper.isBoolean(props.paginate.simple) ? props.paginate.simple : false,
-        visible: helper.isBoolean(props.paginate.visible) ? props.paginate.visible : false,
-        size: props.paginate.size && ['small', 'default'].includes(props.paginate.size) ? props.paginate.size : (Normalizer.size.value === 'small' ? 'small' : 'default'),
-        mode: (props.paginate.mode === 'local' ? 'local' : 'remote') as 'local' | 'remote'
-      }),
-      update: (paginate: STablePartPaginate) => {
-        Paginator.paginate.mode = !Methoder.isOwnProperty(paginate, ['mode']) ? Paginator.paginate.mode : paginate.mode === 'local' ? 'local' : 'remote'
-        Paginator.paginate.size = !Methoder.isOwnProperty(paginate, ['size']) ? Paginator.paginate.size : paginate.size === 'small' ? 'small' : 'default'
-        Paginator.paginate.simple = !Methoder.isOwnProperty(paginate, ['simple']) ? Paginator.paginate.simple : paginate.simple === true
-        Paginator.paginate.visible = !Methoder.isOwnProperty(paginate, ['visible']) ? Paginator.paginate.visible : paginate.visible === true
-        Paginator.paginate.showTotal = !Methoder.isOwnProperty(paginate, ['showTotal']) ? Paginator.paginate.showTotal : helper.isFunction(paginate.showTotal) ? paginate.showTotal : undefined
-        Paginator.paginate.showLessItems = !Methoder.isOwnProperty(paginate, ['showLessItems']) ? Paginator.paginate.showLessItems : paginate.showLessItems === true
-        Paginator.paginate.defaultPageSize = !Methoder.isOwnProperty(paginate, ['defaultPageSize']) ? Paginator.paginate.defaultPageSize : helper.isFiniteNumber(paginate.defaultPageSize) && paginate.defaultPageSize > 0 ? paginate.defaultPageSize : 20
-        Paginator.paginate.pageSizeOptions = !Methoder.isOwnProperty(paginate, ['pageSizeOptions']) ? Paginator.paginate.pageSizeOptions : helper.isNotEmptyArray(paginate.pageSizeOptions) ? paginate.pageSizeOptions : [10, 20, 25, 30, 50, 100, 200, 300, 500]
-        Paginator.paginate.showSizeChanger = !Methoder.isOwnProperty(paginate, ['showSizeChanger']) ? Paginator.paginate.showSizeChanger : helper.isBoolean(paginate.showSizeChanger) ? paginate.showSizeChanger : undefined
-        Paginator.paginate.showQuickJumper = !Methoder.isOwnProperty(paginate, ['showQuickJumper']) ? Paginator.paginate.showQuickJumper : paginate.showQuickJumper === true
-        Paginator.paginate.hideOnSinglePage = !Methoder.isOwnProperty(paginate, ['hideOnSinglePage']) ? Paginator.paginate.hideOnSinglePage : paginate.hideOnSinglePage !== false
-        Paginator.paginate.pageNo = !Methoder.isOwnProperty(paginate, ['pageNo']) ? Paginator.paginate.pageNo : helper.isFiniteNumber(paginate.pageNo) && paginate.pageNo > 0 ? ~~paginate.pageNo : 1
-        Paginator.paginate.pageSize = !Methoder.isOwnProperty(paginate, ['pageSize']) ? Paginator.paginate.pageSize : helper.isFiniteNumber(paginate.pageSize) && paginate.pageSize > 0 ? ~~paginate.pageSize : 20
-        Paginator.paginate.totalSize = !Methoder.isOwnProperty(paginate, ['totalSize']) ? Paginator.paginate.totalSize : helper.isFiniteNumber(paginate.totalSize) && paginate.totalSize > 0 ? ~~paginate.totalSize : 0
-        Paginator.paginate.totalPage = !Methoder.isOwnProperty(paginate, ['totalPage']) ? (~~(Paginator.paginate.totalSize / Paginator.paginate.pageSize) + (Paginator.paginate.totalSize % Paginator.paginate.pageSize ? 1 : 0)) : helper.isFiniteNumber(paginate.totalPage) && paginate.totalPage > 0 ? ~~paginate.totalPage : 0
-        Paginator.paginate.loadPageNo = !Methoder.isOwnProperty(paginate, ['loadPageNo']) ? Paginator.paginate.loadPageNo : helper.isFiniteNumber(paginate.loadPageNo) && paginate.loadPageNo > 0 ? ~~paginate.loadPageNo : undefined
-        Paginator.paginate.loadPageSize = !Methoder.isOwnProperty(paginate, ['loadPageSize']) ? Paginator.paginate.loadPageSize : helper.isFiniteNumber(paginate.loadPageSize) && paginate.loadPageSize > 0 ? ~~paginate.loadPageSize : undefined
-        Paginator.paginate.pageNo = Paginator.paginate.pageNo <= Paginator.paginate.totalPage ? Paginator.paginate.pageNo : Paginator.paginate.totalPage
-        Paginator.paginate.pageNo = Paginator.paginate.pageNo > 0 ? Paginator.paginate.pageNo : 1
-      }
-    }
-
-    const Optionser = {
-      srcollTop: ref(0),
-      scrollLeft: ref(0),
-      srcollRight: ref(0),
-      srcollBottom: ref(0),
-      scrollContainer: ref(null) as Ref<HTMLElement | null>,
-      windowInnerWidth: ref(window.innerWidth),
-      windowInnerHeight: ref(window.innerHeight),
-      scrollResizeWidth: ref(0),
-      scrollResizeHeight: ref(0),
-      tableTheadSizes: ref([]) as Ref<Array<{
-        colOffset: number;
-        rowOffset: number;
-        colIndex: number;
-        rowIndex: number;
-        colSpan: number;
-        rowSpan: number;
-        height: number;
-        width: number;
-      }>>
+      loadOnScroll: computed(() => (
+        (props.loadOnScroll !== false && Paginator.paginate.mode === 'local') ||
+        (props.loadOnScroll === true && Paginator.paginate.visible === false)
+      ))
     }
 
     const Computer = {
@@ -505,8 +518,112 @@ export const STable = defineComponent({
 
         return 'auto'
       }),
-      filterPageSummary: computed(() => {
-        return listSummary.value.filter(summary => summary)
+      filterListColumns: computed(() => {
+        const filterColumns = (columns: STableWrapColumnType[], wraps: STableWrapColumnType[] = [], parent?: STableWrapColumnType | null) => {
+          let offset = parent ? parent.referColumn.colOffset : 0
+
+          for (const [index, column] of columns.entries()) {
+            if (!columnSettingsCheckKeys.value.includes(column.key)) {
+              continue
+            }
+
+            const wrapColumn: STableWrapColumnType = {
+              ...column,
+              referColumn: reactive({
+                ...column.referColumn,
+                colOffset: offset + index,
+                rowOffset: parent ? parent.referColumn.rowIndex + 1 : 0,
+                colMaxSpan: 1,
+                rowMaxSpan: parent ? parent.referColumn.rowMaxSpan + 1 : 1,
+                colSpan: 1,
+                rowSpan: 1
+              }),
+              treeChildren: []
+            }
+
+            wraps.push(wrapColumn)
+
+            if (helper.isNotEmptyArray(column.treeChildren)) {
+              const childTrees = filterColumns(column.treeChildren, [], wrapColumn)
+              const rowMaxSpan = Math.max(...childTrees.map(child => child.referColumn.rowMaxSpan), wrapColumn.referColumn.rowMaxSpan)
+              const colMaxSpan = childTrees.reduce((colMaxSpan, child) => colMaxSpan + child.referColumn.colMaxSpan, 0) || 1
+              wrapColumn.referColumn.rowMaxSpan = rowMaxSpan
+              wrapColumn.referColumn.colMaxSpan = colMaxSpan
+              wrapColumn.treeChildren = childTrees
+              offset += colMaxSpan - 1
+            }
+          }
+
+          return wraps
+        }
+
+        const updateColumns = (columns: STableWrapColumnType[], arrays: STableColumnType[][] = [], isRoot: boolean = true) => {
+          for (const wrap of columns) {
+            const colOffset = wrap.referColumn.colOffset
+            const rowOffset = wrap.referColumn.rowOffset
+
+            arrays[rowOffset] = arrays[rowOffset] || []
+            arrays[rowOffset][colOffset] = arrays[rowOffset][colOffset] || wrap.referColumn
+
+            if (helper.isNotEmptyArray(wrap.treeChildren)) {
+              updateColumns(wrap.treeChildren, arrays, false)
+            }
+          }
+
+          if (isRoot === true) {
+            for (const columns of arrays) {
+              for (const column of columns) {
+                if (column) {
+                  column.colSpan = Number.isFinite(column.colInitSpan) ? column.colInitSpan : column.colMaxSpan
+                  column.rowSpan = Number.isFinite(column.rowInitSpan) ? column.rowInitSpan : column.rowIndex < column.rowMaxSpan - 1 ? 1 : arrays.length - column.rowIndex
+                }
+              }
+            }
+
+            const rows = arrays.length as number
+            const cols = Math.max(...arrays.map(arr => arr.length), 0) as number
+            const arrs = Array.from({ length: rows }, () => Array.from({ length: cols }, () => 0)) as number[][]
+
+            for (const [rowIndex, columns] of arrays.entries()) {
+              for (const [colIndex, column] of columns.entries()) {
+                if (column) {
+                  column.colOffset = arrs[rowIndex].findIndex(index => index === 0)
+                  column.rowOffset = arrs.map(arr => arr[colIndex]).findLastIndex(index => index === 1) + 1
+                  column.colOffset = column.colOffset > -1 ? column.colOffset : arrs[rowIndex].length
+                  column.rowOffset = column.rowOffset > -1 ? column.rowOffset : 0
+
+                  for (let rowOffset = 0; rowOffset < column.rowSpan; rowOffset++) {
+                    for (let colOffset = 0; colOffset < column.colSpan; colOffset++) {
+                      arrs[rowIndex + rowOffset] = arrs[rowIndex + rowOffset] || []
+                      arrs[rowIndex + rowOffset][colIndex + colOffset] = 1
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          return arrays
+        }
+
+        return updateColumns(filterColumns(treeColumns.value))
+      }),
+      filterDataColumns: computed(() => {
+        const dataColumns: STableColumnType[] = []
+
+        for (const columns of Computer.filterListColumns.value) {
+          for (const column of columns) {
+            if (!column) {
+              continue
+            }
+
+            if (column.rowIndex === column.rowMaxSpan - 1) {
+              dataColumns[column.colOffset] = column
+            }
+          }
+        }
+
+        return dataColumns
       }),
       filterPageSources: computed(() => {
         return treeSources.value.filter(record => (
@@ -540,6 +657,9 @@ export const STable = defineComponent({
         }
 
         return treeSources.value.filter(filterByPaginate).filter(filterByExpaned).filter(filterByRange)
+      }),
+      filterPageSummary: computed(() => {
+        return listSummary.value.filter(summary => summary)
       })
     }
 
@@ -602,6 +722,36 @@ export const STable = defineComponent({
 
           return record
         })
+      },
+
+      extractTreeColumns(columns: STableWrapColumnType[], rowIndex: number, colIndex: number) {
+        for (const column of columns) {
+          if (column.referColumn.rowIndex !== rowIndex) {
+            const treeColumn = Methoder.extractTreeColumns(column.treeChildren, rowIndex, colIndex) as STableWrapColumnType | null
+
+            if (treeColumn) {
+              return treeColumn as STableWrapColumnType
+            }
+          }
+
+          if (column.referColumn.rowIndex === rowIndex && column.referColumn.colIndex === colIndex) {
+            return column
+          }
+        }
+
+        return null
+      },
+
+      extractListColumns(arrays: STableColumnType[][], rowIndex: number, colIndex: number) {
+        for (const columns of arrays) {
+          for (const column of columns) {
+            if (column?.rowIndex === rowIndex && column?.colIndex === colIndex) {
+              return column
+            }
+          }
+        }
+
+        return null
       },
 
       isColumnsChanged(parts: STablePartColumnType[], temps: STableWrapColumnType[]) {
@@ -723,7 +873,7 @@ export const STable = defineComponent({
       },
 
       normalizeTreeColumns(columns: STablePartColumnType[], wraps: STableWrapColumnType[] = [], parent?: STableWrapColumnType | null) {
-        let offset = parent ? parent.referColumn.colIndex : 0
+        let offset = parent ? parent.referColumn.colOffset : 0
 
         for (const [index, column] of columns.entries()) {
           const wrapColumn: STableWrapColumnType = {
@@ -743,14 +893,16 @@ export const STable = defineComponent({
               maxWidth: column.maxWidth,
               resizable: column.resizable ?? parent?.referColumn.resizable ?? false,
               ellipsis: column.ellipsis ?? parent?.referColumn.ellipsis ?? false,
-              colMax: 1,
-              rowMax: parent ? parent.referColumn.rowMax + 1 : 1,
-              colSpan: helper.isFiniteNumber(column.colSpan) ? column.colSpan : NaN,
-              rowSpan: helper.isFiniteNumber(column.rowSpan) ? column.rowSpan : NaN,
               colIndex: offset + index,
               rowIndex: parent ? parent.referColumn.rowIndex + 1 : 0,
               colOffset: offset + index,
               rowOffset: parent ? parent.referColumn.rowIndex + 1 : 0,
+              colInitSpan: helper.isFiniteNumber(column.colSpan) ? column.colSpan : NaN,
+              rowInitSpan: helper.isFiniteNumber(column.rowSpan) ? column.rowSpan : NaN,
+              colMaxSpan: 1,
+              rowMaxSpan: parent ? parent.referColumn.rowMaxSpan + 1 : 1,
+              colSpan: 1,
+              rowSpan: 1,
               sorter: column.sorter ?? parent?.referColumn.sorter ?? false,
               sortered: false,
               sortDirections: column.sortDirections ?? parent?.referColumn.sortDirections,
@@ -778,13 +930,13 @@ export const STable = defineComponent({
           if (helper.isNotEmptyArray(column.children)) {
             const childTrees = Methoder.normalizeTreeColumns(column.children, [], wrapColumn)
             const childKeys = [...childTrees.map(tree => tree.key), ...childTrees.map(tree => tree.childKeys).flat()]
-            const rowMax = Math.max(...childTrees.map(child => child.referColumn.rowMax), wrapColumn.referColumn.rowMax)
-            const colMax = childTrees.reduce((colMax, child) => colMax + child.referColumn.colMax, 0) || 1
-            wrapColumn.referColumn.rowMax = rowMax
-            wrapColumn.referColumn.colMax = colMax
+            const rowMaxSpan = Math.max(...childTrees.map(child => child.referColumn.rowMaxSpan), wrapColumn.referColumn.rowMaxSpan)
+            const colMaxSpan = childTrees.reduce((colMaxSpan, child) => colMaxSpan + child.referColumn.colMaxSpan, 0) || 1
+            wrapColumn.referColumn.rowMaxSpan = rowMaxSpan
+            wrapColumn.referColumn.colMaxSpan = colMaxSpan
             wrapColumn.treeChildren = childTrees
             wrapColumn.childKeys = childKeys
-            offset += colMax - 1
+            offset += colMaxSpan - 1
           }
         }
 
@@ -851,55 +1003,6 @@ export const STable = defineComponent({
         return wraps
       },
 
-      normalizeListColumns(columns: STableWrapColumnType[], arrays: STableColumnType[][], isRoot: boolean) {
-        for (const wrap of columns) {
-          const colIndex = wrap.referColumn.colIndex
-          const rowIndex = wrap.referColumn.rowIndex
-
-          arrays[rowIndex] = arrays[rowIndex] || []
-          arrays[rowIndex][colIndex] = arrays[rowIndex][colIndex] || wrap.referColumn
-
-          if (helper.isNotEmptyArray(wrap.treeChildren)) {
-            Methoder.normalizeListColumns(wrap.treeChildren, arrays, false)
-          }
-        }
-
-        if (isRoot === true) {
-          for (const columns of arrays) {
-            for (const column of columns) {
-              if (column) {
-                column.colSpan = Number.isFinite(column.colSpan) ? column.colSpan : column.colMax
-                column.rowSpan = Number.isFinite(column.rowSpan) ? column.rowSpan : column.rowIndex < column.rowMax - 1 ? 1 : arrays.length - column.rowIndex
-              }
-            }
-          }
-
-          const rows = arrays.length as number
-          const cols = Math.max(...arrays.map(arr => arr.length), 0) as number
-          const arrs = Array.from({ length: rows }).fill(Array.from({ length: cols }).fill(0)) as number[][]
-
-          for (const [rowIndex, columns] of arrays.entries()) {
-            for (const [colIndex, column] of columns.entries()) {
-              if (column) {
-                column.colOffset = arrs[rowIndex].findIndex(index => index === 0)
-                column.rowOffset = arrs.map(arr => arr[colIndex]).findLastIndex(index => index === 1)
-                column.colOffset = column.colOffset > -1 ? column.colOffset : arrs[rowIndex].length
-                column.rowOffset = column.rowOffset > -1 ? column.rowOffset : 0
-
-                for (let rowOffset = 0; rowOffset < column.rowSpan; rowOffset++) {
-                  for (let colOffset = 0; colOffset < column.colSpan; colOffset++) {
-                    arrs[rowIndex + rowOffset] = arrs[rowIndex + rowOffset] || []
-                    arrs[rowIndex + rowOffset][colIndex + colOffset] = 1
-                  }
-                }
-              }
-            }
-          }
-        }
-
-        return arrays
-      },
-
       normalizeTreeSettings(columns: STableWrapColumnType[], settings?: STableSettingsType[]) {
         settings = settings || columnSettingsAllTrees.value
 
@@ -907,6 +1010,7 @@ export const STable = defineComponent({
           const setting = {
             key: wrap.referColumn.key,
             title: wrap.referColumn.title,
+            disabled: wrap.referColumn.fixed === 'left' || wrap.referColumn.fixed === 'right',
             column: wrap.referColumn,
             children: []
           }
@@ -926,13 +1030,33 @@ export const STable = defineComponent({
         return settings
       },
 
+      normalizeListColumns(columns: STableWrapColumnType[], arrays: STableColumnType[][]) {
+        for (const wrap of columns) {
+          const colOffset = wrap.referColumn.colOffset
+          const rowOffset = wrap.referColumn.rowOffset
+
+          arrays[rowOffset] = arrays[rowOffset] || []
+          arrays[rowOffset][colOffset] = arrays[rowOffset][colOffset] || wrap.referColumn
+
+          if (helper.isNotEmptyArray(wrap.treeChildren)) {
+            Methoder.normalizeListColumns(wrap.treeChildren, arrays)
+          }
+        }
+
+        return arrays
+      },
+
       normalizeDataColumns(arrays: Array<STableColumnType>[] = []) {
         const dataColumns: STableColumnType[] = []
 
         for (const columns of arrays) {
           for (const column of columns) {
-            if (column && column.rowIndex === column.rowMax - 1) {
-              dataColumns[column.colIndex] = column
+            if (!column) {
+              continue
+            }
+
+            if (column.rowIndex === column.rowMaxSpan - 1) {
+              dataColumns[column.colOffset] = column
             }
           }
         }
@@ -950,73 +1074,80 @@ export const STable = defineComponent({
             columnRowAttrs.value[rowIndex] = columnRowAttrs.value[rowIndex] || props.customHeaderRowAttrs({ columns: readonly(columns), rowIndex })
           }
 
-          for (const [colIndex, column] of columns.entries()) {
-            if (!column) {
-              continue
-            }
+          if (columnRowAttrs.value[rowIndex] === undefined) {
+            columnRowAttrs.value[rowIndex] = {}
+          }
+        }
 
-            if (helper.isFunction(column.customHeaderCellAttrs)) {
-              columnCellAttrs.value[rowIndex] = columnCellAttrs.value[rowIndex] || []
-              columnCellAttrs.value[rowIndex][colIndex] = columnCellAttrs.value[rowIndex][colIndex] || column.customHeaderCellAttrs({ column: readonly(column), rowIndex, colIndex })
-            }
+        for (const column of arrays.flat()) {
+          if (!column) {
+            continue
+          }
 
-            if (helper.isFunction(column.customHeaderCellRender)) {
-              if (!Methoder.isOwnProperty(columnCellRender.value, [rowIndex, colIndex])) {
-                const renderNode = column.customHeaderCellRender({ title: column.title, column: readonly(column), rowIndex, colIndex })
+          const rowIndex = column.rowIndex
+          const colIndex = column.colIndex
 
-                columnCellRender.value[rowIndex] = helper.isArray(columnCellRender.value[rowIndex]) ? columnCellRender.value[rowIndex] : []
-                columnCellRender.value[rowIndex][colIndex] = helper.isObject(renderNode) ? (isVNode(renderNode) ? renderNode : renderNode.children) : undefined
+          if (helper.isFunction(column.customHeaderCellAttrs)) {
+            columnCellAttrs.value[rowIndex] = columnCellAttrs.value[rowIndex] || []
+            columnCellAttrs.value[rowIndex][colIndex] = columnCellAttrs.value[rowIndex][colIndex] || column.customHeaderCellAttrs({ column: readonly(column), rowIndex, colIndex })
+          }
 
-                if (helper.isObject(renderNode) && !isVNode(renderNode) && helper.isNotEmptyObject(renderNode.props)) {
-                  column.align = Object.hasOwn(renderNode.props, 'align') ? renderNode.props.align || 'left' : column.align
-                  column.fixed = Object.hasOwn(renderNode.props, 'fixed') ? renderNode.props.fixed || false : column.fixed
-                  column.width = Object.hasOwn(renderNode.props, 'width') ? renderNode.props.width || undefined : column.width
-                  column.minWidth = Object.hasOwn(renderNode.props, 'minWidth') ? renderNode.props.minWidth || undefined : column.minWidth
-                  column.maxWidth = Object.hasOwn(renderNode.props, 'maxWidth') ? renderNode.props.maxWidth || undefined : column.maxWidth
-                  column.resizable = Object.hasOwn(renderNode.props, 'resizable') ? renderNode.props.resizable || false : column.resizable
-                  column.ellipsis = Object.hasOwn(renderNode.props, 'ellipsis') ? renderNode.props.ellipsis || false : column.ellipsis
-                  column.colSpan = Object.hasOwn(renderNode.props, 'colSpan') ? helper.isFiniteNumber(renderNode.props.colSpan) ? renderNode.props.colSpan : column.colSpan : column.colSpan
-                  column.rowSpan = Object.hasOwn(renderNode.props, 'rowSpan') ? helper.isFiniteNumber(renderNode.props.rowSpan) ? renderNode.props.rowSpan : column.rowSpan : column.rowSpan
-                  column.sorter = Object.hasOwn(renderNode.props, 'sorter') ? renderNode.props.sorter || false : column.sorter
-                  column.sorterField = Object.hasOwn(renderNode.props, 'sorterField') ? renderNode.props.sorterField || '' : column.sorterField
-                  column.sortDirections = Object.hasOwn(renderNode.props, 'sortDirections') ? renderNode.props.sortDirections || undefined : column.sortDirections
-                }
+          if (helper.isFunction(column.customHeaderCellRender)) {
+            if (!Methoder.isOwnProperty(columnCellRender.value, [rowIndex, colIndex])) {
+              const renderNode = column.customHeaderCellRender({ title: column.title, column: readonly(column), rowIndex, colIndex })
+
+              columnCellRender.value[rowIndex] = helper.isArray(columnCellRender.value[rowIndex]) ? columnCellRender.value[rowIndex] : []
+              columnCellRender.value[rowIndex][colIndex] = helper.isObject(renderNode) ? (isVNode(renderNode) ? renderNode : renderNode.children) : undefined
+
+              if (helper.isObject(renderNode) && !isVNode(renderNode) && helper.isNotEmptyObject(renderNode.props)) {
+                column.align = Object.hasOwn(renderNode.props, 'align') ? renderNode.props.align || 'left' : column.align
+                column.fixed = Object.hasOwn(renderNode.props, 'fixed') ? renderNode.props.fixed || false : column.fixed
+                column.width = Object.hasOwn(renderNode.props, 'width') ? renderNode.props.width || undefined : column.width
+                column.minWidth = Object.hasOwn(renderNode.props, 'minWidth') ? renderNode.props.minWidth || undefined : column.minWidth
+                column.maxWidth = Object.hasOwn(renderNode.props, 'maxWidth') ? renderNode.props.maxWidth || undefined : column.maxWidth
+                column.resizable = Object.hasOwn(renderNode.props, 'resizable') ? renderNode.props.resizable || false : column.resizable
+                column.ellipsis = Object.hasOwn(renderNode.props, 'ellipsis') ? renderNode.props.ellipsis || false : column.ellipsis
+                column.colSpan = Object.hasOwn(renderNode.props, 'colSpan') ? helper.isFiniteNumber(renderNode.props.colSpan) ? renderNode.props.colSpan : column.colSpan : column.colSpan
+                column.rowSpan = Object.hasOwn(renderNode.props, 'rowSpan') ? helper.isFiniteNumber(renderNode.props.rowSpan) ? renderNode.props.rowSpan : column.rowSpan : column.rowSpan
+                column.sorter = Object.hasOwn(renderNode.props, 'sorter') ? renderNode.props.sorter || false : column.sorter
+                column.sorterField = Object.hasOwn(renderNode.props, 'sorterField') ? renderNode.props.sorterField || '' : column.sorterField
+                column.sortDirections = Object.hasOwn(renderNode.props, 'sortDirections') ? renderNode.props.sortDirections || undefined : column.sortDirections
               }
             }
+          }
 
-            if (!helper.isFunction(column.customHeaderCellRender) && helper.isFunction(props.headerCell)) {
-              if (!Methoder.isOwnProperty(columnCellRender.value, [rowIndex, colIndex])) {
-                const renderNode = props.headerCell({ title: column.title, column: readonly(column), rowIndex, colIndex })
+          if (!helper.isFunction(column.customHeaderCellRender) && helper.isFunction(props.headerCell)) {
+            if (!Methoder.isOwnProperty(columnCellRender.value, [rowIndex, colIndex])) {
+              const renderNode = props.headerCell({ title: column.title, column: readonly(column), rowIndex, colIndex })
 
-                columnCellRender.value[rowIndex] = helper.isArray(columnCellRender.value[rowIndex]) ? columnCellRender.value[rowIndex] : []
-                columnCellRender.value[rowIndex][colIndex] = helper.isObject(renderNode) ? (isVNode(renderNode) ? renderNode : renderNode.children) : undefined
+              columnCellRender.value[rowIndex] = helper.isArray(columnCellRender.value[rowIndex]) ? columnCellRender.value[rowIndex] : []
+              columnCellRender.value[rowIndex][colIndex] = helper.isObject(renderNode) ? (isVNode(renderNode) ? renderNode : renderNode.children) : undefined
 
-                if (helper.isObject(renderNode) && !isVNode(renderNode) && helper.isNotEmptyObject(renderNode.props)) {
-                  column.align = Object.hasOwn(renderNode.props, 'align') ? renderNode.props.align || 'left' : column.align
-                  column.fixed = Object.hasOwn(renderNode.props, 'fixed') ? renderNode.props.fixed || false : column.fixed
-                  column.width = Object.hasOwn(renderNode.props, 'width') ? renderNode.props.width || undefined : column.width
-                  column.minWidth = Object.hasOwn(renderNode.props, 'minWidth') ? renderNode.props.minWidth || undefined : column.minWidth
-                  column.maxWidth = Object.hasOwn(renderNode.props, 'maxWidth') ? renderNode.props.maxWidth || undefined : column.maxWidth
-                  column.resizable = Object.hasOwn(renderNode.props, 'resizable') ? renderNode.props.resizable || false : column.resizable
-                  column.ellipsis = Object.hasOwn(renderNode.props, 'ellipsis') ? renderNode.props.ellipsis || false : column.ellipsis
-                  column.colSpan = Object.hasOwn(renderNode.props, 'colSpan') ? helper.isFiniteNumber(renderNode.props.colSpan) ? renderNode.props.colSpan : column.colSpan : column.colSpan
-                  column.rowSpan = Object.hasOwn(renderNode.props, 'rowSpan') ? helper.isFiniteNumber(renderNode.props.rowSpan) ? renderNode.props.rowSpan : column.rowSpan : column.rowSpan
-                  column.sorter = Object.hasOwn(renderNode.props, 'sorter') ? renderNode.props.sorter || false : column.sorter
-                  column.sorterField = Object.hasOwn(renderNode.props, 'sorterField') ? renderNode.props.sorterField || '' : column.sorterField
-                  column.sortDirections = Object.hasOwn(renderNode.props, 'sortDirections') ? renderNode.props.sortDirections || undefined : column.sortDirections
-                }
+              if (helper.isObject(renderNode) && !isVNode(renderNode) && helper.isNotEmptyObject(renderNode.props)) {
+                column.align = Object.hasOwn(renderNode.props, 'align') ? renderNode.props.align || 'left' : column.align
+                column.fixed = Object.hasOwn(renderNode.props, 'fixed') ? renderNode.props.fixed || false : column.fixed
+                column.width = Object.hasOwn(renderNode.props, 'width') ? renderNode.props.width || undefined : column.width
+                column.minWidth = Object.hasOwn(renderNode.props, 'minWidth') ? renderNode.props.minWidth || undefined : column.minWidth
+                column.maxWidth = Object.hasOwn(renderNode.props, 'maxWidth') ? renderNode.props.maxWidth || undefined : column.maxWidth
+                column.resizable = Object.hasOwn(renderNode.props, 'resizable') ? renderNode.props.resizable || false : column.resizable
+                column.ellipsis = Object.hasOwn(renderNode.props, 'ellipsis') ? renderNode.props.ellipsis || false : column.ellipsis
+                column.colSpan = Object.hasOwn(renderNode.props, 'colSpan') ? helper.isFiniteNumber(renderNode.props.colSpan) ? renderNode.props.colSpan : column.colSpan : column.colSpan
+                column.rowSpan = Object.hasOwn(renderNode.props, 'rowSpan') ? helper.isFiniteNumber(renderNode.props.rowSpan) ? renderNode.props.rowSpan : column.rowSpan : column.rowSpan
+                column.sorter = Object.hasOwn(renderNode.props, 'sorter') ? renderNode.props.sorter || false : column.sorter
+                column.sorterField = Object.hasOwn(renderNode.props, 'sorterField') ? renderNode.props.sorterField || '' : column.sorterField
+                column.sortDirections = Object.hasOwn(renderNode.props, 'sortDirections') ? renderNode.props.sortDirections || undefined : column.sortDirections
               }
             }
+          }
 
-            if (columnCellAttrs.value[rowIndex]?.[colIndex] === undefined) {
-              columnCellAttrs.value[rowIndex] = columnCellAttrs.value[rowIndex] || []
-              columnCellAttrs.value[rowIndex][colIndex] = {}
-            }
+          if (columnCellAttrs.value[rowIndex]?.[colIndex] === undefined) {
+            columnCellAttrs.value[rowIndex] = columnCellAttrs.value[rowIndex] || []
+            columnCellAttrs.value[rowIndex][colIndex] = {}
+          }
 
-            if (columnCellRender.value[rowIndex]?.[colIndex] === undefined) {
-              columnCellRender.value[rowIndex] = columnCellRender.value[rowIndex] || []
-              columnCellRender.value[rowIndex][colIndex] = column.title
-            }
+          if (columnCellRender.value[rowIndex]?.[colIndex] === undefined) {
+            columnCellRender.value[rowIndex] = columnCellRender.value[rowIndex] || []
+            columnCellRender.value[rowIndex][colIndex] = column.title
           }
         }
 
@@ -1039,11 +1170,20 @@ export const STable = defineComponent({
           if (helper.isFunction(props.customBodyerRowStates)) {
             sourceRowStates.value[globalIndex] = sourceRowStates.value[globalIndex] || props.customBodyerRowStates({ record, rowIndex, groupIndex, groupLevel, groupIndexs, globalIndex })
           }
+
+          if (sourceRowAttrs.value[globalIndex] === undefined) {
+            sourceRowAttrs.value[globalIndex] = {}
+          }
+
+          if (sourceRowStates.value[globalIndex] === undefined) {
+            sourceRowStates.value[globalIndex] = {}
+          }
         }
 
-        for (const [colIndex, item] of dataColumns.value.entries()) {
+        for (const item of dataColumns.value) {
           const column = readonly(item)
           const columnKey = column.key
+          const colIndex = column.colIndex
           const dataIndex = column.dataIndex
 
           for (const option of sources) {
@@ -1148,11 +1288,16 @@ export const STable = defineComponent({
           if (helper.isFunction(props.customFooterRowAttrs)) {
             summaryRowAttrs.value[rowIndex] = summaryRowAttrs.value[rowIndex] || props.customFooterRowAttrs({ record: readonly(record), rowIndex, sources, paginate })
           }
+
+          if (summaryRowAttrs.value[rowIndex] === undefined) {
+            summaryRowAttrs.value[rowIndex] = {}
+          }
         }
 
-        for (const [colIndex, item] of dataColumns.value.entries()) {
+        for (const item of dataColumns.value) {
           const column = readonly(item)
           const columnKey = column.key
+          const colIndex = column.colIndex
           const dataIndex = column.dataIndex
 
           for (const [rowIndex, record] of summarys.entries()) {
@@ -1245,7 +1390,7 @@ export const STable = defineComponent({
         }
       },
 
-      updatePropPaginate(paginate: STablePartPaginate) {
+      updatePropPaginate(paginate: STablePaginateType) {
         if (!helper.toDeepEqual(props.paginate, paginate)) {
           context.emit('update:paginate', { ...paginate })
         }
@@ -1285,7 +1430,69 @@ export const STable = defineComponent({
         }
       },
 
-      computeTableGroupStyle(column: STableColumnType) {
+      cleanSelectedRowKeys() {
+        if (props.selectedMode === 'Radio' && selectedRowKeys.value.length > 1) {
+          selectedRowKeys.value = selectedRowKeys.value.filter(key => props.preserveSelectedRowKeys || sourceRowKeys.value.includes(key)).filter((_, index) => index < 1)
+        }
+
+        if (!props.preserveSelectedRowKeys && !selectedRowKeys.value.every(key => sourceRowKeys.value.includes(key))) {
+          selectedRowKeys.value = selectedRowKeys.value.filter(key => sourceRowKeys.value.includes(key))
+        }
+      },
+
+      cleanExpandedRowKeys() {
+        if (!props.preserveExpandedRowKeys && !expandedRowKeys.value.every(key => sourceRowKeys.value.includes(key))) {
+          expandedRowKeys.value = expandedRowKeys.value.filter(key => sourceRowKeys.value.includes(key))
+        }
+      },
+
+      forceUpdate() {
+        // Update Columns
+        columnRowAttrs.value = []
+        columnCellAttrs.value = []
+        columnCellRender.value = []
+        columnSettingsAllTrees.value = []
+        treeColumns.value = Methoder.normalizeTreeColumns(props.columns, [])
+        listColumns.value = Methoder.normalizeListColumns(treeColumns.value, [])
+        dataColumns.value = Methoder.normalizeDataColumns(listColumns.value)
+        Methoder.normalizeTreeSettings(treeColumns.value)
+        Methoder.normalizeInitColumns(listColumns.value)
+
+        // Update DataSources
+        sourceRowAttrs.value = []
+        sourceRowStates.value = []
+        sourceCellProps.value = []
+        sourceCellAttrs.value = []
+        sourceCellRender.value = []
+        treeSources.value = Methoder.normalizeTreeSources(props.sources, [])
+        Methoder.normalizeInitSources(Computer.filterRangeSources.value)
+
+        // Update Summarys
+        listSummary.value = Methoder.normalizeListSummary(props.summarys)
+
+        // Update Clean RowKeys
+        Methoder.cleanSelectedRowKeys()
+        Methoder.cleanExpandedRowKeys()
+      }
+    }
+
+    const Observer = {
+      intersectionObserver: new IntersectionObserver(() => {
+
+      }),
+
+      mutationObserver: new MutationObserver(() => {
+
+      }),
+
+      resizeObserver: new ResizeObserver(() => {
+        Eventer.updateResizeContainer()
+        Eventer.updateScrollContainer()
+      })
+    }
+
+    const Eventer = {
+      computeTableGroupStyle(column: STableColumnType, index?: number) {
         const style = {
           width: helper.isString(column.width) ? column.width : 'auto',
           minWidth: helper.isString(column.width) ? column.width : 'auto'
@@ -1364,7 +1571,7 @@ export const STable = defineComponent({
         return style
       },
 
-      resizeContainerUpdate() {
+      updateResizeContainer(entries: Array<any> = []) {
         if (Normalizer.scroll.value.getScrollResizeContainer) {
           const container = Normalizer.scroll.value.getScrollResizeContainer()
           const clientRect = container && container.getBoundingClientRect()
@@ -1373,9 +1580,9 @@ export const STable = defineComponent({
         }
       },
 
-      scrollContainerUpdate() {
-        if (Optionser.scrollContainer.value) {
-          const scrollContainer = Optionser.scrollContainer.value
+      updateScrollContainer(entries: Array<any> = []) {
+        if (Optionser.refTableWrapper.value) {
+          const scrollContainer = Optionser.refTableWrapper.value
           const offsetHeight = scrollContainer.offsetHeight || 0
           const offsetWidth = scrollContainer.offsetWidth || 0
           const scrollHeight = scrollContainer.scrollHeight || 0
@@ -1411,65 +1618,45 @@ export const STable = defineComponent({
         }
       },
 
-      cleanSelectedRowKeys() {
-        if (props.selectedMode === 'Radio' && selectedRowKeys.value.length > 1) {
-          selectedRowKeys.value = selectedRowKeys.value.filter(key => props.preserveSelectedRowKeys || sourceRowKeys.value.includes(key)).filter((_, index) => index < 1)
-        }
+      documentMouseMove(event: MouseEvent) {
+        if (Optionser.resizeRcordColumn) {
+          const offsetX = event.clientX - Optionser.resizeRcordX
+          const maxWidth = Optionser.resizeRcordColumn.maxWidth || Infinity
+          const minWidth = Optionser.resizeRcordColumn.minWidth || 0
+          const nowWidth = Optionser.resizeRcordWidth + offsetX || 0
+          const nowBound = Optionser.resizeRcordBound + offsetX || 0
+          const $wrapper = Optionser.refTableWrapper.value
 
-        if (!props.preserveSelectedRowKeys && !selectedRowKeys.value.every(key => sourceRowKeys.value.includes(key))) {
-          selectedRowKeys.value = selectedRowKeys.value.filter(key => sourceRowKeys.value.includes(key))
+          if ($wrapper && nowBound > 0) {
+            nextTick(() => $wrapper.scroll({ left: Optionser.resizeRcordScoll + nowBound + 10 }))
+          }
+
+          Optionser.resizeRcordColumn.width = nowWidth < maxWidth ? nowWidth : maxWidth
+          Optionser.resizeRcordColumn.width = nowWidth > minWidth ? nowWidth : minWidth
+          Optionser.resizeRcordColumn.width = nowWidth > 0 ? nowWidth : 0
+
+          return
         }
       },
 
-      cleanExpandedRowKeys() {
-        if (!props.preserveExpandedRowKeys && !expandedRowKeys.value.every(key => sourceRowKeys.value.includes(key))) {
-          expandedRowKeys.value = expandedRowKeys.value.filter(key => sourceRowKeys.value.includes(key))
+      documentMouseup(event: MouseEvent) {
+        if (Optionser.resizeRcordColumn) {
+          const width = Optionser.resizeRcordColumn.width
+          const rowIndex = Optionser.resizeRcordColumn.rowIndex
+          const colIndex = Optionser.resizeRcordColumn.colIndex
+          const treeColumn = Methoder.extractTreeColumns(treeColumns.value, rowIndex, colIndex)!
+          treeColumn.referColumn.width = width
+          treeColumn.cacheColumn.width = width
         }
-      },
 
-      forceUpdate() {
-        // Update Columns
-        columnRowAttrs.value = []
-        columnCellAttrs.value = []
-        columnCellRender.value = []
-        columnSettingsAllTrees.value = []
-        treeColumns.value = Methoder.normalizeTreeColumns(props.columns, [], null)
-        listColumns.value = Methoder.normalizeListColumns(treeColumns.value, [], true)
-        dataColumns.value = Methoder.normalizeDataColumns(listColumns.value)
-        Methoder.normalizeTreeSettings(treeColumns.value)
-        Methoder.normalizeInitColumns(listColumns.value)
-
-        // Update DataSources
-        sourceRowAttrs.value = []
-        sourceRowStates.value = []
-        sourceCellProps.value = []
-        sourceCellAttrs.value = []
-        sourceCellRender.value = []
-        treeSources.value = Methoder.normalizeTreeSources(props.sources, [])
-        Methoder.normalizeInitSources(Computer.filterRangeSources.value)
-
-        // Update Summarys
-        listSummary.value = Methoder.normalizeListSummary(props.summarys)
-
-        // Update Clean RowKeys
-        Methoder.cleanSelectedRowKeys()
-        Methoder.cleanExpandedRowKeys()
+        Optionser.resizeRcordX = 0
+        Optionser.resizeRcordScoll = 0
+        Optionser.resizeRcordBound = 0
+        Optionser.resizeRcordWidth = 0
+        Optionser.resizeRcordColumn = null
+        Optionser.refTableWrapper.value?.classList.remove('user-select-none')
+        Optionser.refTableWrapper.value?.classList.remove('cursor-column-resize')
       }
-    }
-
-    const Observer = {
-      intersectionObserver: new IntersectionObserver(() => {
-
-      }),
-
-      mutationObserver: new MutationObserver(() => {
-
-      }),
-
-      resizeObserver: new ResizeObserver(() => {
-        Methoder.resizeContainerUpdate()
-        Methoder.scrollContainerUpdate()
-      })
     }
 
     watch([() => props.columns, () => props.sources, () => props.summarys], () => {
@@ -1483,8 +1670,8 @@ export const STable = defineComponent({
         columnCellAttrs.value = []
         columnCellRender.value = []
         columnSettingsAllTrees.value = []
-        treeColumns.value = Methoder.normalizeTreeColumns(props.columns, [], null)
-        listColumns.value = Methoder.normalizeListColumns(treeColumns.value, [], true)
+        treeColumns.value = Methoder.normalizeTreeColumns(props.columns, [])
+        listColumns.value = Methoder.normalizeListColumns(treeColumns.value, [])
         dataColumns.value = Methoder.normalizeDataColumns(listColumns.value)
         Methoder.normalizeTreeSettings(treeColumns.value)
         Methoder.normalizeInitColumns(listColumns.value)
@@ -1525,9 +1712,11 @@ export const STable = defineComponent({
     watch(() => loading.value, () => { context.emit('update:loading', loading.value) }, watchDeepOptions)
 
     onMounted(() => {
-      Methoder.resizeContainerUpdate()
-      Methoder.scrollContainerUpdate()
+      Eventer.updateResizeContainer()
+      Eventer.updateScrollContainer()
       Observer.resizeObserver.observe(Normalizer.scroll.value.getScrollResizeContainer?.() || document.documentElement)
+      document.addEventListener('mousemove', event => Eventer.documentMouseMove(event))
+      document.addEventListener('mouseup', event => Eventer.documentMouseup(event))
     })
 
     context.expose({
@@ -1540,7 +1729,7 @@ export const STable = defineComponent({
       const RenderColGroup = () => {
         return (
           <colgroup>
-            { dataColumns.value.map((column, index) => <col style={Methoder.computeTableGroupStyle(column)}/>) }
+            { ref(Computer.filterDataColumns).value.map(column => <col style={Eventer.computeTableGroupStyle(column)}/>) }
           </colgroup>
         )
       }
@@ -1564,7 +1753,7 @@ export const STable = defineComponent({
             style={style}
           >
             {
-              listColumns.value.map((columns, rowIndex) => (
+              ref(Computer.filterListColumns).value.map((columns, rowIndex) => (
                 <tr
                   { ...toRaw(unref(columnRowAttrs.value[rowIndex])) }
                   style={{ 'position': 'relative', 'z-index': listColumns.value.length - rowIndex }}
@@ -1572,7 +1761,7 @@ export const STable = defineComponent({
                   row-index={rowIndex}
                 >
                   {
-                    columns.filter(column => !!column).map(column => {
+                    columns.filter(column => !!column && column.rowSpan > 0 && column.colSpan > 0).map(column => {
                       const rowIndex = column.rowIndex
                       const colIndex = column.colIndex
                       const headerCell = ctx.slots.headerCell
@@ -1585,12 +1774,15 @@ export const STable = defineComponent({
                           rowIndex, colIndex
                         })
 
+                      const resizeActive = column.resizable === true && (column.minWidth || 0) < (column.maxWidth || Infinity)
+                      const resizeDriver = resizeActive ? <span class='s-table-thead-th-resizable'/> : null
+
                       return (
                         <th
                           colspan={column.colSpan}
                           rowspan={column.rowSpan}
                           class='s-table-thead-th'
-                          style={Methoder.computeTableChildStyle(column, 'thead')}
+                          style={Eventer.computeTableChildStyle(column, 'thead')}
                           { ...toRaw(unref(columnCellAttrs.value[rowIndex][colIndex])) }
                           col-index={column.colIndex}
                           row-index={column.rowIndex}
@@ -1598,6 +1790,7 @@ export const STable = defineComponent({
                           row-offset={column.rowOffset}
                         >
                           { computeTitle }
+                          { resizeDriver }
                         </th>
                       )
                     })
@@ -1634,7 +1827,7 @@ export const STable = defineComponent({
                     row-index={rowIndex}
                   >
                     {
-                      dataColumns.value.map((column, colIndex) => {
+                      ref(Computer.filterDataColumns).value.map((column, colIndex) => {
                         const columnKey = column.key
                         const bodyerCell = ctx.slots.bodyerCell
                         const renderValue = Methoder.getValue(sourceCellRender.value[globalIndex][columnKey])
@@ -1656,7 +1849,7 @@ export const STable = defineComponent({
                           <td
                             colspan={column.colSpan}
                             class='s-table-tbody-td'
-                            style={Methoder.computeTableChildStyle(column, 'tbody')}
+                            style={Eventer.computeTableChildStyle(column, 'tbody')}
                             { ...toRaw(unref(sourceCellAttrs.value[globalIndex][columnKey])) }
                             col-index={column.colIndex}
                             col-offset={column.colOffset}
@@ -1706,7 +1899,7 @@ export const STable = defineComponent({
                     row-index={rowIndex}
                   >
                     {
-                      dataColumns.value.map((column, colIndex) => {
+                      ref(Computer.filterDataColumns).value.map((column, colIndex) => {
                         const columnKey = column.key
                         const footerCell = ctx.slots.footerCell
                         const renderValue = Methoder.getValue(summaryCellRender.value[rowIndex][columnKey])
@@ -1726,7 +1919,7 @@ export const STable = defineComponent({
                           <td
                             colspan={column.colSpan}
                             class='s-table-tfoot-td'
-                            style={Methoder.computeTableChildStyle(column, 'tfoot')}
+                            style={Eventer.computeTableChildStyle(column, 'tfoot')}
                             { ...toRaw(unref(sourceCellAttrs.value[rowIndex][columnKey])) }
                             col-index={column.colIndex}
                             col-offset={column.colOffset}
@@ -1745,9 +1938,56 @@ export const STable = defineComponent({
         )
       }
 
+      const WrapperMousedown = (event: MouseEvent) => {
+        if (!(event.target instanceof HTMLElement)) {
+          return
+        }
+
+        if (!Optionser.resizeRcordColumn && event.target.classList.contains('s-table-thead-th-resizable')) {
+          const $target = event.target
+          const $wrapper = Optionser.refTableWrapper.value!
+          const $theader = $target.closest('.s-table-thead-th')!
+          const rowIndex = +$theader.getAttribute('row-index')!
+          const colIndex = +$theader.getAttribute('col-index')!
+          const findColumn = Methoder.extractListColumns(Computer.filterListColumns.value, rowIndex, colIndex)
+
+          if (findColumn) {
+            const colSpan = findColumn.colSpan
+            const colOffset = findColumn.colOffset
+            Optionser.resizeRcordColumn = Computer.filterDataColumns.value.find(column => colSpan + colOffset === column.colSpan + column.colOffset) || null
+          }
+
+          if (Optionser.resizeRcordColumn) {
+            const rowIndex = Optionser.resizeRcordColumn.rowIndex
+            const colIndex = Optionser.resizeRcordColumn.colIndex
+            const $theader = $wrapper.querySelector(`.s-table-thead-th[row-index="${rowIndex}"][col-index="${colIndex}"]`)!
+            const wrapperRect = $wrapper.getBoundingClientRect()
+            const theaderRect = $theader.getBoundingClientRect()
+
+            $wrapper.classList.add('user-select-none')
+            $wrapper.classList.add('cursor-column-resize')
+            Optionser.resizeRcordWidth = theaderRect.width
+            Optionser.resizeRcordScoll = $wrapper.scrollLeft
+            Optionser.resizeRcordBound = theaderRect.right - wrapperRect.right
+            Optionser.resizeRcordX = event.clientX
+          }
+        }
+      }
+
+      const WrapperAttributes = {
+        border: props.border === true || dataColumns.value.length > 1
+      }
+
       return (
-        <div class='s-nested-table-wrapper'>
+        <div
+          ref={Optionser.refTableWrapper}
+          class={'s-nested-table-wrapper'}
+          style={{ height: Computer.tableBodyHeight.value }} // @ts-ignore
+          onScrollPassive={Eventer.updateScrollContainer}
+          onMousedown={WrapperMousedown}
+        >
           <table
+            {...WrapperAttributes}
             class='s-nested-table'
             style={{ width: Computer.tableBodyWidth.value, tableLayout: props.layout }}
           >
@@ -1761,21 +2001,10 @@ export const STable = defineComponent({
     }
 
     const RenderTableContianer = (_: any, ctx: typeof context) => {
-      const events = {
-        on: {
-          '&scroll': Methoder.scrollContainerUpdate
-        }
-      }
-
       return (
         <section class={['s-table-container', `s-table-${Normalizer.size.value}`]}>
           <div class='s-table-spining-container'>
-            <div
-              ref={Optionser.scrollContainer}
-              class={['s-table-spining-content', { spining: loading }]}
-              style={{ height: Computer.tableBodyHeight.value }}
-              { ...events }
-            >
+            <div class={['s-table-spining-content', { spining: loading }]}>
               <RenderTableWrapper v-slots={ctx.slots}/>
             </div>
           </div>
@@ -1788,5 +2017,3 @@ export const STable = defineComponent({
   slots: {} as STableeDefineSlots<STableRecordType>,
   methods: {} as STableDefineMethods
 })
-
-export default STable
