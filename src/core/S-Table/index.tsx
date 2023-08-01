@@ -1581,28 +1581,50 @@ export const STable = defineComponent({
 
     const Eventer = {
       computeTableGroupStyle(column: STableColumnType) {
+        const width = helper.isFiniteNumber(parseInt(`${column.width}`)) ? parseInt(`${column.width}`) : 'auto'
+        const minWidth = helper.isFiniteNumber(parseInt(`${column.minWidth}`)) ? parseInt(`${column.minWidth}`) : 0
+        const maxWidth = helper.isFiniteNumber(parseInt(`${column.maxWidth}`)) ? parseInt(`${column.maxWidth}`) : Infinity
+
         const style = {
-          width: '0',
-          minWidth: '0',
+          width: 'auto',
+          minWidth: `0px`,
           maxWidth: 'none'
         }
 
-        if (/^\+?\d+\.?\d*(px)?$/.test(`${column.width}`)) {
-          style.width = parseInt(`${column.width}`) + 'px'
+        if (/^\+?\d+\.?\d*(px)?$/.test(`${width}`)) {
+          style.width = parseInt(`${width}`) + 'px'
         }
 
-        if (/^\+?\d+\.?\d*(px)?$/.test(`${column.maxWidth}`)) {
-          style.width = parseInt(`${style.width}`) < parseInt(`${column.maxWidth}`) ? parseInt(`${style.width}`) + 'px' : parseInt(`${column.maxWidth}`) + 'px'
-          style.maxWidth = parseInt(`${column.maxWidth}`) + 'px'
+        if (/^\+?\d+\.?\d*(px)?$/.test(`${maxWidth}`)) {
+          if (style.width !== 'auto') {
+            style.width = parseInt(`${style.width}`) < parseInt(`${maxWidth}`)
+              ? parseInt(`${style.width}`) + 'px'
+              : parseInt(`${maxWidth}`) + 'px'
+          }
+
+          style.maxWidth = parseInt(`${maxWidth}`) + 'px'
         }
 
-        if (/^\+?\d+\.?\d*(px)?$/.test(`${column.minWidth}`)) {
-          style.width = parseInt(`${style.width}`) > parseInt(`${column.minWidth}`) ? parseInt(`${style.width}`) + 'px' : parseInt(`${column.minWidth}`) + 'px'
-          style.minWidth = parseInt(`${column.minWidth}`) + 'px'
+        if (/^\+?\d+\.?\d*(px)?$/.test(`${minWidth}`)) {
+          if (style.width !== 'auto') {
+            style.width = parseInt(`${style.width}`) > parseInt(`${minWidth}`)
+              ? parseInt(`${style.width}`) + 'px'
+              : parseInt(`${minWidth}`) + 'px'
+          }
+
+          style.minWidth = parseInt(`${minWidth}`) + 'px'
+        }
+
+        if (/^\+?\d+\.?\d*(px)?$/.test(`${minWidth}`) && /^\+?\d+\.?\d*(px)?$/.test(`${maxWidth}`)) {
+          style.width = minWidth !== maxWidth
+            ? parseInt(`${style.width}`) + 'px'
+            : parseInt(`${minWidth}`) + 'px'
         }
 
         if (/^\+?\d+\.?\d*(px)?$/.test(`${style.width}`)) {
-          style.width = parseInt(`${style.width}`) > 0 ? parseInt(`${style.width}`) + 'px' : 'auto'
+          style.width = parseInt(`${style.width}`) >= 0
+            ? parseInt(`${style.width}`) + 'px'
+            : 'auto'
         }
 
         return style
@@ -1753,6 +1775,22 @@ export const STable = defineComponent({
         }
       },
 
+      updateColGroupRender(entries: Array<any> = []) {
+        if (Optionser.refTableWrapper.value) {
+          Array.from<HTMLElement>(Optionser.refTableWrapper.value.querySelectorAll('table > colgroup > col')).forEach(col => {
+            const maxWidth = col.style.maxWidth ? parseInt(col.style.maxWidth) : Infinity
+            const minWidth = col.style.minWidth ? parseInt(col.style.minWidth) : 0
+            const width = col.getBoundingClientRect().width
+
+            if (width < minWidth || width > maxWidth) {
+              col.style.width = `${width < minWidth ? minWidth : width > maxWidth ? maxWidth : width}px`
+            }
+          })
+
+          nextTick(() => Eventer.updateScrollContainer())
+        }
+      },
+
       documentMouseMove(event: MouseEvent) {
         if (Optionser.resizeRcordColumn) {
           const offsetX = event.clientX - Optionser.resizeRcordX
@@ -1845,6 +1883,7 @@ export const STable = defineComponent({
     onMounted(() => {
       Eventer.updateResizeContainer()
       Eventer.updateScrollContainer()
+      Eventer.updateColGroupRender()
       Observer.resizeObserver.observe(Normalizer.scroll.value.getScrollResizeContainer?.() || document.documentElement)
       document.addEventListener('mousemove', event => Eventer.documentMouseMove(event))
       document.addEventListener('mouseup', event => Eventer.documentMouseup(event))
@@ -2118,7 +2157,7 @@ export const STable = defineComponent({
 
     const RenderTableContianer = (_: any, ctx: typeof context) => {
       return (
-        <section class={['s-table-container', `s-table-${Normalizer.size.value}`]}>
+        <section class={['s-table-container', `s-${Normalizer.size.value}`]}>
           <div class='s-table-spining-container'>
             <div class={['s-table-spining-content', { spining: loading }]}>
               <RenderTableWrapper v-slots={ctx.slots}/>
