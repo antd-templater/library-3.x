@@ -20,6 +20,7 @@
     "STable": false,
     "STableStickyType": false,
     "STableScrollType": false,
+    "STableSorterType": false,
     "STableRecordType": false,
     "STablePaginateType": false,
     "STableRowKey": false,

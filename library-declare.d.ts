@@ -60,6 +60,7 @@ declare global {
   export type  {
     STableStickyType,
     STableScrollType,
+    STableSorterType,
     STableRecordType,
     STablePaginateType,
     STableRowKey,

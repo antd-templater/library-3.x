@@ -22,6 +22,11 @@ export interface STableScrollType {
   getScrollResizeContainer?: () => HTMLElement;
 }
 
+export interface STableSorterType {
+  field: string | string[];
+  value: 'ascend'| 'descend';
+}
+
 export interface STableRecordType {
   [field: string]: any;
 }
@@ -84,10 +89,9 @@ export interface STableHeaderCellRender<RecordType = STableRecordType> {
     props?: {
       align?: 'left' | 'center' | 'right';
       fixed?: 'left' | 'right' | false;
-      width?: number | string;
+      width?: number;
       minWidth?: number;
       maxWidth?: number;
-      resizable?: boolean;
       ellipsis?: boolean;
       colSpan?: number;
       rowSpan?: number;
@@ -173,7 +177,7 @@ export interface STablePartColumnType<RecordType = STableRecordType> {
   children?: STablePartColumnType<RecordType>[];
   align?: 'left' | 'center' | 'right';
   fixed?: 'left' | 'right' | false;
-  width?: number | string;
+  width?: number;
   minWidth?: number;
   maxWidth?: number;
   resizable?: boolean;
@@ -184,7 +188,7 @@ export interface STablePartColumnType<RecordType = STableRecordType> {
   sorterField?: string | string[];
   sortDirections?: STableSortDirections;
   defaultSorterValue?: 'ascend'| 'descend';
-  sorterValueChange?: (option: { value: 'ascend'| 'descend' | ''; values: Array<{ field: string | string[]; value: 'ascend'| 'descend' }>; }) => void;
+  sorterValueChange?: (option: { value: 'ascend'| 'descend' | ''; values: Array<STableSorterType>; }) => void;
   customHeaderCellAttrs?: (option: { column: DeepReadonly<STableColumnType<RecordType>>; rowIndex: number; colIndex: number; }) => STableRefWrapper<HTMLAttributes>;
   customBodyerCellAttrs?: (option: { value: any; record: DeepReadonly<RecordType>, rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: number[]; globalIndex: number; column: DeepReadonly<STableColumnType<RecordType>>; colIndex: number; }) => STableRefWrapper<HTMLAttributes>;
   customFooterCellAttrs?: (option: { value: any; record: DeepReadonly<RecordType>; rowIndex: number; column: DeepReadonly<STableColumnType<RecordType>>; colIndex: number; sources: DeepReadonly<RecordType[]>; paginate: DeepReadonly<STablePaginateType>; }) => STableRefWrapper<HTMLAttributes>;
@@ -201,9 +205,9 @@ export interface STableColumnType<RecordType = STableRecordType> {
   children: STableColumnType<RecordType>[];
   align: 'left' | 'center' | 'right';
   fixed: 'left' | 'right' | false;
-  width?: number | string;
-  minWidth?: number;
-  maxWidth?: number;
+  width?: number;
+  minWidth: number;
+  maxWidth: number;
   resizable: boolean;
   ellipsis: boolean;
   colIndex: number;
@@ -222,8 +226,8 @@ export interface STableColumnType<RecordType = STableRecordType> {
   sortDirections?: STableSortDirections;
   defaultSorterValue: 'ascend'| 'descend' | '';
   currentSorterValue: 'ascend'| 'descend' | '';
-  activedSorterValues: Array<{ field: string | string[]; value: 'ascend'| 'descend' }>;
-  sorterValueChange?: (option: { value: 'ascend'| 'descend' | ''; values: Array<{ field: string | string[]; value: 'ascend'| 'descend' }>; }) => void;
+  activedSorterValues: Array<STableSorterType>;
+  sorterValueChange?: (option: { value: 'ascend'| 'descend' | ''; values: Array<STableSorterType>; }) => void;
   customHeaderCellAttrs?: (option: { column: DeepReadonly<STableColumnType<RecordType>>; rowIndex: number; colIndex: number; }) => STableRefWrapper<HTMLAttributes>;
   customBodyerCellAttrs?: (option: { value: any; record: DeepReadonly<RecordType>, rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: number[]; globalIndex: number; column: DeepReadonly<STableColumnType<RecordType>>; colIndex: number; }) => STableRefWrapper<HTMLAttributes>;
   customFooterCellAttrs?: (option: { value: any; record: DeepReadonly<RecordType>; rowIndex: number; column: DeepReadonly<STableColumnType<RecordType>>; colIndex: number; sources: DeepReadonly<RecordType[]>; paginate: DeepReadonly<STablePaginateType>; }) => STableRefWrapper<HTMLAttributes>;
@@ -274,17 +278,17 @@ export const STable = defineComponent({
     customBodyerRowAttrs: VueTypes.func<STableCustomBodyerRowAttrs>().def(undefined),
     customFooterRowAttrs: VueTypes.func<STableCustomFooterRowAttrs>().def(undefined),
     customBodyerRowStates: VueTypes.func<STableCustomBodyerRowStates>().def(undefined),
-    selectedMode: VueTypes.string<'Radio' | 'Checkbox'>().def('Checkbox'),
+    selectedRowMode: VueTypes.string<'Radio' | 'Checkbox'>().def('Checkbox'),
     selectedRowKeys: VueTypes.array<STableKey>().def(() => []),
     expandedRowKeys: VueTypes.array<STableKey>().def(() => []),
-    selectedStrictly: VueTypes.bool().def(true),
     preserveSelectedRowKeys: VueTypes.bool().def(false),
     preserveExpandedRowKeys: VueTypes.bool().def(false),
     defaultSelectAllRows: VueTypes.bool().def(false),
     defaultExpandAllRows: VueTypes.bool().def(false),
+    columnPresetResizable: VueTypes.bool().def(false),
     columnSorterMultiple: VueTypes.bool().def(false),
-    columnSorterTooltip: VueTypes.bool().def(true),
-    expandRowByClick: VueTypes.bool().def(false),
+    rowSelectedStrictly: VueTypes.bool().def(true),
+    rowExpandedByClick: VueTypes.bool().def(false),
     selectIndentSize: VueTypes.number().def(15),
     expandIndentSize: VueTypes.number().def(15),
     loadOnScroll: VueTypes.bool().def(false),
@@ -300,8 +304,9 @@ export const STable = defineComponent({
     'update:selectedRowKeys': (keys: Array<STableKey>) => true,
     'update:expandedRowKeys': (keys: Array<STableKey>) => true,
     'update:paginate': (paginate: STablePaginateType) => true,
+    'update:summarys': (summarys: STableRecordType[]) => true,
     'update:sources': (sources: STableRecordType[]) => true,
-    'sorter': (options: Array<{ field: string | string[]; value: 'ascend'| 'descend' }>) => true,
+    'sorter': (options: Array<STableSorterType>) => true,
     'expand': (keys: Array<STableKey>) => true,
     'select': (keys: Array<STableKey>) => true,
     'paginate': (pages: STablePaginateType) => true
@@ -312,6 +317,7 @@ export const STable = defineComponent({
     const renderRowRanger = reactive({ renderOffset: [0, ~~(window.innerHeight / renderRowPresets.minHeight)], renderBuffer: [0, 10] })
     const configProvider = inject('configProvider', defaultConfigProvider)
 
+    const listSorters: Ref<STableSorterType[]> = ref([])
     const treeColumns: Ref<STableWrapColumnType[]> = ref([])
     const listColumns: Ref<Array<STableColumnType>[]> = ref([])
     const dataColumns: Ref<Array<STableColumnType>> = ref([])
@@ -366,10 +372,8 @@ export const STable = defineComponent({
 
       // column - resizable
       resizeRcordX: 0,
-      resizeRcordScoll: 0,
-      resizeRcordBound: 0,
       resizeRcordWidth: 0,
-      resizeRcordColumn: null as STableColumnType | null
+      resizeRcordColumn: null as STableColumnType | null | undefined
 
       // column - draggable
     }
@@ -724,10 +728,10 @@ export const STable = defineComponent({
         })
       },
 
-      extractTreeColumns(columns: STableWrapColumnType[], rowIndex: number, colIndex: number) {
+      findTreeColumns(columns: STableWrapColumnType[], rowIndex: number, colIndex: number) {
         for (const column of columns) {
           if (column.referColumn.rowIndex !== rowIndex) {
-            const treeColumn = Methoder.extractTreeColumns(column.treeChildren, rowIndex, colIndex) as STableWrapColumnType | null
+            const treeColumn = Methoder.findTreeColumns(column.treeChildren, rowIndex, colIndex) as STableWrapColumnType | null
 
             if (treeColumn) {
               return treeColumn as STableWrapColumnType
@@ -742,7 +746,7 @@ export const STable = defineComponent({
         return null
       },
 
-      extractListColumns(arrays: STableColumnType[][], rowIndex: number, colIndex: number) {
+      findListColumns(arrays: STableColumnType[][], rowIndex: number, colIndex: number) {
         for (const columns of arrays) {
           for (const column of columns) {
             if (column?.rowIndex === rowIndex && column?.colIndex === colIndex) {
@@ -876,6 +880,10 @@ export const STable = defineComponent({
         let offset = parent ? parent.referColumn.colOffset : 0
 
         for (const [index, column] of columns.entries()) {
+          const columnMinWidth = column.minWidth || 0
+          const columnMaxWidth = column.maxWidth || Infinity
+          const columnResizable = helper.isBoolean(column.resizable) ? column.resizable : parent?.referColumn.resizable ?? props.columnPresetResizable
+
           const wrapColumn: STableWrapColumnType = {
             key: column.key || (helper.isArray(column.dataIndex) ? column.dataIndex.join('.') : column.dataIndex),
             childKeys: [],
@@ -889,9 +897,9 @@ export const STable = defineComponent({
               align: column.align ?? parent?.referColumn.align ?? 'left',
               fixed: column.fixed ?? parent?.referColumn.fixed ?? false,
               width: column.width,
-              minWidth: column.minWidth,
-              maxWidth: column.maxWidth,
-              resizable: column.resizable ?? parent?.referColumn.resizable ?? false,
+              minWidth: columnMinWidth,
+              maxWidth: columnMaxWidth,
+              resizable: (columnMinWidth < columnMaxWidth) && columnResizable === true,
               ellipsis: column.ellipsis ?? parent?.referColumn.ellipsis ?? false,
               colIndex: offset + index,
               rowIndex: parent ? parent.referColumn.rowIndex + 1 : 0,
@@ -909,7 +917,7 @@ export const STable = defineComponent({
               sorterField: column.sorterField ?? column.dataIndex,
               defaultSorterValue: column.defaultSorterValue || '',
               currentSorterValue: '',
-              activedSorterValues: [] as Array<{ field: string | string[]; value: 'ascend'| 'descend'; }>,
+              activedSorterValues: listSorters.value as Array<STableSorterType>,
               sorterValueChange: column.sorterValueChange ?? parent?.referColumn.sorterValueChange,
               customHeaderCellAttrs: column.customHeaderCellAttrs ?? parent?.referColumn.customHeaderCellAttrs,
               customBodyerCellAttrs: column.customBodyerCellAttrs ?? parent?.referColumn.customBodyerCellAttrs,
@@ -929,11 +937,13 @@ export const STable = defineComponent({
 
           if (helper.isNotEmptyArray(column.children)) {
             const childTrees = Methoder.normalizeTreeColumns(column.children, [], wrapColumn)
-            const childKeys = [...childTrees.map(tree => tree.key), ...childTrees.map(tree => tree.childKeys).flat()]
             const rowMaxSpan = Math.max(...childTrees.map(child => child.referColumn.rowMaxSpan), wrapColumn.referColumn.rowMaxSpan)
             const colMaxSpan = childTrees.reduce((colMaxSpan, child) => colMaxSpan + child.referColumn.colMaxSpan, 0) || 1
+            const childKeys = [...childTrees.map(tree => tree.key), ...childTrees.map(tree => tree.childKeys).flat()]
+            const resizable = childTrees.some(child => child.referColumn.resizable)
             wrapColumn.referColumn.rowMaxSpan = rowMaxSpan
             wrapColumn.referColumn.colMaxSpan = colMaxSpan
+            wrapColumn.referColumn.resizable = resizable
             wrapColumn.treeChildren = childTrees
             wrapColumn.childKeys = childKeys
             offset += colMaxSpan - 1
@@ -1103,9 +1113,8 @@ export const STable = defineComponent({
                 column.align = Object.hasOwn(renderNode.props, 'align') ? renderNode.props.align || 'left' : column.align
                 column.fixed = Object.hasOwn(renderNode.props, 'fixed') ? renderNode.props.fixed || false : column.fixed
                 column.width = Object.hasOwn(renderNode.props, 'width') ? renderNode.props.width || undefined : column.width
-                column.minWidth = Object.hasOwn(renderNode.props, 'minWidth') ? renderNode.props.minWidth || undefined : column.minWidth
-                column.maxWidth = Object.hasOwn(renderNode.props, 'maxWidth') ? renderNode.props.maxWidth || undefined : column.maxWidth
-                column.resizable = Object.hasOwn(renderNode.props, 'resizable') ? renderNode.props.resizable || false : column.resizable
+                column.minWidth = Object.hasOwn(renderNode.props, 'minWidth') ? renderNode.props.minWidth || 0 : column.minWidth
+                column.maxWidth = Object.hasOwn(renderNode.props, 'maxWidth') ? renderNode.props.maxWidth || Infinity : column.maxWidth
                 column.ellipsis = Object.hasOwn(renderNode.props, 'ellipsis') ? renderNode.props.ellipsis || false : column.ellipsis
                 column.colSpan = Object.hasOwn(renderNode.props, 'colSpan') ? helper.isFiniteNumber(renderNode.props.colSpan) ? renderNode.props.colSpan : column.colSpan : column.colSpan
                 column.rowSpan = Object.hasOwn(renderNode.props, 'rowSpan') ? helper.isFiniteNumber(renderNode.props.rowSpan) ? renderNode.props.rowSpan : column.rowSpan : column.rowSpan
@@ -1127,9 +1136,8 @@ export const STable = defineComponent({
                 column.align = Object.hasOwn(renderNode.props, 'align') ? renderNode.props.align || 'left' : column.align
                 column.fixed = Object.hasOwn(renderNode.props, 'fixed') ? renderNode.props.fixed || false : column.fixed
                 column.width = Object.hasOwn(renderNode.props, 'width') ? renderNode.props.width || undefined : column.width
-                column.minWidth = Object.hasOwn(renderNode.props, 'minWidth') ? renderNode.props.minWidth || undefined : column.minWidth
-                column.maxWidth = Object.hasOwn(renderNode.props, 'maxWidth') ? renderNode.props.maxWidth || undefined : column.maxWidth
-                column.resizable = Object.hasOwn(renderNode.props, 'resizable') ? renderNode.props.resizable || false : column.resizable
+                column.minWidth = Object.hasOwn(renderNode.props, 'minWidth') ? renderNode.props.minWidth || 0 : column.minWidth
+                column.maxWidth = Object.hasOwn(renderNode.props, 'maxWidth') ? renderNode.props.maxWidth || Infinity : column.maxWidth
                 column.ellipsis = Object.hasOwn(renderNode.props, 'ellipsis') ? renderNode.props.ellipsis || false : column.ellipsis
                 column.colSpan = Object.hasOwn(renderNode.props, 'colSpan') ? helper.isFiniteNumber(renderNode.props.colSpan) ? renderNode.props.colSpan : column.colSpan : column.colSpan
                 column.rowSpan = Object.hasOwn(renderNode.props, 'rowSpan') ? helper.isFiniteNumber(renderNode.props.rowSpan) ? renderNode.props.rowSpan : column.rowSpan : column.rowSpan
@@ -1431,7 +1439,7 @@ export const STable = defineComponent({
       },
 
       cleanSelectedRowKeys() {
-        if (props.selectedMode === 'Radio' && selectedRowKeys.value.length > 1) {
+        if (props.selectedRowMode === 'Radio' && selectedRowKeys.value.length > 1) {
           selectedRowKeys.value = selectedRowKeys.value.filter(key => props.preserveSelectedRowKeys || sourceRowKeys.value.includes(key)).filter((_, index) => index < 1)
         }
 
@@ -1494,17 +1502,27 @@ export const STable = defineComponent({
     const Eventer = {
       computeTableGroupStyle(column: STableColumnType, index?: number) {
         const style = {
-          width: helper.isString(column.width) ? column.width : 'auto',
-          minWidth: helper.isString(column.width) ? column.width : 'auto'
+          width: '0',
+          minWidth: '0',
+          maxWidth: 'none'
         }
 
         if (/^\+?\d+\.?\d*(px)?$/.test(`${column.width}`)) {
           style.width = parseInt(`${column.width}`) + 'px'
-          style.minWidth = parseInt(`${column.width}`) + 'px'
+        }
+
+        if (/^\+?\d+\.?\d*(px)?$/.test(`${column.maxWidth}`)) {
+          style.width = parseInt(`${style.width}`) < parseInt(`${column.maxWidth}`) ? parseInt(`${style.width}`) + 'px' : parseInt(`${column.maxWidth}`) + 'px'
+          style.maxWidth = parseInt(`${column.maxWidth}`) + 'px'
         }
 
         if (/^\+?\d+\.?\d*(px)?$/.test(`${column.minWidth}`)) {
+          style.width = parseInt(`${style.width}`) > parseInt(`${column.minWidth}`) ? parseInt(`${style.width}`) + 'px' : parseInt(`${column.minWidth}`) + 'px'
           style.minWidth = parseInt(`${column.minWidth}`) + 'px'
+        }
+
+        if (/^\+?\d+\.?\d*(px)?$/.test(`${style.width}`)) {
+          style.width = parseInt(`${style.width}`) > 0 ? parseInt(`${style.width}`) + 'px' : 'auto'
         }
 
         return style
@@ -1595,13 +1613,15 @@ export const STable = defineComponent({
           Optionser.srcollRight.value = scrollWidth - (scrollLeft + offsetWidth) || 0
           Optionser.srcollBottom.value = scrollHeight - (scrollTop + offsetHeight) || 0
 
-          Optionser.tableTheadSizes.value = dataColumns.value.map(column => {
+          Optionser.tableTheadSizes.value = Computer.filterDataColumns.value.map(column => {
             const rowSpan = column.rowSpan
             const colSpan = column.colSpan
             const rowIndex = column.rowIndex
             const colIndex = column.colIndex
             const rowOffset = column.rowOffset
             const colOffset = column.colOffset
+            const minWidth = column.minWidth || 0
+            const maxWidth = column.maxWidth || Infinity
             const tableThead = scrollContainer.querySelector<HTMLElement>(`.s-table-thead-th[row-index="${rowIndex}"][col-index="${colIndex}"]`)
 
             return {
@@ -1611,6 +1631,8 @@ export const STable = defineComponent({
               colIndex,
               rowOffset,
               colOffset,
+              minWidth,
+              maxWidth,
               width: tableThead?.offsetWidth || 0,
               height: tableThead?.offsetHeight || 0
             }
@@ -1624,18 +1646,12 @@ export const STable = defineComponent({
           const maxWidth = Optionser.resizeRcordColumn.maxWidth || Infinity
           const minWidth = Optionser.resizeRcordColumn.minWidth || 0
           const nowWidth = Optionser.resizeRcordWidth + offsetX || 0
-          const nowBound = Optionser.resizeRcordBound + offsetX || 0
-          const $wrapper = Optionser.refTableWrapper.value
-
-          if ($wrapper && nowBound > 0) {
-            nextTick(() => $wrapper.scroll({ left: Optionser.resizeRcordScoll + nowBound + 10 }))
-          }
 
           Optionser.resizeRcordColumn.width = nowWidth < maxWidth ? nowWidth : maxWidth
           Optionser.resizeRcordColumn.width = nowWidth > minWidth ? nowWidth : minWidth
           Optionser.resizeRcordColumn.width = nowWidth > 0 ? nowWidth : 0
 
-          return
+          nextTick(() => Eventer.updateScrollContainer())
         }
       },
 
@@ -1644,18 +1660,16 @@ export const STable = defineComponent({
           const width = Optionser.resizeRcordColumn.width
           const rowIndex = Optionser.resizeRcordColumn.rowIndex
           const colIndex = Optionser.resizeRcordColumn.colIndex
-          const treeColumn = Methoder.extractTreeColumns(treeColumns.value, rowIndex, colIndex)!
+          const treeColumn = Methoder.findTreeColumns(treeColumns.value, rowIndex, colIndex)!
           treeColumn.referColumn.width = width
           treeColumn.cacheColumn.width = width
         }
 
         Optionser.resizeRcordX = 0
-        Optionser.resizeRcordScoll = 0
-        Optionser.resizeRcordBound = 0
         Optionser.resizeRcordWidth = 0
         Optionser.resizeRcordColumn = null
-        Optionser.refTableWrapper.value?.classList.remove('user-select-none')
-        Optionser.refTableWrapper.value?.classList.remove('cursor-column-resize')
+        document.body.classList.remove('user-select-none')
+        document.body.classList.remove('cursor-column-resize')
       }
     }
 
@@ -1698,7 +1712,7 @@ export const STable = defineComponent({
 
     watch(() => props.loading, state => { loading.value = state })
     watch(() => props.paginate, paginate => { Paginator.update(paginate) })
-    watch(() => props.selectedMode, selectedMode => { selectedRowKeys.value = [] })
+    watch(() => props.selectedRowMode, () => { selectedRowKeys.value = [] })
     watch(() => [...props.selectedRowKeys], () => { Methoder.updateSetupSelectedRowKeys(props.selectedRowKeys) })
     watch(() => [...props.expandedRowKeys], () => { Methoder.updateSetupExpandedRowKeys(props.expandedRowKeys) })
 
@@ -1766,6 +1780,7 @@ export const STable = defineComponent({
                       const colIndex = column.colIndex
                       const headerCell = ctx.slots.headerCell
                       const renderTitle = Methoder.getValue(columnCellRender.value[rowIndex][colIndex])
+
                       const computeTitle = Methoder.isVueNode(renderTitle) || !helper.isFunction(headerCell)
                         ? renderTitle
                         : headerCell({
@@ -1774,16 +1789,17 @@ export const STable = defineComponent({
                           rowIndex, colIndex
                         })
 
-                      const resizeActive = column.resizable === true && (column.minWidth || 0) < (column.maxWidth || Infinity)
-                      const resizeDriver = resizeActive ? <span class='s-table-thead-th-resizable'/> : null
+                      const resizeDriver = column.resizable === true
+                        ? <span class='s-table-thead-th-resizable'/>
+                        : null
 
                       return (
                         <th
                           colspan={column.colSpan}
                           rowspan={column.rowSpan}
-                          class='s-table-thead-th'
-                          style={Eventer.computeTableChildStyle(column, 'thead')}
                           { ...toRaw(unref(columnCellAttrs.value[rowIndex][colIndex])) }
+                          style={Eventer.computeTableChildStyle(column, 'thead')}
+                          class='s-table-thead-th'
                           col-index={column.colIndex}
                           row-index={column.rowIndex}
                           col-offset={column.colOffset}
@@ -1819,8 +1835,8 @@ export const STable = defineComponent({
 
                 return (
                   <tr
-                    class='s-table-tbody-tr'
                     { ...toRaw(unref(sourceRowAttrs.value[globalIndex])) }
+                    class='s-table-tbody-tr'
                     row-global-index={globalIndex}
                     row-group-index={groupIndex}
                     row-group-level={groupLevel}
@@ -1848,9 +1864,9 @@ export const STable = defineComponent({
                         return (
                           <td
                             colspan={column.colSpan}
-                            class='s-table-tbody-td'
-                            style={Eventer.computeTableChildStyle(column, 'tbody')}
                             { ...toRaw(unref(sourceCellAttrs.value[globalIndex][columnKey])) }
+                            style={Eventer.computeTableChildStyle(column, 'tbody')}
+                            class='s-table-tbody-td'
                             col-index={column.colIndex}
                             col-offset={column.colOffset}
                             row-global-index={globalIndex}
@@ -1894,8 +1910,8 @@ export const STable = defineComponent({
 
                 return (
                   <tr
-                    class='s-table-tfoot-tr'
                     { ...toRaw(unref(summaryRowAttrs.value[rowIndex])) }
+                    class='s-table-tfoot-tr'
                     row-index={rowIndex}
                   >
                     {
@@ -1918,9 +1934,9 @@ export const STable = defineComponent({
                         return (
                           <td
                             colspan={column.colSpan}
-                            class='s-table-tfoot-td'
-                            style={Eventer.computeTableChildStyle(column, 'tfoot')}
                             { ...toRaw(unref(sourceCellAttrs.value[rowIndex][columnKey])) }
+                            style={Eventer.computeTableChildStyle(column, 'tfoot')}
+                            class='s-table-tfoot-td'
                             col-index={column.colIndex}
                             col-offset={column.colOffset}
                             row-index={rowIndex}
@@ -1949,27 +1965,30 @@ export const STable = defineComponent({
           const $theader = $target.closest('.s-table-thead-th')!
           const rowIndex = +$theader.getAttribute('row-index')!
           const colIndex = +$theader.getAttribute('col-index')!
-          const findColumn = Methoder.extractListColumns(Computer.filterListColumns.value, rowIndex, colIndex)
+          const findColumn = rowIndex >= 0 && colIndex >= 0 && Methoder.findListColumns(Computer.filterListColumns.value, rowIndex, colIndex)
 
           if (findColumn) {
-            const colSpan = findColumn.colSpan
-            const colOffset = findColumn.colOffset
-            Optionser.resizeRcordColumn = Computer.filterDataColumns.value.find(column => colSpan + colOffset === column.colSpan + column.colOffset) || null
+            Optionser.resizeRcordColumn = Computer.filterDataColumns.value.findLast(column => {
+              return (
+                column.rowSpan > 0 &&
+                column.colSpan > 0 &&
+                column.resizable === true &&
+                column.colOffset >= findColumn.colOffset &&
+                column.colOffset + column.colSpan <= findColumn.colOffset + findColumn.colSpan
+              )
+            })
           }
 
           if (Optionser.resizeRcordColumn) {
             const rowIndex = Optionser.resizeRcordColumn.rowIndex
             const colIndex = Optionser.resizeRcordColumn.colIndex
             const $theader = $wrapper.querySelector(`.s-table-thead-th[row-index="${rowIndex}"][col-index="${colIndex}"]`)!
-            const wrapperRect = $wrapper.getBoundingClientRect()
             const theaderRect = $theader.getBoundingClientRect()
 
-            $wrapper.classList.add('user-select-none')
-            $wrapper.classList.add('cursor-column-resize')
-            Optionser.resizeRcordWidth = theaderRect.width
-            Optionser.resizeRcordScoll = $wrapper.scrollLeft
-            Optionser.resizeRcordBound = theaderRect.right - wrapperRect.right
             Optionser.resizeRcordX = event.clientX
+            Optionser.resizeRcordWidth = theaderRect.width
+            document.body.classList.add('cursor-column-resize')
+            document.body.classList.add('user-select-none')
           }
         }
       }
