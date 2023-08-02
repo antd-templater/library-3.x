@@ -20,9 +20,9 @@ body {
   & > .s-table-spining-container {
     width: 100%;
     min-height: 130px;
+    // overflow: hidden; -- support sticky header in document
     box-sizing: border-box;
     position: relative;
-    overflow: hidden;
     z-index: 1;
 
     & > .s-table-spining-content {
@@ -38,9 +38,9 @@ body {
         height: auto;
         margin: 0;
         padding: 0;
+        // overflow: auto; -- support sticky header in document
         box-sizing: border-box;
         position: relative;
-        overflow: auto;
         z-index: 1;
 
         & > .s-nested-table {
@@ -60,9 +60,9 @@ body {
           font-variant: tabular-nums;
           font-feature-settings: 'tnum';
           border-collapse: collapse;
-          border-color: rgba(240, 240, 240, 0.65);
           box-sizing: border-box;
           border-spacing: 0;
+          border-radius: 4px;
 
           & > colgroup > col {
             box-sizing: border-box;
@@ -76,7 +76,6 @@ body {
             text-align: left;
             background: #fafafa;
             box-sizing: border-box;
-            border-color: rgba(240, 240, 240, 0.65);
             transition: background 0.3s ease;
             position: relative;
             overflow: hidden;
@@ -103,7 +102,6 @@ body {
             text-align: left;
             background: #ffffff;
             box-sizing: border-box;
-            border-color: rgba(240, 240, 240, 0.65);
             transition: background 0.3s ease;
             position: relative;
             overflow: hidden;
@@ -117,10 +115,20 @@ body {
             text-align: left;
             background: #ffffff;
             box-sizing: border-box;
-            border-color: rgba(240, 240, 240, 0.65);
             transition: background 0.3s ease;
             position: relative;
             overflow: hidden;
+          }
+        }
+
+        & > .s-nested-table.s-border-table {
+          width: 100%;
+          outline: solid 1px #f0f0f0;
+
+          & > .s-table-thead > .s-table-thead-tr > .s-table-thead-th,
+          & > .s-table-tbody > .s-table-tbody-tr > .s-table-tbody-td,
+          & > .s-table-tfoot > .s-table-tfoot-tr > .s-table-tfoot-td {
+            outline: solid 1px #f0f0f0;
           }
         }
       }
