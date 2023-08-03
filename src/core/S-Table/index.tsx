@@ -17,6 +17,7 @@ export interface STableStickyType {
 export interface STableScrollType {
   x: number | string | false;
   y: number | 'auto' | false;
+  overflow: string | null;
   scrollToFirstXOnChange: boolean;
   scrollToFirstYOnChange: boolean;
   getScrollResizeContainer?: () => HTMLElement;
@@ -307,7 +308,6 @@ export const STable = defineComponent({
     'update:selectedRowKeys': (keys: Array<STableKey>) => true,
     'update:expandedRowKeys': (keys: Array<STableKey>) => true,
     'update:paginate': (paginate: STablePaginateType) => true,
-    'update:summarys': (summarys: STableRecordType[]) => true,
     'update:sources': (sources: STableRecordType[]) => true,
     'sorter': (options: Array<STableSorterType>) => true,
     'expand': (keys: Array<STableKey>) => true,
@@ -371,6 +371,8 @@ export const STable = defineComponent({
         rowIndex: number;
         colSpan: number;
         rowSpan: number;
+        minWidth: number;
+        maxWidth: number;
         height: number;
         width: number;
       }>>,
@@ -443,6 +445,7 @@ export const STable = defineComponent({
       scroll: computed(() => ({
         x: props.scroll.x ?? false,
         y: props.scroll.y ?? false,
+        overflow: ['hidden', 'visible', 'scroll', 'auto', 'unset'].includes(props.scroll.overflow!) ? props.scroll.overflow! : null,
         scrollToFirstXOnChange: props.scroll.scrollToFirstXOnChange !== false,
         scrollToFirstYOnChange: props.scroll.scrollToFirstYOnChange !== false,
         getScrollResizeContainer: props.scroll.getScrollResizeContainer
@@ -503,7 +506,7 @@ export const STable = defineComponent({
         const resizeWidth = Optionser.scrollResizeWidth.value
         const windowWidth = Optionser.windowInnerWidth.value
 
-        if (/^0$|^-\d+\.?\d*(px)?$/.test(`${x}`)) {
+        if (/^0(px)?$|^-\d+\.?\d*(px)?$/.test(`${x}`)) {
           return (resizeWidth || windowWidth) + parseInt(`${x}`) + 'px'
         }
 
@@ -525,26 +528,31 @@ export const STable = defineComponent({
         const resizeHeight = Optionser.scrollResizeHeight.value
         const windowHeight = Optionser.windowInnerHeight.value
 
-        if (/^0$|^-\d+\.?\d*(px)?$/.test(`${y}`)) {
+        if (/^0(px)?$|^-\d+\.?\d*(px)?$/.test(`${y}`)) {
           return pageHide
             ? (resizeHeight || windowHeight) + parseInt(`${y}`) + 'px'
             : (resizeHeight || windowHeight) + parseInt(`${y}`) - pageHeight + 'px'
         }
 
         if (/^\d+\.?\d*(px)?$/.test(`${y}`)) {
-          return !pageHide
+          return pageHide
             ? parseInt(`${y}`) + 'px'
             : parseInt(`${y}`) - pageHeight + 'px'
         }
 
         return 'auto'
       }),
+      tableBodyOverflow: computed(() => {
+        return Normalizer.scroll.value.overflow
+      }),
       filterListColumns: computed(() => {
         const filterColumns = (columns: STableWrapColumnType[], wraps: STableWrapColumnType[] = [], parent?: STableWrapColumnType | null) => {
+          let skip = 0
           let offset = parent ? parent.referColumn.colOffset : 0
 
           for (const [index, column] of columns.entries()) {
             if (!columnSettingsCheckKeys.value.includes(column.key)) {
+              skip++
               continue
             }
 
@@ -556,7 +564,7 @@ export const STable = defineComponent({
               ...column,
               referColumn: reactive({
                 ...column.referColumn,
-                colOffset: offset + index,
+                colOffset: offset + index - skip,
                 rowOffset: parent ? parent.referColumn.rowIndex + 1 : 0,
                 colMaxSpan: 1,
                 rowMaxSpan: parent ? parent.referColumn.rowMaxSpan + 1 : 1,
@@ -573,8 +581,6 @@ export const STable = defineComponent({
               treeChildren: []
             }
 
-            wraps.push(wrapColumn)
-
             if (helper.isNotEmptyArray(column.treeChildren)) {
               const childTrees = filterColumns(column.treeChildren, [], wrapColumn)
               const rowMaxSpan = Math.max(...childTrees.map(child => child.referColumn.rowMaxSpan), wrapColumn.referColumn.rowMaxSpan)
@@ -583,6 +589,14 @@ export const STable = defineComponent({
               wrapColumn.referColumn.colMaxSpan = colMaxSpan
               wrapColumn.treeChildren = childTrees
               offset += colMaxSpan - 1
+
+              helper.isNotEmptyArray(childTrees)
+                ? wraps.push(wrapColumn)
+                : skip++
+            }
+
+            if (!helper.isNotEmptyArray(column.treeChildren)) {
+              wraps.push(wrapColumn)
             }
           }
 
@@ -655,7 +669,7 @@ export const STable = defineComponent({
           }
         }
 
-        return dataColumns
+        return dataColumns.filter(column => !!column)
       }),
       filterPageSources: computed(() => {
         return listSources.value.filter(record => (
@@ -1473,7 +1487,7 @@ export const STable = defineComponent({
 
       updatePropColumns(columns: STableWrapColumnType[]) {
         if (Methoder.isColumnsChanged(props.columns, columns)) {
-          context.emit('update:sources', Methoder.restoreColumns(columns))
+          context.emit('update:columns', Methoder.restoreColumns(columns))
         }
       },
 
@@ -1737,9 +1751,13 @@ export const STable = defineComponent({
       },
 
       updateResizeContainer(entries: Array<any> = []) {
-        if (Normalizer.scroll.value.getScrollResizeContainer) {
-          const container = Normalizer.scroll.value.getScrollResizeContainer()
+        if (/^0(px)?$|^-\d+\.?\d*(px)?$/.test(`${Normalizer.scroll.value.y}`)) {
+          const container = helper.isFunction(Normalizer.scroll.value.getScrollResizeContainer)
+            ? Normalizer.scroll.value.getScrollResizeContainer()
+            : document.documentElement
+
           const clientRect = container && container.getBoundingClientRect()
+
           Optionser.scrollResizeWidth.value = clientRect ? clientRect.width : 0
           Optionser.scrollResizeHeight.value = clientRect ? clientRect.height : 0
         }
@@ -1763,7 +1781,32 @@ export const STable = defineComponent({
       },
 
       updateTheadContainer(entries: Array<any> = []) {
-        if (Optionser.refTableWrapper.value) {
+        if (Optionser.refTableWrapper.value && Optionser.tableTheadSizes.value.length === Computer.filterDataColumns.value.length) {
+          for (const [index, column] of Computer.filterDataColumns.value.entries()) {
+            const rowSpan = column.rowSpan
+            const colSpan = column.colSpan
+            const rowIndex = column.rowIndex
+            const colIndex = column.colIndex
+            const rowOffset = column.rowOffset
+            const colOffset = column.colOffset
+            const minWidth = column.minWidth || 0
+            const maxWidth = column.maxWidth || Infinity
+            const tableThead = Optionser.refTableWrapper.value?.querySelector<HTMLElement>(`.s-table-thead-th[row-index="${rowIndex}"][col-index="${colIndex}"]`)
+
+            Optionser.tableTheadSizes.value[index].rowSpan = rowSpan
+            Optionser.tableTheadSizes.value[index].colSpan = colSpan
+            Optionser.tableTheadSizes.value[index].rowIndex = rowIndex
+            Optionser.tableTheadSizes.value[index].colIndex = colIndex
+            Optionser.tableTheadSizes.value[index].rowOffset = rowOffset
+            Optionser.tableTheadSizes.value[index].colOffset = colOffset
+            Optionser.tableTheadSizes.value[index].minWidth = minWidth
+            Optionser.tableTheadSizes.value[index].maxWidth = maxWidth
+            Optionser.tableTheadSizes.value[index].width = tableThead?.offsetWidth || 0
+            Optionser.tableTheadSizes.value[index].height = tableThead?.offsetHeight || 0
+          }
+        }
+
+        if (Optionser.refTableWrapper.value && Optionser.tableTheadSizes.value.length !== Computer.filterDataColumns.value.length) {
           Optionser.tableTheadSizes.value = Computer.filterDataColumns.value.map(column => {
             const rowSpan = column.rowSpan
             const colSpan = column.colSpan
@@ -1814,9 +1857,10 @@ export const STable = defineComponent({
           const minWidth = Optionser.resizeRcordColumn.minWidth || 0
           const nowWidth = Optionser.resizeRcordWidth + offsetX || 0
 
-          Optionser.resizeRcordColumn.width = nowWidth < maxWidth ? nowWidth : maxWidth
-          Optionser.resizeRcordColumn.width = nowWidth > minWidth ? nowWidth : minWidth
-          Optionser.resizeRcordColumn.width = nowWidth > 0 ? nowWidth : 0
+          Optionser.resizeRcordColumn.width = nowWidth
+          Optionser.resizeRcordColumn.width = Optionser.resizeRcordColumn.width < maxWidth ? Optionser.resizeRcordColumn.width : maxWidth
+          Optionser.resizeRcordColumn.width = Optionser.resizeRcordColumn.width > minWidth ? Optionser.resizeRcordColumn.width : minWidth
+          Optionser.resizeRcordColumn.width = Optionser.resizeRcordColumn.width > 0 ? Optionser.resizeRcordColumn.width : 0
 
           nextTick(() => Eventer.updateTheadContainer())
         }
@@ -1904,7 +1948,7 @@ export const STable = defineComponent({
       Eventer.updateScrollContainer()
       Eventer.updateColGroupRender()
       Observer.resizeObserver.observe(Optionser.refTableWrapper.value!)
-      Observer.resizeObserver.observe(Normalizer.scroll.value.getScrollResizeContainer?.() || document.documentElement)
+      Observer.resizeObserver.observe(helper.isFunction(Normalizer.scroll.value.getScrollResizeContainer) ? Normalizer.scroll.value.getScrollResizeContainer() : document.documentElement)
       document.addEventListener('mousemove', event => Eventer.documentMouseMove(event))
       document.addEventListener('mouseup', event => Eventer.documentMouseup(event))
     })
@@ -2030,7 +2074,7 @@ export const STable = defineComponent({
                           colSpan = cacheIndexs.has(colIndex) ? cacheIndexs.get(colIndex)!.span : colSpan
 
                           if (colSpan > 1) {
-                            for (let next = 1; next < colSpan; next++) {
+                            for (let next = 1, last = colSpan; next < last; next++) {
                               const index = dataColumns.value[colIndex + next].colIndex
                               const column = filterColumns.value.find(col => col.colIndex === index)
                               const props = column && Methoder.getValue(sourceCellProps.value[globalIndex][column.key])
@@ -2056,7 +2100,7 @@ export const STable = defineComponent({
                           if (colSpan > 1) {
                             let reset = 0
 
-                            for (let next = 1; next < colSpan; next++) {
+                            for (let next = 1, last = colSpan; next < last; next++) {
                               const index = dataColumns.value[colIndex + next].colIndex
                               const column = filterColumns.value.find(col => col.colIndex === index)
                               const props = column && Methoder.getValue(sourceCellProps.value[globalIndex][column.key])
@@ -2164,7 +2208,7 @@ export const STable = defineComponent({
                           colSpan = cacheIndexs.has(colIndex) ? cacheIndexs.get(colIndex)!.span : colSpan
 
                           if (colSpan > 1) {
-                            for (let next = 1; next < colSpan; next++) {
+                            for (let next = 1, last = colSpan; next < last; next++) {
                               const index = dataColumns.value[colIndex + next].colIndex
                               const column = filterColumns.value.find(col => col.colIndex === index)
                               const props = column && Methoder.getValue(summaryCellProps.value[rowIndex][column.key])
@@ -2190,7 +2234,7 @@ export const STable = defineComponent({
                           if (colSpan > 1) {
                             let reset = 0
 
-                            for (let next = 1; next < colSpan; next++) {
+                            for (let next = 1, last = colSpan; next < last; next++) {
                               const index = dataColumns.value[colIndex + next].colIndex
                               const column = filterColumns.value.find(col => col.colIndex === index)
                               const props = column && Methoder.getValue(summaryCellProps.value[rowIndex][column.key])
@@ -2300,11 +2344,17 @@ export const STable = defineComponent({
         's-footer-table': Computer.hasFooter.value
       }
 
+      const WrapperScollerStyle = {
+        width: Computer.tableBodyWidth.value,
+        height: Computer.tableBodyHeight.value,
+        overflow: Computer.tableBodyOverflow.value ?? (Computer.tableBodyWidth.value !== '100%' || Computer.tableBodyHeight.value !== 'auto' ? 'auto' : 'visible')
+      }
+
       return (
         <div
           ref={Optionser.refTableWrapper}
           class={'s-nested-table-wrapper'}
-          style={{ height: Computer.tableBodyHeight.value, overflow: Computer.isFixedTop.value ? 'auto' : 'visible' }} // @ts-ignore
+          style={WrapperScollerStyle} // @ts-ignore
           onScrollPassive={Eventer.updateScrollContainer}
           onMousedown={WrapperMousedown}
         >
@@ -2338,3 +2388,5 @@ export const STable = defineComponent({
   slots: {} as STableeDefineSlots<STableRecordType>,
   methods: {} as STableDefineMethods
 })
+
+export default STable
