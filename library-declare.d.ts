@@ -63,6 +63,7 @@ declare global {
     STableSorterType,
     STableRecordType,
     STablePaginateType,
+    STableCellMegreType,
     STableRowKey,
     STableTreeKey,
     STableLoadSource,

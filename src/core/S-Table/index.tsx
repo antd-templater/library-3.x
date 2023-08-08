@@ -52,6 +52,18 @@ export interface STablePaginateType {
   showTotal?:	(total: number, range: [number, number]) => void;
 }
 
+export interface STableCellMegreType {
+  index: number;
+  rowSpan: number;
+  colSpan: number;
+  colCount: number;
+  rowCount: number;
+  cellAttrs: any;
+  cellProps: any;
+  cellValue: any;
+  cellRender: boolean;
+}
+
 export interface STableRowKey<RecordType = STableRecordType> {
   (record: DeepReadonly<RecordType>): string
 }
@@ -109,6 +121,7 @@ export interface STableBodyerCellRender<RecordType = STableRecordType> {
     props?: {
       align?: 'left' | 'center' | 'right';
       ellipsis?: boolean;
+      cellSpan?: boolean;
       colSpan?: number;
       rowSpan?: number;
     };
@@ -122,6 +135,7 @@ export interface STableFooterCellRender<RecordType = STableRecordType> {
     props?: {
       align?: 'left' | 'center' | 'right';
       ellipsis?: boolean;
+      cellSpan?: boolean;
       colSpan?: number;
       rowSpan?: number;
     };
@@ -162,6 +176,7 @@ export interface STableWrapRecordType<RecordType = STableRecordType> {
   rowTreeKeyField: string;
   rowKeyField: string;
   rowHeight: number;
+  rowIndex: number;
 }
 
 export interface STableWrapColumnType<RecordType = STableRecordType> {
@@ -278,23 +293,25 @@ export const STable = defineComponent({
     headerCell: VueTypes.func<STableHeaderCellRender>().def(undefined),
     bodyerCell: VueTypes.func<STableBodyerCellRender>().def(undefined),
     footerCell: VueTypes.func<STableFooterCellRender>().def(undefined),
+    persistSourceRanges: VueTypes.any<Array<[number, number]> | boolean>().def(false),
     customHeaderRowAttrs: VueTypes.func<STableCustomHeaderRowAttrs>().def(undefined),
     customBodyerRowAttrs: VueTypes.func<STableCustomBodyerRowAttrs>().def(undefined),
     customFooterRowAttrs: VueTypes.func<STableCustomFooterRowAttrs>().def(undefined),
     customBodyerRowStates: VueTypes.func<STableCustomBodyerRowStates>().def(undefined),
+    preserveSelectedRowKeys: VueTypes.bool().def(false),
+    preserveExpandedRowKeys: VueTypes.bool().def(false),
+    columnPresetResizable: VueTypes.bool().def(false),
+    columnSorterMultiple: VueTypes.bool().def(false),
+    defaultSelectAllRows: VueTypes.bool().def(false),
+    defaultExpandAllRows: VueTypes.bool().def(false),
+    rowSelectedStrictly: VueTypes.bool().def(true),
+    rowExpandedByClick: VueTypes.bool().def(false),
+    cellMegreNormalize: VueTypes.bool().def(true),
+    expandIndentSize: VueTypes.number().def(15),
+    selectIndentSize: VueTypes.number().def(15),
     selectedRowMode: VueTypes.string<'Radio' | 'Checkbox'>().def('Checkbox'),
     selectedRowKeys: VueTypes.array<STableKey>().def(() => []),
     expandedRowKeys: VueTypes.array<STableKey>().def(() => []),
-    preserveSelectedRowKeys: VueTypes.bool().def(false),
-    preserveExpandedRowKeys: VueTypes.bool().def(false),
-    defaultSelectAllRows: VueTypes.bool().def(false),
-    defaultExpandAllRows: VueTypes.bool().def(false),
-    columnPresetResizable: VueTypes.bool().def(false),
-    columnSorterMultiple: VueTypes.bool().def(false),
-    rowSelectedStrictly: VueTypes.bool().def(true),
-    rowExpandedByClick: VueTypes.bool().def(false),
-    selectIndentSize: VueTypes.number().def(15),
-    expandIndentSize: VueTypes.number().def(15),
     loadOnScroll: VueTypes.bool().def(false),
     showHeader: VueTypes.bool().def(true),
     showFooter: VueTypes.bool().def(true),
@@ -305,10 +322,11 @@ export const STable = defineComponent({
   emits: {
     'update:loading': (loading: boolean) => true,
     'update:columns': (columns: STablePartColumnType[]) => true,
+    'update:sources': (sources: STableRecordType[]) => true,
+    'update:summarys': (summarys: STableRecordType[]) => true,
+    'update:paginate': (paginate: STablePaginateType) => true,
     'update:selectedRowKeys': (keys: Array<STableKey>) => true,
     'update:expandedRowKeys': (keys: Array<STableKey>) => true,
-    'update:paginate': (paginate: STablePaginateType) => true,
-    'update:sources': (sources: STableRecordType[]) => true,
     'sorter': (options: Array<STableSorterType>) => true,
     'expand': (keys: Array<STableKey>) => true,
     'select': (keys: Array<STableKey>) => true,
@@ -451,15 +469,46 @@ export const STable = defineComponent({
         getScrollResizeContainer: props.scroll.getScrollResizeContainer
       })),
 
+      virtual: computed(() => {
+        return props.virtual !== false
+      }),
+
       loadOnScroll: computed(() => (
         (props.loadOnScroll !== false && Paginator.paginate.mode === 'local') ||
         (props.loadOnScroll === true && Paginator.paginate.visible === false)
-      ))
+      )),
+
+      persistSourceRanges: computed(() => {
+        if (helper.isNotEmptyArray(props.persistSourceRanges)) {
+          const presetSpans: [number, number][] = props.persistSourceRanges
+          const filterSpans: [number, number][] = presetSpans.filter(spans => helper.isArray(spans) && +spans[0] >= 0 && +spans[1] >= 0 && +spans[0] !== +spans[1])
+          const sorterSpans: [number, number][] = filterSpans.map(spans => [Math.min(+spans[0], +spans[1]), Math.max(+spans[0], +spans[1])])
+
+          sorterSpans.sort((next, prev) => next[0] - prev[0])
+
+          let cache: [number, number] = [0, 0]
+          let spans: [number, number][] = []
+
+          for (const span of sorterSpans) {
+            if (span[0] < cache[1]) {
+              cache[1] = Math.max(cache[1], span[1])
+              continue
+            }
+
+            spans = [...spans, span]
+            cache = span
+          }
+
+          return spans
+        }
+
+        return props.persistSourceRanges === true
+      })
     }
 
     const Computer = {
       hasBorder: computed(() => {
-        return props.border === true || dataColumns.value.length > 1
+        return props.border === true || listColumns.value.length > 1
       }),
       hasHeader: computed(() => {
         return props.showHeader !== false && dataColumns.value.length > 0
@@ -672,36 +721,75 @@ export const STable = defineComponent({
         return dataColumns.filter(column => !!column)
       }),
       filterPageSources: computed(() => {
-        return listSources.value.filter(record => (
-          Normalizer.loadOnScroll.value === true ||
-          record.rowGroupIndex >= Paginator.paginate.pageSize * (Paginator.paginate.pageNo - 1) ||
-          record.rowGroupIndex < Paginator.paginate.pageSize * Paginator.paginate.pageNo
-        ))
+        let rowIndex = 0
+
+        const filter = (record: STableWrapRecordType) => {
+          return (
+            Normalizer.loadOnScroll.value === true ||
+            record.rowGroupIndex >= Paginator.paginate.pageSize * (Paginator.paginate.pageNo - 1) ||
+            record.rowGroupIndex < Paginator.paginate.pageSize * Paginator.paginate.pageNo
+          )
+        }
+
+        const writer = (record: STableWrapRecordType) => {
+          return {
+            ...record,
+
+            rowIndex: record.rowGroupLevel === 1
+              ? rowIndex++
+              : rowIndex
+          }
+        }
+
+        return listSources.value.filter(filter).map(writer)
       }),
       filterRangeSources: computed(() => {
-        const filterSources: STableWrapRecordType[] = []
+        let persistGrouperOne = Infinity
+        let persistGrouperTwo = -Infinity
+
         const renderBufferOne = renderRowRanger.renderBuffer[0]
         const renderBufferTwo = renderRowRanger.renderBuffer[1]
         const renderOffsetOne = renderRowRanger.renderOffset[0]
         const renderOffsetTwo = renderRowRanger.renderOffset[1]
+
+        const renderRangerArr = Computer.filterPageSources.value as STableWrapRecordType[]
         const renderRangerOne = renderOffsetOne - renderBufferOne > 0 ? renderOffsetOne - renderBufferOne : 0
         const renderRangerTwo = renderOffsetTwo + renderBufferTwo < listSources.value.length ? renderOffsetTwo + renderBufferTwo : listSources.value.length
+        const renderGrouperOne = renderRangerArr.find((_, index) => index >= renderRangerOne)!.rowGroupIndex
+        const renderGrouperTwo = renderRangerArr.findLast((_, index) => index <= renderRangerTwo)!.rowGroupIndex
 
-        const filterByExpaned = (record: STableWrapRecordType, index: number) => {
+        if (helper.isArray(Normalizer.persistSourceRanges.value)) {
+          for (const ranges of Normalizer.persistSourceRanges.value) {
+            if (renderGrouperOne >= ranges[0] || renderGrouperTwo <= ranges[1]) {
+              persistGrouperOne = Math.min(ranges[0], persistGrouperOne)
+              persistGrouperTwo = Math.max(ranges[0], persistGrouperTwo)
+            }
+          }
+        }
+
+        const filterByExpander = (record: STableWrapRecordType, index: number) => {
           return record.parentKeys.every(key => expandedRowKeys.value.includes(key))
         }
 
-        const filterByRange = (record: STableWrapRecordType, index: number) => {
+        const filterByGroupRanger = (record: STableWrapRecordType, index: number) => {
+          if (Normalizer.virtual.value !== true) {
+            return true
+          }
+
+          if (Normalizer.persistSourceRanges.value === true) {
+            return true
+          }
+
+          if (record.rowGlobalIndex >= persistGrouperOne && record.rowGlobalIndex <= persistGrouperTwo) {
+            return true
+          }
+
           return index >= renderRangerOne && index <= renderRangerTwo
         }
 
-        for (const source of Computer.filterPageSources.value) {
-          filterSources.push(source)
-        }
-
-        return filterSources.filter(filterByExpaned).filter(filterByRange)
+        return renderRangerArr.filter(filterByExpander).filter(filterByGroupRanger)
       }),
-      filterPageSummary: computed(() => {
+      filterPageSummarys: computed(() => {
         return listSummary.value.filter(summary => summary)
       })
     }
@@ -1033,7 +1121,8 @@ export const STable = defineComponent({
             rowGlobalIndex: TempCacher.offset,
             rowTreeKeyField: treeKey,
             rowKeyField: rowKey,
-            rowHeight: cacheRecord ? cacheRecord.rowHeight : renderRowPresets.minHeight
+            rowHeight: cacheRecord ? cacheRecord.rowHeight : renderRowPresets.minHeight,
+            rowIndex: -1
           }
 
           wraps.push(wrapRecord)
@@ -1934,7 +2023,7 @@ export const STable = defineComponent({
     watch(() => [...props.expandedRowKeys], () => { Methoder.updateSetupExpandedRowKeys(props.expandedRowKeys) })
 
     watch([dataColumns, Computer.filterRangeSources], () => { Methoder.normalizeInitSources(Computer.filterRangeSources.value) }, watchDeepOptions)
-    watch([listSummary, Computer.filterPageSources], () => { Methoder.normalizeInitSummary(Computer.filterPageSummary.value) }, watchDeepOptions)
+    watch([listSummary, Computer.filterPageSources], () => { Methoder.normalizeInitSummary(Computer.filterPageSummarys.value) }, watchDeepOptions)
     watch(() => Computer.filterDataColumns.value, () => { Eventer.updateColGroupRender(Computer.filterDataColumns.value) }, watchDeepOptions)
     watch(() => selectedRowKeys.value, () => { Methoder.updatePropSelectedRowKeys(selectedRowKeys.value) }, watchDeepOptions)
     watch(() => expandedRowKeys.value, () => { Methoder.updatePropExpandedRowKeys(expandedRowKeys.value) }, watchDeepOptions)
@@ -2033,125 +2122,382 @@ export const STable = defineComponent({
       }
 
       const RenderTableTBody = () => {
+        const presetColumns = ref(dataColumns).value
+        const filterColumns = ref(Computer.filterDataColumns).value
+        const filterSources = ref(Computer.filterRangeSources).value
+        const persistRanges = ref(Normalizer.persistSourceRanges).value
+
+        const StoreCachers = {} as Map<number, STableCellMegreType>[]
+        const StoreSpikers = {} as Set<number>[]
+        const StoreEmpters = {} as Set<number>[]
+
+        for (const option of filterSources) {
+          const groupIndex = option.rowGroupIndex
+          const globalIndex = option.rowGlobalIndex
+
+          const cellCachers = StoreCachers[groupIndex] || new Map()
+          const cellSpikers = StoreSpikers[groupIndex] || new Set()
+          const cellEmpters = StoreEmpters[groupIndex] || new Set()
+
+          StoreCachers[groupIndex] = cellCachers
+          StoreSpikers[groupIndex] = cellSpikers
+          StoreEmpters[groupIndex] = cellEmpters
+
+          for (let index = 0; index < presetColumns.length; index++) {
+            let colSpan = 0
+            let rowSpan = 0
+            let colCount = 0
+            let rowCount = 0
+            let cellRender = true
+
+            const column = presetColumns[index]
+            const cellAttrs = Methoder.getValue(sourceCellAttrs.value[globalIndex][column.key])
+            const cellProps = Methoder.getValue(sourceCellProps.value[globalIndex][column.key])
+            const cellValue = Methoder.getValue(sourceCellRender.value[globalIndex][column.key])
+            const cellMegrer = props.cellMegreNormalize !== false
+            const cellCahcer = cellCachers.get(index)
+
+            rowSpan = helper.isFiniteNumber(cellProps?.rowSpan) ? cellProps.rowSpan : 1
+            rowSpan = helper.isFiniteNumber(cellCahcer?.rowSpan) ? cellCahcer!.rowSpan : rowSpan
+
+            colSpan = helper.isFiniteNumber(cellProps?.colSpan) ? cellProps.colSpan : +column.colSpan || 1
+            colSpan = helper.isFiniteNumber(cellCahcer?.colSpan) ? cellCahcer!.colSpan : colSpan
+
+            cellRender = cellCahcer?.cellRender !== false && cellProps?.cellSpan !== false && filterColumns.some(col => col.colIndex === index)
+
+            rowCount = rowSpan - 1
+            colCount = colSpan - 1
+
+            if (helper.isNotEmptyArray(persistRanges)) {
+              let persist = false
+
+              for (const ranges of persistRanges) {
+                if (groupIndex >= ranges[0] || groupIndex <= ranges[1]) {
+                  persist = true
+                  break
+                }
+              }
+
+              rowSpan = persist ? rowSpan : 1
+              rowCount = persist ? rowCount : 0
+            }
+
+            if (helper.isBoolean(persistRanges)) {
+              rowSpan = persistRanges ? rowSpan : 1
+              rowCount = persistRanges ? rowCount : 0
+            }
+
+            if (cellMegrer !== false) {
+              if (rowSpan > 1) {
+                for (let next = 1; next < rowSpan; next++) {
+                  StoreCachers[groupIndex + next] = StoreCachers[groupIndex + next] || new Map()
+                  StoreCachers[groupIndex + next].set(index, {
+                    index: index,
+                    colCount: colSpan - 1,
+                    colSpan: colSpan,
+                    rowCount: -1,
+                    rowSpan: 0,
+                    cellAttrs: null,
+                    cellProps: null,
+                    cellValue: null,
+                    cellRender: false
+                  })
+                }
+              }
+
+              if (colSpan > 1) {
+                for (let next = 1; next < colSpan; next++) {
+                  StoreCachers[groupIndex].set(index + next, {
+                    index: index + next,
+                    rowCount: rowSpan - 1,
+                    rowSpan: rowSpan,
+                    colCount: -1,
+                    colSpan: 0,
+                    cellAttrs: null,
+                    cellProps: null,
+                    cellValue: null,
+                    cellRender: true
+                  })
+                }
+              }
+
+              if (rowSpan > 1 && colSpan > 1) {
+                for (let nextRowIndex = 1; nextRowIndex < rowSpan; nextRowIndex++) {
+                  for (let nextColIndex = 1; nextColIndex < colSpan; nextColIndex++) {
+                    const tempColIndex = index + nextColIndex
+                    const tempRowIndex = groupIndex + nextRowIndex
+                    const tempCellCacher = StoreCachers[tempRowIndex] = StoreCachers[tempRowIndex] || new Map()
+
+                    tempCellCacher.set(tempColIndex, {
+                      index: tempColIndex,
+                      rowCount: -1,
+                      rowSpan: 0,
+                      colCount: -1,
+                      colSpan: 0,
+                      cellAttrs: null,
+                      cellProps: null,
+                      cellValue: null,
+                      cellRender: true
+                    })
+                  }
+                }
+              }
+            }
+
+            cellCachers.set(index, {
+              index: index,
+              rowSpan: rowSpan,
+              colSpan: colSpan,
+              colCount: colCount,
+              rowCount: rowCount,
+              cellAttrs: cellAttrs,
+              cellProps: cellProps,
+              cellValue: cellValue,
+              cellRender: cellRender
+            })
+          }
+        }
+
         return (
           <tbody
             class='s-table-tbody'
             style={{ 'position': 'relative', 'z-index': 10 }}
           >
             {
-              Computer.filterRangeSources.value.map(option => {
-                const record = readonly(option.referRecord)
-                const rowIndex = option.rowGroupIndex
+              filterSources.map(option => {
+                const rowIndex = option.rowIndex
                 const groupLevel = option.rowGroupLevel
                 const groupIndex = option.rowGroupIndex
                 const groupIndexs = option.rowGroupIndexs
                 const globalIndex = option.rowGlobalIndex
-                const filterColumns = ref(Computer.filterDataColumns)
-                const cacheIndexs = new Map() as Map<number, { span: number; render: any }>
-                const emptyIndexs = new Set() as Set<number>
+                const referRecord = option.referRecord
+
+                const cellCachers = StoreCachers[groupIndex]
+                const cellSpikers = StoreSpikers[groupIndex]
+                const cellEmpters = StoreEmpters[groupIndex]
 
                 return (
                   <tr
                     { ...toRaw(unref(sourceRowAttrs.value[globalIndex])) }
                     class={'s-table-tbody-tr'}
-                    row-global-index={globalIndex}
-                    row-group-index={groupIndex}
-                    row-group-level={groupLevel}
-                    row-index={rowIndex}
+                    row-global-index={option.rowGlobalIndex}
+                    row-group-index={option.rowGroupIndex}
+                    row-group-level={option.rowGroupLevel}
+                    row-index={option.rowGroupIndex}
                   >
                     {
-                      dataColumns.value.map((item, colIndex) => {
+                      presetColumns.map((referColumn, colIndex) => {
                         let rowSpan = 0
                         let colSpan = 0
+                        let colCount = 0
 
-                        const column = filterColumns.value.find(col => col.colIndex === item.colIndex)
-                        const cellAttrs = column && Methoder.getValue(sourceCellAttrs.value[globalIndex][column.key])
-                        const cellProps = column && Methoder.getValue(sourceCellProps.value[globalIndex][column.key])
-                        const cellValue = column && Methoder.getValue(sourceCellRender.value[globalIndex][column.key])
+                        const cellCacher = cellCachers.get(colIndex)!
+                        const cellSpiker = cellSpikers.has(colIndex)
+                        const cellRender = cellCacher.cellRender
+                        const cellValue = cellCacher.cellValue
+                        const cellProps = cellCacher.cellProps
+                        const cellAttrs = cellCacher.cellAttrs
 
-                        if (!column) {
-                          colSpan = helper.isFiniteNumber(cellProps?.colSpan) ? cellProps.colSpan : 1
-                          colSpan = cacheIndexs.has(colIndex) ? cacheIndexs.get(colIndex)!.span : colSpan
+                        colCount = cellCacher.colCount
+                        colSpan = cellCacher.colSpan
+                        rowSpan = cellCacher.rowSpan
 
-                          if (colSpan > 1) {
-                            for (let next = 1, last = colSpan; next < last; next++) {
-                              const index = dataColumns.value[colIndex + next].colIndex
-                              const column = filterColumns.value.find(col => col.colIndex === index)
-                              const props = column && Methoder.getValue(sourceCellProps.value[globalIndex][column.key])
-                              const span = helper.isFiniteNumber(props?.colSpan) ? (props.colSpan >= 0 ? props.colSpan : 1) : column?.colSpan || 1
+                        if (!cellSpiker && colCount !== 0 && cellRender) {
+                          const megre = colCount > 0
+                          const empty = colCount < 0
+                          const queues = Array.from(cellCachers.values()).filter(cacher => !cellSpikers.has(cacher.index) && cacher.index > colIndex)
+                          const emptys = queues.filter(cacher => cacher.colCount < 0)
+                          const exists = queues.filter(cacher => cacher.colCount > 0)
 
-                              if (column && span === 0) {
-                                colSpan = 1
-                              }
+                          if (empty) {
+                            const empter = {
+                              taskers: [] as { count: number, render: boolean }[],
+                              refers: [cellCacher] as typeof queues,
+                              counts: 1
+                            }
 
-                              if (column && span > 0) {
+                            for (const cacher of queues) {
+                              if (!cacher.cellRender || (cacher.rowSpan > 0 && cacher.colSpan > 0)) {
                                 break
                               }
+                              empter.refers.push(cacher)
+                              empter.counts++
+                            }
+
+                            for (const cacher of exists) {
+                              if (empter.counts < 1) {
+                                break
+                              }
+
+                              const count1 = empter.counts
+                              const count2 = cacher.colCount
+                              const render = cacher.cellRender
+                              const tasker = empter.taskers.slice(-1)[0]
+
+                              if (!tasker || tasker.render !== render) {
+                                empter.taskers.push({
+                                  count: count2 > count1 ? count1 : count2,
+                                  render: cacher.cellRender
+                                })
+                              }
+
+                              if (tasker && tasker.render === render) {
+                                tasker.count += count2 > count1 ? count1 : count2
+                              }
+
+                              if (count1 >= count2) {
+                                cellSpikers.add(cacher.index)
+                              }
+
+                              empter.counts = count1 >= count2 ? count1 - count2 : 0
+                              cacher.colCount = count2 >= count1 ? count2 - count1 : 0
+                            }
+
+                            for (const tasker of empter.taskers) {
+                              let index = 0
+
+                              while (index < tasker.count) {
+                                const refer = empter.refers.shift()!
+                                const first = index++ === 0
+
+                                refer.colCount = 0
+                                refer.colSpan = first && !tasker.render ? tasker.count : 0
+                                cellEmpters.add(refer.index)
+                                cellSpikers.add(refer.index)
+                              }
+                            }
+
+                            for (const [index, refer] of empter.refers.entries()) {
+                              refer.colSpan = index === 0 ? empter.refers.length : 0
+                              refer.colCount = index === 0 ? 0 : -1
+                              cellEmpters.add(refer.index)
+                              cellSpikers.add(refer.index)
                             }
                           }
+
+                          if (megre) {
+                            for (const cacher of emptys) {
+                              if (cellCacher.colCount < 1) {
+                                break
+                              }
+
+                              cellEmpters.add(cacher.index)
+                              cellSpikers.add(cacher.index)
+
+                              cellCacher.colSpan = cacher.cellRender ? cellCacher.colSpan : cellCacher.colSpan - 1
+                              cellCacher.colCount = cellCacher.colCount - 1
+                            }
+
+                            cellCacher.colSpan = cellCacher.colSpan - (cellCacher.colCount > 0 ? cellCacher.colCount : 0)
+                            cellCacher.colSpan = cellCacher.colSpan > 0 ? cellCacher.colSpan : 0
+                            cellCacher.colCount = 0
+                          }
+
+                          cellSpikers.add(cellCacher.index)
                         }
 
-                        if (column) {
-                          rowSpan = helper.isFiniteNumber(cellProps?.rowSpan) ? cellProps.rowSpan : 1
-                          colSpan = helper.isFiniteNumber(cellProps?.colSpan) ? cellProps.colSpan : column.colSpan || 1
-                          colSpan = cacheIndexs.has(colIndex) ? cacheIndexs.get(colIndex)!.span : colSpan
-                          colSpan = emptyIndexs.has(colIndex) ? 0 : colSpan || 1
+                        if (!cellSpiker && colCount !== 0 && !cellRender) {
+                          const megre = colCount > 0
+                          const empty = colCount < 0
+                          const queues = Array.from(cellCachers.values()).filter(cacher => !cellSpikers.has(cacher.index) && cacher.index > colIndex)
+                          const emptys = queues.filter(cacher => cacher.colCount < 0)
+                          const exists = queues.filter(cacher => cacher.colCount > 0)
 
-                          if (colSpan > 1) {
-                            let reset = 0
+                          if (empty) {
+                            for (const caher of exists) {
+                              caher.colSpan--
+                              caher.colCount--
+                              caher.colCount === 0 && cellSpikers.add(caher.index)
+                              break
+                            }
+                          }
 
-                            for (let next = 1, last = colSpan; next < last; next++) {
-                              const index = dataColumns.value[colIndex + next].colIndex
-                              const column = filterColumns.value.find(col => col.colIndex === index)
-                              const props = column && Methoder.getValue(sourceCellProps.value[globalIndex][column.key])
-                              const span = helper.isFiniteNumber(props?.colSpan) ? (props.colSpan >= 0 ? props.colSpan : 1) : column?.colSpan || 1
+                          if (megre) {
+                            const empter = {
+                              taskers: [] as { render: boolean, refers: typeof queues }[]
+                            }
 
-                              if (column && span === 0) {
-                                emptyIndexs.add(colIndex + next)
-                              }
-
-                              if (column && span > 0) {
-                                colSpan = 1
-                                reset = next
+                            for (const cacher of emptys) {
+                              if (cellCacher.colCount < 1) {
                                 break
                               }
 
-                              if (!column) {
-                                colSpan--
+                              const render = cacher.cellRender
+                              const tasker = empter.taskers.slice(-1)[0]
+
+                              if (!tasker || tasker.render !== render) {
+                                empter.taskers.push({
+                                  render: cacher.cellRender,
+                                  refers: [cacher]
+                                })
+                              }
+
+                              if (tasker && tasker.render === render) {
+                                tasker.refers.push(cacher)
+                              }
+
+                              cellCacher.colCount--
+                            }
+
+                            for (const tasker of empter.taskers) {
+                              const render = tasker.render
+                              const refers = tasker.refers
+
+                              for (const [index, refer] of refers.entries()) {
+                                refer.colSpan = render && index === 0 ? refers.length : 0
+                                refer.colCount = render && index === 0 ? 0 : -1
+                                cellEmpters.add(refer.index)
+                                cellSpikers.add(refer.index)
                               }
                             }
 
-                            for (let next = 1; next < reset; next++) {
-                              cacheIndexs.set(colIndex + next, { span: 1, render: undefined })
-                              emptyIndexs.delete(colIndex + next)
-                            }
+                            cellCacher.colSpan = cellCacher.colSpan - (cellCacher.colCount > 0 ? cellCacher.colCount : 0)
+                            cellCacher.colSpan = cellCacher.colSpan > 0 ? cellCacher.colSpan : 0
+                            cellCacher.colCount = 0
                           }
 
-                          if (rowSpan >= 1 && colSpan >= 1) {
-                            const cacheValue = cacheIndexs.get(colIndex) ? cacheIndexs.get(colIndex)!.render : undefined
-                            const computeValue = cacheValue !== undefined ? cacheValue : !Methoder.isVueNode(cellValue) && helper.isFunction(ctx.slots.bodyerCell)
-                              ? Methoder.getVNodes(renderSlot(ctx.slots, 'bodyerCell', { value: cellValue, record, rowIndex, groupIndex, groupLevel, groupIndexs, globalIndex, column: readonly(column), colIndex }))
+                          cellSpikers.add(cellCacher.index)
+                        }
+
+                        colSpan = cellCacher.colSpan
+                        rowSpan = cellCacher.rowSpan
+
+                        if (cellRender && rowSpan >= 1 && colSpan >= 1) {
+                          const options = {
+                            value: cellValue,
+                            record: readonly(referRecord),
+                            rowIndex,
+                            groupIndex,
+                            groupLevel,
+                            groupIndexs,
+                            globalIndex,
+                            column: readonly(referColumn),
+                            colIndex
+                          }
+
+                          const computeValue = cellEmpters.has(colIndex) ? null
+                            : !Methoder.isVueNode(cellValue) && helper.isFunction(ctx.slots.bodyerCell)
+                              ? Methoder.getVNodes(renderSlot(ctx.slots, 'bodyerCell', options)) ?? cellValue
                               : cellValue
 
-                            return (
-                              <td
-                                rowspan={rowSpan}
-                                colspan={colSpan}
-                                style={Eventer.computeTableChildStyle(column, 'tbody')}
-                                { ...Eventer.computeTableChildAttrs(cellAttrs, 'tbody') }
-                                { ...Eventer.computeTableChildProps(cellProps, 'tbody') }
-                                class={'s-table-tbody-td'}
-                                col-index={column.colIndex}
-                                col-offset={column.colOffset}
-                                row-global-index={globalIndex}
-                                row-group-index={groupIndex}
-                                row-group-level={groupLevel}
-                                row-index={rowIndex}
-                              >
-                                { computeValue ?? cellValue }
-                              </td>
-                            )
-                          }
+                          return (
+                            <td
+                              rowspan={rowSpan}
+                              colspan={colSpan}
+                              style={Eventer.computeTableChildStyle(referColumn, 'tbody')}
+                              { ...Eventer.computeTableChildAttrs(cellAttrs, 'tbody') }
+                              { ...Eventer.computeTableChildProps(cellProps, 'tbody') }
+                              class={'s-table-tbody-td'}
+                              col-index={referColumn.colIndex}
+                              col-offset={referColumn.colOffset}
+                              row-global-index={globalIndex}
+                              row-group-index={groupIndex}
+                              row-group-level={groupLevel}
+                              row-index={rowIndex}
+                            >
+                              { computeValue }
+                            </td>
+                          )
                         }
                       })
                     }
@@ -2175,17 +2521,129 @@ export const STable = defineComponent({
           })
         }
 
+        const presetColumns = ref(dataColumns).value
+        const filterColumns = ref(Computer.filterDataColumns).value
+        const filterSummarys = ref(Computer.filterPageSummarys).value
+
+        const StoreCachers = {} as Map<number, STableCellMegreType>[]
+        const StoreSpikers = {} as Set<number>[]
+        const StoreEmpters = {} as Set<number>[]
+
+        for (const rowIndex of filterSummarys.keys()) {
+          const cellCachers = StoreCachers[rowIndex] || new Map()
+          const cellSpikers = StoreSpikers[rowIndex] || new Set()
+          const cellEmpters = StoreEmpters[rowIndex] || new Set()
+
+          StoreSpikers[rowIndex] = cellSpikers
+          StoreEmpters[rowIndex] = cellEmpters
+          StoreCachers[rowIndex] = cellCachers
+
+          for (let index = 0; index < presetColumns.length; index++) {
+            let colSpan = 0
+            let rowSpan = 0
+            let colCount = 0
+            let rowCount = 0
+            let cellRender = true
+
+            const column = presetColumns[index]
+            const cellAttrs = Methoder.getValue(summaryCellAttrs.value[rowIndex][column.key])
+            const cellProps = Methoder.getValue(summaryCellProps.value[rowIndex][column.key])
+            const cellValue = Methoder.getValue(summaryCellRender.value[rowIndex][column.key])
+            const cellMegrer = props.cellMegreNormalize !== false
+            const cellCahcer = cellCachers.get(index)
+
+            rowSpan = helper.isFiniteNumber(cellProps?.rowSpan) ? cellProps.rowSpan : 1
+            rowSpan = helper.isFiniteNumber(cellCahcer?.rowSpan) ? cellCahcer!.rowSpan : rowSpan
+
+            colSpan = helper.isFiniteNumber(cellProps?.colSpan) ? cellProps.colSpan : +column.colSpan || 1
+            colSpan = helper.isFiniteNumber(cellCahcer?.colSpan) ? cellCahcer!.colSpan : colSpan
+
+            cellRender = cellCahcer?.cellRender !== false && cellProps?.cellSpan !== false && filterColumns.some(col => col.colIndex === index)
+
+            rowCount = rowSpan - 1
+            colCount = colSpan - 1
+
+            if (cellMegrer !== false) {
+              if (rowSpan > 1) {
+                for (let next = 1; next < rowSpan; next++) {
+                  StoreCachers[rowIndex + next] = StoreCachers[rowIndex + next] || new Map()
+                  StoreCachers[rowIndex + next].set(index, {
+                    index: index,
+                    colCount: colSpan - 1,
+                    colSpan: colSpan,
+                    rowCount: -1,
+                    rowSpan: 0,
+                    cellAttrs: null,
+                    cellProps: null,
+                    cellValue: null,
+                    cellRender: false
+                  })
+                }
+              }
+
+              if (colSpan > 1) {
+                for (let next = 1; next < colSpan; next++) {
+                  StoreCachers[rowIndex].set(index + next, {
+                    index: index + next,
+                    rowCount: rowSpan - 1,
+                    rowSpan: rowSpan,
+                    colCount: -1,
+                    colSpan: 0,
+                    cellAttrs: null,
+                    cellProps: null,
+                    cellValue: null,
+                    cellRender: true
+                  })
+                }
+              }
+
+              if (rowSpan > 1 && colSpan > 1) {
+                for (let nextRowIndex = 1; nextRowIndex < rowSpan; nextRowIndex++) {
+                  for (let nextColIndex = 1; nextColIndex < colSpan; nextColIndex++) {
+                    const tempColIndex = index + nextColIndex
+                    const tempRowIndex = rowIndex + nextRowIndex
+                    const tempCellCacher = StoreCachers[tempRowIndex] = StoreCachers[tempRowIndex] || new Map()
+
+                    tempCellCacher.set(tempColIndex, {
+                      index: tempColIndex,
+                      rowCount: -1,
+                      rowSpan: 0,
+                      colCount: -1,
+                      colSpan: 0,
+                      cellAttrs: null,
+                      cellProps: null,
+                      cellValue: null,
+                      cellRender: true
+                    })
+                  }
+                }
+              }
+            }
+
+            cellCachers.set(index, {
+              index: index,
+              rowSpan: rowSpan,
+              colSpan: colSpan,
+              colCount: colCount,
+              rowCount: rowCount,
+              cellAttrs: cellAttrs,
+              cellProps: cellProps,
+              cellValue: cellValue,
+              cellRender: cellRender
+            })
+          }
+        }
+
         return (
           <tfoot
             class='s-table-tfoot'
             style={style}
           >
             {
-              Computer.filterPageSummary.value.map((summary, rowIndex) => {
-                const record = readonly(summary)
-                const filterColumns = ref(Computer.filterDataColumns)
-                const cacheIndexs = new Map() as Map<number, { span: number; render: any }>
-                const emptyIndexs = new Set() as Set<number>
+              filterSummarys.map((summary, rowIndex) => {
+                const cellCachers = StoreCachers[rowIndex]
+                const cellSpikers = StoreSpikers[rowIndex]
+                const cellEmpters = StoreEmpters[rowIndex]
 
                 return (
                   <tr
@@ -2194,99 +2652,217 @@ export const STable = defineComponent({
                     row-index={rowIndex}
                   >
                     {
-                      dataColumns.value.map((item, colIndex) => {
+                      presetColumns.map((column, colIndex) => {
                         let rowSpan = 0
                         let colSpan = 0
+                        let colCount = 0
 
-                        const column = filterColumns.value.find(col => col.colIndex === item.colIndex)
-                        const cellAttrs = column && Methoder.getValue(summaryCellAttrs.value[rowIndex][ column.key])
-                        const cellProps = column && Methoder.getValue(summaryCellProps.value[rowIndex][ column.key])
-                        const cellValue = column && Methoder.getValue(summaryCellRender.value[rowIndex][ column.key])
+                        const cellCacher = cellCachers.get(colIndex)!
+                        const cellSpiker = cellSpikers.has(colIndex)
+                        const cellRender = cellCacher.cellRender
+                        const cellValue = cellCacher.cellValue
+                        const cellProps = cellCacher.cellProps
+                        const cellAttrs = cellCacher.cellAttrs
 
-                        if (!column) {
-                          colSpan = helper.isFiniteNumber(cellProps?.colSpan) ? cellProps.colSpan : 1
-                          colSpan = cacheIndexs.has(colIndex) ? cacheIndexs.get(colIndex)!.span : colSpan
+                        colCount = cellCacher.colCount
+                        colSpan = cellCacher.colSpan
+                        rowSpan = cellCacher.rowSpan
 
-                          if (colSpan > 1) {
-                            for (let next = 1, last = colSpan; next < last; next++) {
-                              const index = dataColumns.value[colIndex + next].colIndex
-                              const column = filterColumns.value.find(col => col.colIndex === index)
-                              const props = column && Methoder.getValue(summaryCellProps.value[rowIndex][column.key])
-                              const span = helper.isFiniteNumber(props?.colSpan) ? (props.colSpan >= 0 ? props.colSpan : 1) : column?.colSpan || 1
+                        if (!cellSpiker && colCount !== 0 && cellRender) {
+                          const megre = colCount > 0
+                          const empty = colCount < 0
+                          const queues = Array.from(cellCachers.values()).filter(cacher => !cellSpikers.has(cacher.index) && cacher.index > colIndex)
+                          const emptys = queues.filter(cacher => cacher.colCount < 0)
+                          const exists = queues.filter(cacher => cacher.colCount > 0)
 
-                              if (column && span === 0) {
-                                colSpan = 1
-                              }
+                          if (empty) {
+                            const empter = {
+                              taskers: [] as { count: number, render: boolean }[],
+                              refers: [cellCacher] as typeof queues,
+                              counts: 1
+                            }
 
-                              if (column && span > 0) {
+                            for (const cacher of queues) {
+                              if (!cacher.cellRender || (cacher.rowSpan > 0 && cacher.colSpan > 0)) {
                                 break
                               }
+                              empter.refers.push(cacher)
+                              empter.counts++
+                            }
+
+                            for (const cacher of exists) {
+                              if (empter.counts < 1) {
+                                break
+                              }
+
+                              const count1 = empter.counts
+                              const count2 = cacher.colCount
+                              const render = cacher.cellRender
+                              const tasker = empter.taskers.slice(-1)[0]
+
+                              if (!tasker || tasker.render !== render) {
+                                empter.taskers.push({
+                                  count: count2 > count1 ? count1 : count2,
+                                  render: cacher.cellRender
+                                })
+                              }
+
+                              if (tasker && tasker.render === render) {
+                                tasker.count += count2 > count1 ? count1 : count2
+                              }
+
+                              if (count1 >= count2) {
+                                cellSpikers.add(cacher.index)
+                              }
+
+                              empter.counts = count1 >= count2 ? count1 - count2 : 0
+                              cacher.colCount = count2 >= count1 ? count2 - count1 : 0
+                            }
+
+                            for (const tasker of empter.taskers) {
+                              let index = 0
+
+                              while (index < tasker.count) {
+                                const refer = empter.refers.shift()!
+                                const first = index++ === 0
+
+                                refer.colCount = 0
+                                refer.colSpan = first && !tasker.render ? tasker.count : 0
+                                cellEmpters.add(refer.index)
+                                cellSpikers.add(refer.index)
+                              }
+                            }
+
+                            for (const [index, refer] of empter.refers.entries()) {
+                              refer.colSpan = index === 0 ? empter.refers.length : 0
+                              refer.colCount = index === 0 ? 0 : -1
+                              cellEmpters.add(refer.index)
+                              cellSpikers.add(refer.index)
                             }
                           }
+
+                          if (megre) {
+                            for (const cacher of emptys) {
+                              if (cellCacher.colCount < 1) {
+                                break
+                              }
+
+                              cellEmpters.add(cacher.index)
+                              cellSpikers.add(cacher.index)
+
+                              cellCacher.colSpan = cacher.cellRender ? cellCacher.colSpan : cellCacher.colSpan - 1
+                              cellCacher.colCount = cellCacher.colCount - 1
+                            }
+
+                            cellCacher.colSpan = cellCacher.colSpan - (cellCacher.colCount > 0 ? cellCacher.colCount : 0)
+                            cellCacher.colSpan = cellCacher.colSpan > 0 ? cellCacher.colSpan : 0
+                            cellCacher.colCount = 0
+                          }
+
+                          cellSpikers.add(cellCacher.index)
                         }
 
-                        if (column) {
-                          rowSpan = helper.isFiniteNumber(cellProps?.rowSpan) ? cellProps.rowSpan : 1
-                          colSpan = helper.isFiniteNumber(cellProps?.colSpan) ? cellProps.colSpan : column.colSpan || 1
-                          colSpan = cacheIndexs.has(colIndex) ? cacheIndexs.get(colIndex)!.span : colSpan
-                          colSpan = emptyIndexs.has(colIndex) ? 0 : colSpan || 1
+                        if (!cellSpiker && colCount !== 0 && !cellRender) {
+                          const megre = colCount > 0
+                          const empty = colCount < 0
+                          const queues = Array.from(cellCachers.values()).filter(cacher => !cellSpikers.has(cacher.index) && cacher.index > colIndex)
+                          const emptys = queues.filter(cacher => cacher.colCount < 0)
+                          const exists = queues.filter(cacher => cacher.colCount > 0)
 
-                          if (colSpan > 1) {
-                            let reset = 0
+                          if (empty) {
+                            for (const caher of exists) {
+                              caher.colSpan--
+                              caher.colCount--
+                              caher.colCount === 0 && cellSpikers.add(caher.index)
+                              break
+                            }
+                          }
 
-                            for (let next = 1, last = colSpan; next < last; next++) {
-                              const index = dataColumns.value[colIndex + next].colIndex
-                              const column = filterColumns.value.find(col => col.colIndex === index)
-                              const props = column && Methoder.getValue(summaryCellProps.value[rowIndex][column.key])
-                              const span = helper.isFiniteNumber(props?.colSpan) ? (props.colSpan >= 0 ? props.colSpan : 1) : column?.colSpan || 1
+                          if (megre) {
+                            const empter = {
+                              taskers: [] as { render: boolean, refers: typeof queues }[]
+                            }
 
-                              if (column && span === 0) {
-                                emptyIndexs.add(colIndex + next)
-                              }
-
-                              if (column && span > 0) {
-                                colSpan = 1
-                                reset = next
+                            for (const cacher of emptys) {
+                              if (cellCacher.colCount < 1) {
                                 break
                               }
 
-                              if (!column) {
-                                colSpan--
+                              const render = cacher.cellRender
+                              const tasker = empter.taskers.slice(-1)[0]
+
+                              if (!tasker || tasker.render !== render) {
+                                empter.taskers.push({
+                                  render: cacher.cellRender,
+                                  refers: [cacher]
+                                })
+                              }
+
+                              if (tasker && tasker.render === render) {
+                                tasker.refers.push(cacher)
+                              }
+
+                              cellCacher.colCount--
+                            }
+
+                            for (const tasker of empter.taskers) {
+                              const render = tasker.render
+                              const refers = tasker.refers
+
+                              for (const [index, refer] of refers.entries()) {
+                                refer.colSpan = render && index === 0 ? refers.length : 0
+                                refer.colCount = render && index === 0 ? 0 : -1
+                                cellEmpters.add(refer.index)
+                                cellSpikers.add(refer.index)
                               }
                             }
 
-                            for (let next = 1; next < reset; next++) {
-                              cacheIndexs.set(colIndex + next, { span: 1, render: undefined })
-                              emptyIndexs.delete(colIndex + next)
-                            }
+                            cellCacher.colSpan = cellCacher.colSpan - (cellCacher.colCount > 0 ? cellCacher.colCount : 0)
+                            cellCacher.colSpan = cellCacher.colSpan > 0 ? cellCacher.colSpan : 0
+                            cellCacher.colCount = 0
                           }
 
-                          if (rowSpan >= 1 && colSpan >= 1) {
-                            const records = Computer.filterPageSources.value.filter(refer => refer.rowGroupLevel === 1)
-                            const sources = readonly(records.map(refer => refer.referRecord))
-                            const paginate = readonly(Paginator.paginate)
+                          cellSpikers.add(cellCacher.index)
+                        }
 
-                            const cacheValue = cacheIndexs.get(colIndex) ? cacheIndexs.get(colIndex)!.render : undefined
-                            const computeValue = cacheValue !== undefined ? cacheValue : !Methoder.isVueNode(cellValue) && helper.isFunction(ctx.slots.footerCell)
-                              ? Methoder.getVNodes(renderSlot(ctx.slots, 'footerCell', { value: cellValue, record, rowIndex, column: readonly(column), colIndex, sources, paginate }))
+                        colSpan = cellCacher.colSpan
+                        rowSpan = cellCacher.rowSpan
+
+                        if (cellRender && rowSpan >= 1 && colSpan >= 1) {
+                          const records = Computer.filterPageSources.value.filter(refer => refer.rowGroupLevel === 1)
+                          const sources = readonly(records.map(refer => refer.referRecord))
+                          const paginate = readonly(Paginator.paginate)
+
+                          const options = {
+                            value: cellValue,
+                            column: readonly(column),
+                            record: readonly(summary),
+                            rowIndex: rowIndex,
+                            colIndex: colIndex,
+                            paginate: paginate,
+                            sources: sources
+                          }
+
+                          const computeValue = cellEmpters.has(colIndex) ? null
+                            : !Methoder.isVueNode(cellValue) && helper.isFunction(ctx.slots.footerCell)
+                              ? Methoder.getVNodes(renderSlot(ctx.slots, 'footerCell', options)) ?? cellValue
                               : cellValue
 
-                            return (
-                              <td
-                                rowspan={rowSpan}
-                                colspan={colSpan}
-                                style={Eventer.computeTableChildStyle(column, 'tfoot')}
-                                { ...Eventer.computeTableChildAttrs(cellAttrs, 'tfoot') }
-                                { ...Eventer.computeTableChildProps(cellProps, 'tfoot') }
-                                class={'s-table-tfoot-td'}
-                                col-index={column.colIndex}
-                                col-offset={column.colOffset}
-                                row-index={rowIndex}
-                              >
-                                { computeValue ?? cellValue }
-                              </td>
-                            )
-                          }
+                          return (
+                            <td
+                              rowspan={rowSpan}
+                              colspan={colSpan}
+                              style={Eventer.computeTableChildStyle(column, 'tfoot')}
+                              { ...Eventer.computeTableChildAttrs(cellAttrs, 'tfoot') }
+                              { ...Eventer.computeTableChildProps(cellProps, 'tfoot') }
+                              class={'s-table-tfoot-td'}
+                              col-index={column.colIndex}
+                              col-offset={column.colOffset}
+                              row-index={rowIndex}
+                            >
+                              { computeValue }
+                            </td>
+                          )
                         }
                       })
                     }
@@ -2360,7 +2936,7 @@ export const STable = defineComponent({
         >
           <table
             class={['s-nested-table', WrapperTableClass]}
-            style={{ width: Computer.tableBodyWidth.value, tableLayout: props.layout }}
+            style={{ tableLayout: props.layout }}
           >
             <RenderColGroup/>
             <RenderTableThead/>

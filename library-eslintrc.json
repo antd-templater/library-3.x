@@ -23,6 +23,7 @@
     "STableSorterType": false,
     "STableRecordType": false,
     "STablePaginateType": false,
+    "STableCellMegreType": false,
     "STableRowKey": false,
     "STableTreeKey": false,
     "STableLoadSource": false,

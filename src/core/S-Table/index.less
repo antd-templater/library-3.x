@@ -131,6 +131,19 @@ body {
             outline: solid 1px #f0f0f0;
           }
         }
+
+        & > .s-nested-table:not(.s-border-table) {
+          & > .s-table-thead > .s-table-thead-tr > .s-table-thead-th:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            width: 1px;
+            top: 16px;
+            right: 1px;
+            bottom: 16px;
+            margin: auto;
+            background-color: rgba(0, 0, 0, 0.08);
+          }
+        }
       }
     }
   }
@@ -145,6 +158,19 @@ body {
             padding: 12px 8px;
           }
         }
+
+        & > .s-nested-table:not(.s-border-table) {
+          & > .s-table-thead > .s-table-thead-tr > .s-table-thead-th:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            width: 1px;
+            top: 12px;
+            right: 1px;
+            bottom: 12px;
+            margin: auto;
+            background-color: rgba(0, 0, 0, 0.08);
+          }
+        }
       }
     }
   }
@@ -157,6 +183,19 @@ body {
           & > .s-table-tbody > .s-table-tbody-tr > .s-table-tbody-td,
           & > .s-table-tfoot > .s-table-tfoot-tr > .s-table-tfoot-td {
             padding: 8px 8px;
+          }
+        }
+
+        & > .s-nested-table:not(.s-border-table) {
+          & > .s-table-thead > .s-table-thead-tr > .s-table-thead-th:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            width: 1px;
+            top: 8px;
+            right: 1px;
+            bottom: 8px;
+            margin: auto;
+            background-color: rgba(0, 0, 0, 0.08);
           }
         }
       }
