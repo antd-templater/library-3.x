@@ -64,6 +64,7 @@ declare global {
     STableRecordType,
     STablePaginateType,
     STableCellMegreType,
+    STableCellMegreOpts,
     STableRowKey,
     STableTreeKey,
     STableLoadSource,

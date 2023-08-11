@@ -24,6 +24,7 @@
     "STableRecordType": false,
     "STablePaginateType": false,
     "STableCellMegreType": false,
+    "STableCellMegreOpts": false,
     "STableRowKey": false,
     "STableTreeKey": false,
     "STableLoadSource": false,

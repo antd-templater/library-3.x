@@ -64,6 +64,15 @@ export interface STableCellMegreType {
   cellRender: boolean;
 }
 
+export interface STableCellMegreOpts {
+  index: number;
+  colIndex: number;
+  rowIndex: number;
+  cachers: Map<number, STableCellMegreType>;
+  spikers: Set<number>;
+  empters: Set<number>,
+}
+
 export interface STableRowKey<RecordType = STableRecordType> {
   (record: DeepReadonly<RecordType>): string
 }
@@ -595,58 +604,136 @@ export const STable = defineComponent({
         return Normalizer.scroll.value.overflow
       }),
       filterListColumns: computed(() => {
+        type CellEmpters = Set<number>
+        type CellSpikers = Set<number>
+        type CellCachers = Map<number, STableCellMegreType>
+        type CellMegrers = ReturnType<typeof Methoder.takeCellMegre>[]
+
+        const cellMegrers: CellMegrers = []
+        const cellCachers: CellCachers = new Map()
+        const cellSpikers: CellSpikers = new Set()
+        const cellEmpters: CellEmpters = new Set()
+
+        const megrerColumns = (columns: STableColumnType[], options: { megrers: CellMegrers; cachers: CellCachers; spikers: CellSpikers; empters: CellEmpters; }) => {
+          const cellMegrers = options.megrers
+          const cellCachers = options.cachers
+          const cellSpikers = options.spikers
+          const cellEmpters = options.empters
+          const cellRowSpans = columns.map(column => columnSettingsCheckKeys.value.includes(column.key) ? column.rowMaxSpan : 0)
+          const cellRowMaxSpan = Math.max(0, ...cellRowSpans)
+
+          for (const [index, column] of columns.entries()) {
+            let colSpan = 0
+            let rowSpan = 0
+            let colCount = 0
+            let rowCount = 0
+            let cellRender = true
+
+            const cellAttrs = Methoder.getValue(columnCellAttrs.value[column.rowIndex][column.colIndex])
+            const cellProps = Methoder.getValue(columnCellProps.value[column.rowIndex][column.colIndex])
+            const cellValue = Methoder.getValue(columnCellRender.value[column.rowIndex][column.colIndex])
+            const cellCahcer = cellCachers.get(index)
+
+            rowSpan = helper.isFiniteNumber(cellProps?.rowSpan) ? cellProps.rowSpan : helper.isFiniteNumber(column.rowSpan) ? column.rowSpan : Math.max(cellRowMaxSpan - column.rowIndex, 1)
+            colSpan = helper.isFiniteNumber(cellProps?.colSpan) ? cellProps.colSpan : helper.isFiniteNumber(column.colSpan) ? column.colSpan : 1
+
+            cellRender = cellCahcer?.cellRender !== false && cellProps?.cellSpan !== false && columnSettingsCheckKeys.value.includes(column.key)
+
+            rowSpan = helper.isFiniteNumber(cellCahcer?.rowSpan) ? cellCahcer!.rowSpan : rowSpan
+            colSpan = helper.isFiniteNumber(cellCahcer?.colSpan) ? cellCahcer!.colSpan : colSpan
+
+            rowCount = rowSpan - 1
+            colCount = colSpan - 1
+
+            cellCachers.set(index, {
+              index: index,
+              rowSpan: rowSpan,
+              colSpan: colSpan,
+              colCount: colCount,
+              rowCount: rowCount,
+              cellAttrs: cellAttrs,
+              cellProps: cellProps,
+              cellValue: cellValue,
+              cellRender: cellRender
+            })
+          }
+
+          for (const [index, column] of columns.entries()) {
+            cellMegrers.push(
+              Methoder.takeCellMegre({
+                index: index,
+                colIndex: column.colIndex,
+                rowIndex: column.rowIndex,
+                cachers: cellCachers,
+                spikers: cellSpikers,
+                empters: cellEmpters
+              })
+            )
+          }
+        }
+
         const filterColumns = (columns: STableWrapColumnType[], wraps: STableWrapColumnType[] = [], parent?: STableWrapColumnType | null) => {
           let skip = 0
           let offset = parent ? parent.referColumn.colOffset : 0
 
           for (const [index, column] of columns.entries()) {
+            const rowIndex = column.referColumn.rowIndex
+            const colIndex = column.referColumn.colIndex
+            const refCacher = cellMegrers.find(opt => opt.rowIndex === rowIndex && opt.colIndex === colIndex)?.cacher
+            const refRowSpan = refCacher ? (helper.isFiniteNumber(refCacher?.rowSpan) && refCacher.rowSpan > 0 ? refCacher.rowSpan : 0) : 1
+            const refColSpan = refCacher ? (helper.isFiniteNumber(refCacher?.colSpan) && refCacher.colSpan > 0 ? refCacher.colSpan : 0) : 1
+            const refCellProp = toRaw(unref(columnCellProps.value[rowIndex][colIndex]))
+
             if (!columnSettingsCheckKeys.value.includes(column.key)) {
               skip++
               continue
             }
 
-            const rowIndex = column.referColumn.rowIndex
-            const colIndex = column.referColumn.colIndex
-            const refProps = toRaw(unref(columnCellProps.value[rowIndex][colIndex]))
+            if (refColSpan === 0 || refRowSpan === 0) {
+              skip++
+            }
 
             const wrapColumn: STableWrapColumnType = {
               ...column,
               referColumn: reactive({
                 ...column.referColumn,
+                colSpan: refColSpan,
+                rowSpan: refRowSpan,
                 colOffset: offset + index - skip,
                 rowOffset: parent ? parent.referColumn.rowIndex + 1 : 0,
-                colMaxSpan: 1,
+                colMaxSpan: refColSpan,
                 rowMaxSpan: parent ? parent.referColumn.rowMaxSpan + 1 : 1,
-                align: helper.isNotEmptyObject(refProps) && Object.hasOwn(refProps, 'align') ? refProps.align ?? column.referColumn.align : column.referColumn.align,
-                fixed: helper.isNotEmptyObject(refProps) && Object.hasOwn(refProps, 'fixed') ? refProps.fixed ?? column.referColumn.fixed : column.referColumn.fixed,
-                width: helper.isNotEmptyObject(refProps) && Object.hasOwn(refProps, 'width') ? refProps.width ?? column.referColumn.width : column.referColumn.width,
-                minWidth: helper.isNotEmptyObject(refProps) && Object.hasOwn(refProps, 'minWidth') ? refProps.minWidth ?? column.referColumn.minWidth : column.referColumn.minWidth,
-                maxWidth: helper.isNotEmptyObject(refProps) && Object.hasOwn(refProps, 'maxWidth') ? refProps.maxWidth ?? column.referColumn.maxWidth : column.referColumn.maxWidth,
-                ellipsis: helper.isNotEmptyObject(refProps) && Object.hasOwn(refProps, 'ellipsis') ? refProps.ellipsis ?? column.referColumn.ellipsis : column.referColumn.ellipsis,
-                colSpan: helper.isNotEmptyObject(refProps) && Object.hasOwn(refProps, 'colSpan') ? refProps.colSpan ?? column.referColumn.colSpan : column.referColumn.colSpan,
-                rowSpan: helper.isNotEmptyObject(refProps) && Object.hasOwn(refProps, 'rowSpan') ? refProps.rowSpan ?? column.referColumn.rowSpan : column.referColumn.rowSpan,
-                sorter: helper.isNotEmptyObject(refProps) && Object.hasOwn(refProps, 'sorter') ? refProps.sorter ?? column.referColumn.sorter : column.referColumn.sorter
+                align: helper.isNotEmptyObject(refCellProp) && Object.hasOwn(refCellProp, 'align') ? refCellProp.align ?? column.referColumn.align : column.referColumn.align,
+                fixed: helper.isNotEmptyObject(refCellProp) && Object.hasOwn(refCellProp, 'fixed') ? refCellProp.fixed ?? column.referColumn.fixed : column.referColumn.fixed,
+                width: helper.isNotEmptyObject(refCellProp) && Object.hasOwn(refCellProp, 'width') ? refCellProp.width ?? column.referColumn.width : column.referColumn.width,
+                minWidth: helper.isNotEmptyObject(refCellProp) && Object.hasOwn(refCellProp, 'minWidth') ? refCellProp.minWidth ?? column.referColumn.minWidth : column.referColumn.minWidth,
+                maxWidth: helper.isNotEmptyObject(refCellProp) && Object.hasOwn(refCellProp, 'maxWidth') ? refCellProp.maxWidth ?? column.referColumn.maxWidth : column.referColumn.maxWidth,
+                ellipsis: helper.isNotEmptyObject(refCellProp) && Object.hasOwn(refCellProp, 'ellipsis') ? refCellProp.ellipsis ?? column.referColumn.ellipsis : column.referColumn.ellipsis,
+                sorter: helper.isNotEmptyObject(refCellProp) && Object.hasOwn(refCellProp, 'sorter') ? refCellProp.sorter ?? column.referColumn.sorter : column.referColumn.sorter
               }),
               treeChildren: []
             }
 
             if (helper.isNotEmptyArray(column.treeChildren)) {
               const childTrees = filterColumns(column.treeChildren, [], wrapColumn)
-              const rowMaxSpan = Math.max(...childTrees.map(child => child.referColumn.rowMaxSpan), wrapColumn.referColumn.rowMaxSpan)
-              const colMaxSpan = childTrees.reduce((colMaxSpan, child) => colMaxSpan + child.referColumn.colMaxSpan, 0) || 1
-              wrapColumn.referColumn.rowMaxSpan = rowMaxSpan
-              wrapColumn.referColumn.colMaxSpan = colMaxSpan
-              wrapColumn.treeChildren = childTrees
-              offset += colMaxSpan - 1
+              const filterTrees = childTrees.filter(wrap => wrap.referColumn.rowSpan > 0 && wrap.referColumn.colSpan > 0)
+              const cellRowMaxSpan = Math.max(...filterTrees.map(child => child.referColumn.rowMaxSpan), wrapColumn.referColumn.rowMaxSpan)
+              const cellColMaxSpan = filterTrees.reduce((colMaxSpan, child) => colMaxSpan + child.referColumn.colMaxSpan, 0)
 
-              helper.isNotEmptyArray(childTrees)
-                ? wraps.push(wrapColumn)
-                : skip++
+              wrapColumn.referColumn.rowMaxSpan = cellRowMaxSpan
+              wrapColumn.referColumn.colMaxSpan = cellColMaxSpan
+              wrapColumn.referColumn.colSpan = cellColMaxSpan
+              wrapColumn.treeChildren = childTrees
+
+              helper.isNotEmptyArray(childTrees) && wraps.push(wrapColumn)
+              helper.isNotEmptyArray(filterTrees) || skip++
             }
 
             if (!helper.isNotEmptyArray(column.treeChildren)) {
               wraps.push(wrapColumn)
             }
+
+            offset += Math.max(wrapColumn.referColumn.colSpan - 1, 0)
           }
 
           return wraps
@@ -665,46 +752,21 @@ export const STable = defineComponent({
             }
           }
 
-          if (isRoot === true) {
-            for (const columns of arrays) {
-              for (const column of columns) {
-                if (column) {
-                  column.colSpan = Number.isFinite(column.colSpan) ? column.colSpan : column.colMaxSpan
-                  column.rowSpan = Number.isFinite(column.rowSpan) ? column.rowSpan : column.rowIndex < column.rowMaxSpan - 1 ? 1 : arrays.length - column.rowIndex
-                }
-              }
-            }
-
-            const rows = arrays.length as number
-            const cols = Math.max(...arrays.map(arr => arr.length), 0) as number
-            const arrs = Array.from({ length: rows }, () => Array.from({ length: cols }, () => 0)) as number[][]
-
-            for (const [rowIndex, columns] of arrays.entries()) {
-              for (const [colIndex, column] of columns.entries()) {
-                if (column) {
-                  column.colOffset = arrs[rowIndex].findIndex(index => index === 0)
-                  column.rowOffset = arrs.map(arr => arr[colIndex]).findLastIndex(index => index === 1) + 1
-                  column.colOffset = column.colOffset > -1 ? column.colOffset : arrs[rowIndex].length
-                  column.rowOffset = column.rowOffset > -1 ? column.rowOffset : 0
-
-                  for (let rowOffset = 0; rowOffset < column.rowSpan; rowOffset++) {
-                    for (let colOffset = 0; colOffset < column.colSpan; colOffset++) {
-                      arrs[rowIndex + rowOffset] = arrs[rowIndex + rowOffset] || []
-                      arrs[rowIndex + rowOffset][colIndex + colOffset] = 1
-                    }
-                  }
-                }
-              }
-            }
-          }
-
           return arrays
         }
+
+        megrerColumns(dataColumns.value, {
+          megrers: cellMegrers,
+          cachers: cellCachers,
+          spikers: cellSpikers,
+          empters: cellEmpters
+        })
 
         return updateColumns(filterColumns(treeColumns.value))
       }),
       filterDataColumns: computed(() => {
-        const dataColumns: STableColumnType[] = []
+        const recordColumns: STableColumnType[] = []
+        const filterColumns: STableColumnType[] = []
 
         for (const columns of Computer.filterListColumns.value) {
           for (const column of columns) {
@@ -713,12 +775,16 @@ export const STable = defineComponent({
             }
 
             if (column.rowIndex === column.rowMaxSpan - 1) {
-              dataColumns[column.colOffset] = column
+              recordColumns[column.colOffset] = column
             }
           }
         }
 
-        return dataColumns.filter(column => !!column)
+        for (const column of recordColumns) {
+          if (column) filterColumns.push(column)
+        }
+
+        return filterColumns
       }),
       filterPageSources: computed(() => {
         let rowIndex = 0
@@ -827,6 +893,194 @@ export const STable = defineComponent({
         }
 
         return true
+      },
+
+      takeCellMegre(options: STableCellMegreOpts) {
+        const index = options.index
+        const colIndex = options.colIndex
+        const rowIndex = options.rowIndex
+        const cellCachers = options.cachers
+        const cellSpikers = options.spikers
+        const cellEmpters = options.empters
+
+        const cellCacher = cellCachers.get(index)!
+        const cellSpiker = cellSpikers.has(index)
+        const cellRender = cellCacher.cellRender
+        const cellCount = cellCacher.colCount
+
+        if (!cellSpiker && cellCount !== 0 && cellRender) {
+          const megre = cellCacher.colCount > 0
+          const empty = cellCacher.colCount < 0
+          const arrays = Array.from(cellCachers.values())
+
+          arrays.sort((next, prev) => next.index - prev.index)
+
+          const queues = arrays.filter(cacher => !cellSpikers.has(cacher.index) && cacher.index > index)
+          const emptys = queues.filter(cacher => cacher.colCount < 0)
+          const exists = queues.filter(cacher => cacher.colCount > 0)
+
+          if (empty) {
+            const empter = {
+              taskers: [] as { count: number, render: boolean }[],
+              refers: [cellCacher] as typeof queues,
+              counts: 1
+            }
+
+            for (const cacher of queues) {
+              if (!cacher.cellRender || (cacher.rowSpan > 0 && cacher.colSpan > 0)) {
+                break
+              }
+              empter.refers.push(cacher)
+              empter.counts++
+            }
+
+            for (const cacher of exists) {
+              if (empter.counts < 1) {
+                break
+              }
+
+              const count1 = empter.counts
+              const count2 = cacher.colCount
+              const render = cacher.cellRender
+              const tasker = empter.taskers.slice(-1)[0]
+
+              if (!tasker || tasker.render !== render) {
+                empter.taskers.push({
+                  count: count2 > count1 ? count1 : count2,
+                  render: cacher.cellRender
+                })
+              }
+
+              if (tasker && tasker.render === render) {
+                tasker.count += count2 > count1 ? count1 : count2
+              }
+
+              if (count1 >= count2) {
+                cellSpikers.add(cacher.index)
+              }
+
+              empter.counts = count1 >= count2 ? count1 - count2 : 0
+              cacher.colCount = count2 >= count1 ? count2 - count1 : 0
+            }
+
+            for (const tasker of empter.taskers) {
+              let index = 0
+
+              while (index < tasker.count) {
+                const refer = empter.refers.shift()!
+                const first = index++ === 0
+
+                refer.colCount = 0
+                refer.colSpan = first && !tasker.render ? tasker.count : 0
+                cellEmpters.add(refer.index)
+                cellSpikers.add(refer.index)
+              }
+            }
+
+            for (const [index, refer] of empter.refers.entries()) {
+              refer.colSpan = index === 0 ? empter.refers.length : 0
+              refer.colCount = index === 0 ? 0 : -1
+              cellEmpters.add(refer.index)
+              cellSpikers.add(refer.index)
+            }
+          }
+
+          if (megre) {
+            for (const cacher of emptys) {
+              if (cellCacher.colCount < 1) {
+                break
+              }
+
+              cellEmpters.add(cacher.index)
+              cellSpikers.add(cacher.index)
+
+              cellCacher.colSpan = cacher.cellRender ? cellCacher.colSpan : cellCacher.colSpan - 1
+              cellCacher.colCount = cellCacher.colCount - 1
+            }
+
+            cellCacher.colSpan = cellCacher.colSpan - (cellCacher.colCount > 0 ? cellCacher.colCount : 0)
+            cellCacher.colSpan = cellCacher.colSpan > 0 ? cellCacher.colSpan : 0
+            cellCacher.colCount = 0
+          }
+
+          cellSpikers.add(cellCacher.index)
+        }
+
+        if (!cellSpiker && cellCount !== 0 && !cellRender) {
+          const megre = cellCacher.colCount > 0
+          const empty = cellCacher.colCount < 0
+          const arrays = Array.from(cellCachers.values())
+
+          arrays.sort((next, prev) => next.index - prev.index)
+
+          const queues = arrays.filter(cacher => !cellSpikers.has(cacher.index) && cacher.index > index)
+          const emptys = queues.filter(cacher => cacher.colCount < 0)
+          const exists = queues.filter(cacher => cacher.colCount > 0)
+
+          if (empty) {
+            for (const caher of exists) {
+              caher.colSpan--
+              caher.colCount--
+              caher.colCount === 0 && cellSpikers.add(caher.index)
+              break
+            }
+          }
+
+          if (megre) {
+            const empter = {
+              taskers: [] as { render: boolean, refers: typeof queues }[]
+            }
+
+            for (const cacher of emptys) {
+              if (cellCacher.colCount < 1) {
+                break
+              }
+
+              const render = cacher.cellRender
+              const tasker = empter.taskers.slice(-1)[0]
+
+              if (!tasker || tasker.render !== render) {
+                empter.taskers.push({
+                  render: cacher.cellRender,
+                  refers: [cacher]
+                })
+              }
+
+              if (tasker && tasker.render === render) {
+                tasker.refers.push(cacher)
+              }
+
+              cellCacher.colCount--
+            }
+
+            for (const tasker of empter.taskers) {
+              const render = tasker.render
+              const refers = tasker.refers
+
+              for (const [index, refer] of refers.entries()) {
+                refer.colSpan = render && index === 0 ? refers.length : 0
+                refer.colCount = render && index === 0 ? 0 : -1
+                cellEmpters.add(refer.index)
+                cellSpikers.add(refer.index)
+              }
+            }
+
+            cellCacher.colSpan = cellCacher.colSpan - (cellCacher.colCount > 0 ? cellCacher.colCount : 0)
+            cellCacher.colSpan = cellCacher.colSpan > 0 ? cellCacher.colSpan : 0
+            cellCacher.colCount = 0
+          }
+
+          cellSpikers.add(cellCacher.index)
+        }
+
+        return {
+          index,
+          colIndex,
+          rowIndex,
+          cacher: cellCachers.get(index)!,
+          spiker: cellSpikers.has(index),
+          empter: cellEmpters.has(index)
+        }
       },
 
       restoreColumns(parts: STableWrapColumnType[]) {
@@ -2101,7 +2355,7 @@ export const STable = defineComponent({
                             rowspan={column.rowSpan}
                             style={Eventer.computeTableChildStyle(column, 'thead')}
                             { ...toRaw(unref(columnCellAttrs.value[rowIndex][colIndex])) }
-                            class={'s-table-thead-th'}
+                            class={['s-table-thead-th', { 's-table-thead-th-leafed': column.rowIndex === column.rowMaxSpan - 1 }]}
                             col-index={column.colIndex}
                             row-index={column.rowIndex}
                             col-offset={column.colOffset}
@@ -2150,7 +2404,8 @@ export const STable = defineComponent({
             let rowCount = 0
             let cellRender = true
 
-            const column = presetColumns[index]
+            const item = presetColumns[index]
+            const column = filterColumns.find(col => col.colIndex === item.colIndex) || item
             const cellAttrs = Methoder.getValue(sourceCellAttrs.value[globalIndex][column.key])
             const cellProps = Methoder.getValue(sourceCellProps.value[globalIndex][column.key])
             const cellValue = Methoder.getValue(sourceCellRender.value[globalIndex][column.key])
@@ -2158,12 +2413,12 @@ export const STable = defineComponent({
             const cellCahcer = cellCachers.get(index)
 
             rowSpan = helper.isFiniteNumber(cellProps?.rowSpan) ? cellProps.rowSpan : 1
-            rowSpan = helper.isFiniteNumber(cellCahcer?.rowSpan) ? cellCahcer!.rowSpan : rowSpan
-
-            colSpan = helper.isFiniteNumber(cellProps?.colSpan) ? cellProps.colSpan : +column.colSpan || 1
-            colSpan = helper.isFiniteNumber(cellCahcer?.colSpan) ? cellCahcer!.colSpan : colSpan
+            colSpan = helper.isFiniteNumber(cellProps?.colSpan) ? cellProps.colSpan : helper.isFiniteNumber(column.colSpan) ? column.colSpan : 1
 
             cellRender = cellCahcer?.cellRender !== false && cellProps?.cellSpan !== false && filterColumns.some(col => col.colIndex === index)
+
+            rowSpan = helper.isFiniteNumber(cellCahcer?.rowSpan) ? cellCahcer!.rowSpan : rowSpan
+            colSpan = helper.isFiniteNumber(cellCahcer?.colSpan) ? cellCahcer!.colSpan : colSpan
 
             rowCount = rowSpan - 1
             colCount = colSpan - 1
@@ -2286,183 +2541,28 @@ export const STable = defineComponent({
                     row-index={option.rowGroupIndex}
                   >
                     {
-                      presetColumns.map((referColumn, colIndex) => {
-                        let rowSpan = 0
-                        let colSpan = 0
-                        let colCount = 0
+                      presetColumns.map((refer, colIndex) => {
+                        const options = Methoder.takeCellMegre({
+                          index: colIndex,
+                          colIndex: refer.colIndex,
+                          rowIndex: option.rowIndex,
+                          cachers: cellCachers,
+                          spikers: cellSpikers,
+                          empters: cellEmpters
+                        })
 
-                        const cellCacher = cellCachers.get(colIndex)!
-                        const cellSpiker = cellSpikers.has(colIndex)
-                        const cellRender = cellCacher.cellRender
-                        const cellValue = cellCacher.cellValue
-                        const cellProps = cellCacher.cellProps
-                        const cellAttrs = cellCacher.cellAttrs
-
-                        colCount = cellCacher.colCount
-                        colSpan = cellCacher.colSpan
-                        rowSpan = cellCacher.rowSpan
-
-                        if (!cellSpiker && colCount !== 0 && cellRender) {
-                          const megre = colCount > 0
-                          const empty = colCount < 0
-                          const queues = Array.from(cellCachers.values()).filter(cacher => !cellSpikers.has(cacher.index) && cacher.index > colIndex)
-                          const emptys = queues.filter(cacher => cacher.colCount < 0)
-                          const exists = queues.filter(cacher => cacher.colCount > 0)
-
-                          if (empty) {
-                            const empter = {
-                              taskers: [] as { count: number, render: boolean }[],
-                              refers: [cellCacher] as typeof queues,
-                              counts: 1
-                            }
-
-                            for (const cacher of queues) {
-                              if (!cacher.cellRender || (cacher.rowSpan > 0 && cacher.colSpan > 0)) {
-                                break
-                              }
-                              empter.refers.push(cacher)
-                              empter.counts++
-                            }
-
-                            for (const cacher of exists) {
-                              if (empter.counts < 1) {
-                                break
-                              }
-
-                              const count1 = empter.counts
-                              const count2 = cacher.colCount
-                              const render = cacher.cellRender
-                              const tasker = empter.taskers.slice(-1)[0]
-
-                              if (!tasker || tasker.render !== render) {
-                                empter.taskers.push({
-                                  count: count2 > count1 ? count1 : count2,
-                                  render: cacher.cellRender
-                                })
-                              }
-
-                              if (tasker && tasker.render === render) {
-                                tasker.count += count2 > count1 ? count1 : count2
-                              }
-
-                              if (count1 >= count2) {
-                                cellSpikers.add(cacher.index)
-                              }
-
-                              empter.counts = count1 >= count2 ? count1 - count2 : 0
-                              cacher.colCount = count2 >= count1 ? count2 - count1 : 0
-                            }
-
-                            for (const tasker of empter.taskers) {
-                              let index = 0
-
-                              while (index < tasker.count) {
-                                const refer = empter.refers.shift()!
-                                const first = index++ === 0
-
-                                refer.colCount = 0
-                                refer.colSpan = first && !tasker.render ? tasker.count : 0
-                                cellEmpters.add(refer.index)
-                                cellSpikers.add(refer.index)
-                              }
-                            }
-
-                            for (const [index, refer] of empter.refers.entries()) {
-                              refer.colSpan = index === 0 ? empter.refers.length : 0
-                              refer.colCount = index === 0 ? 0 : -1
-                              cellEmpters.add(refer.index)
-                              cellSpikers.add(refer.index)
-                            }
-                          }
-
-                          if (megre) {
-                            for (const cacher of emptys) {
-                              if (cellCacher.colCount < 1) {
-                                break
-                              }
-
-                              cellEmpters.add(cacher.index)
-                              cellSpikers.add(cacher.index)
-
-                              cellCacher.colSpan = cacher.cellRender ? cellCacher.colSpan : cellCacher.colSpan - 1
-                              cellCacher.colCount = cellCacher.colCount - 1
-                            }
-
-                            cellCacher.colSpan = cellCacher.colSpan - (cellCacher.colCount > 0 ? cellCacher.colCount : 0)
-                            cellCacher.colSpan = cellCacher.colSpan > 0 ? cellCacher.colSpan : 0
-                            cellCacher.colCount = 0
-                          }
-
-                          cellSpikers.add(cellCacher.index)
-                        }
-
-                        if (!cellSpiker && colCount !== 0 && !cellRender) {
-                          const megre = colCount > 0
-                          const empty = colCount < 0
-                          const queues = Array.from(cellCachers.values()).filter(cacher => !cellSpikers.has(cacher.index) && cacher.index > colIndex)
-                          const emptys = queues.filter(cacher => cacher.colCount < 0)
-                          const exists = queues.filter(cacher => cacher.colCount > 0)
-
-                          if (empty) {
-                            for (const caher of exists) {
-                              caher.colSpan--
-                              caher.colCount--
-                              caher.colCount === 0 && cellSpikers.add(caher.index)
-                              break
-                            }
-                          }
-
-                          if (megre) {
-                            const empter = {
-                              taskers: [] as { render: boolean, refers: typeof queues }[]
-                            }
-
-                            for (const cacher of emptys) {
-                              if (cellCacher.colCount < 1) {
-                                break
-                              }
-
-                              const render = cacher.cellRender
-                              const tasker = empter.taskers.slice(-1)[0]
-
-                              if (!tasker || tasker.render !== render) {
-                                empter.taskers.push({
-                                  render: cacher.cellRender,
-                                  refers: [cacher]
-                                })
-                              }
-
-                              if (tasker && tasker.render === render) {
-                                tasker.refers.push(cacher)
-                              }
-
-                              cellCacher.colCount--
-                            }
-
-                            for (const tasker of empter.taskers) {
-                              const render = tasker.render
-                              const refers = tasker.refers
-
-                              for (const [index, refer] of refers.entries()) {
-                                refer.colSpan = render && index === 0 ? refers.length : 0
-                                refer.colCount = render && index === 0 ? 0 : -1
-                                cellEmpters.add(refer.index)
-                                cellSpikers.add(refer.index)
-                              }
-                            }
-
-                            cellCacher.colSpan = cellCacher.colSpan - (cellCacher.colCount > 0 ? cellCacher.colCount : 0)
-                            cellCacher.colSpan = cellCacher.colSpan > 0 ? cellCacher.colSpan : 0
-                            cellCacher.colCount = 0
-                          }
-
-                          cellSpikers.add(cellCacher.index)
-                        }
-
-                        colSpan = cellCacher.colSpan
-                        rowSpan = cellCacher.rowSpan
+                        const cellRender = options.cacher.cellRender
+                        const cellValue = options.cacher.cellValue
+                        const cellProps = options.cacher.cellProps
+                        const cellAttrs = options.cacher.cellAttrs
+                        const rowSpan = options.cacher.rowSpan
+                        const colSpan = options.cacher.colSpan
 
                         if (cellRender && rowSpan >= 1 && colSpan >= 1) {
+                          const column = filterColumns.find(col => {
+                            return col.colIndex === refer.colIndex
+                          })!
+
                           const options = {
                             value: cellValue,
                             record: readonly(referRecord),
@@ -2471,7 +2571,7 @@ export const STable = defineComponent({
                             groupLevel,
                             groupIndexs,
                             globalIndex,
-                            column: readonly(referColumn),
+                            column: readonly(column),
                             colIndex
                           }
 
@@ -2484,12 +2584,12 @@ export const STable = defineComponent({
                             <td
                               rowspan={rowSpan}
                               colspan={colSpan}
-                              style={Eventer.computeTableChildStyle(referColumn, 'tbody')}
+                              style={Eventer.computeTableChildStyle(column, 'tbody')}
                               { ...Eventer.computeTableChildAttrs(cellAttrs, 'tbody') }
                               { ...Eventer.computeTableChildProps(cellProps, 'tbody') }
                               class={'s-table-tbody-td'}
-                              col-index={referColumn.colIndex}
-                              col-offset={referColumn.colOffset}
+                              col-index={column.colIndex}
+                              col-offset={column.colOffset}
                               row-global-index={globalIndex}
                               row-group-index={groupIndex}
                               row-group-level={groupLevel}
@@ -2545,7 +2645,8 @@ export const STable = defineComponent({
             let rowCount = 0
             let cellRender = true
 
-            const column = presetColumns[index]
+            const item = presetColumns[index]
+            const column = filterColumns.find(col => col.colIndex === item.colIndex) || item
             const cellAttrs = Methoder.getValue(summaryCellAttrs.value[rowIndex][column.key])
             const cellProps = Methoder.getValue(summaryCellProps.value[rowIndex][column.key])
             const cellValue = Methoder.getValue(summaryCellRender.value[rowIndex][column.key])
@@ -2553,12 +2654,12 @@ export const STable = defineComponent({
             const cellCahcer = cellCachers.get(index)
 
             rowSpan = helper.isFiniteNumber(cellProps?.rowSpan) ? cellProps.rowSpan : 1
-            rowSpan = helper.isFiniteNumber(cellCahcer?.rowSpan) ? cellCahcer!.rowSpan : rowSpan
-
-            colSpan = helper.isFiniteNumber(cellProps?.colSpan) ? cellProps.colSpan : +column.colSpan || 1
-            colSpan = helper.isFiniteNumber(cellCahcer?.colSpan) ? cellCahcer!.colSpan : colSpan
+            colSpan = helper.isFiniteNumber(cellProps?.colSpan) ? cellProps.colSpan : helper.isFiniteNumber(column.colSpan) ? column.colSpan : 1
 
             cellRender = cellCahcer?.cellRender !== false && cellProps?.cellSpan !== false && filterColumns.some(col => col.colIndex === index)
+
+            rowSpan = helper.isFiniteNumber(cellCahcer?.rowSpan) ? cellCahcer!.rowSpan : rowSpan
+            colSpan = helper.isFiniteNumber(cellCahcer?.colSpan) ? cellCahcer!.colSpan : colSpan
 
             rowCount = rowSpan - 1
             colCount = colSpan - 1
@@ -2652,191 +2753,33 @@ export const STable = defineComponent({
                     row-index={rowIndex}
                   >
                     {
-                      presetColumns.map((column, colIndex) => {
-                        let rowSpan = 0
-                        let colSpan = 0
-                        let colCount = 0
+                      presetColumns.map((refer, colIndex) => {
+                        const options = Methoder.takeCellMegre({
+                          index: colIndex,
+                          colIndex: refer.colIndex,
+                          rowIndex: rowIndex,
+                          cachers: cellCachers,
+                          spikers: cellSpikers,
+                          empters: cellEmpters
+                        })
 
-                        const cellCacher = cellCachers.get(colIndex)!
-                        const cellSpiker = cellSpikers.has(colIndex)
-                        const cellRender = cellCacher.cellRender
-                        const cellValue = cellCacher.cellValue
-                        const cellProps = cellCacher.cellProps
-                        const cellAttrs = cellCacher.cellAttrs
-
-                        colCount = cellCacher.colCount
-                        colSpan = cellCacher.colSpan
-                        rowSpan = cellCacher.rowSpan
-
-                        if (!cellSpiker && colCount !== 0 && cellRender) {
-                          const megre = colCount > 0
-                          const empty = colCount < 0
-                          const queues = Array.from(cellCachers.values()).filter(cacher => !cellSpikers.has(cacher.index) && cacher.index > colIndex)
-                          const emptys = queues.filter(cacher => cacher.colCount < 0)
-                          const exists = queues.filter(cacher => cacher.colCount > 0)
-
-                          if (empty) {
-                            const empter = {
-                              taskers: [] as { count: number, render: boolean }[],
-                              refers: [cellCacher] as typeof queues,
-                              counts: 1
-                            }
-
-                            for (const cacher of queues) {
-                              if (!cacher.cellRender || (cacher.rowSpan > 0 && cacher.colSpan > 0)) {
-                                break
-                              }
-                              empter.refers.push(cacher)
-                              empter.counts++
-                            }
-
-                            for (const cacher of exists) {
-                              if (empter.counts < 1) {
-                                break
-                              }
-
-                              const count1 = empter.counts
-                              const count2 = cacher.colCount
-                              const render = cacher.cellRender
-                              const tasker = empter.taskers.slice(-1)[0]
-
-                              if (!tasker || tasker.render !== render) {
-                                empter.taskers.push({
-                                  count: count2 > count1 ? count1 : count2,
-                                  render: cacher.cellRender
-                                })
-                              }
-
-                              if (tasker && tasker.render === render) {
-                                tasker.count += count2 > count1 ? count1 : count2
-                              }
-
-                              if (count1 >= count2) {
-                                cellSpikers.add(cacher.index)
-                              }
-
-                              empter.counts = count1 >= count2 ? count1 - count2 : 0
-                              cacher.colCount = count2 >= count1 ? count2 - count1 : 0
-                            }
-
-                            for (const tasker of empter.taskers) {
-                              let index = 0
-
-                              while (index < tasker.count) {
-                                const refer = empter.refers.shift()!
-                                const first = index++ === 0
-
-                                refer.colCount = 0
-                                refer.colSpan = first && !tasker.render ? tasker.count : 0
-                                cellEmpters.add(refer.index)
-                                cellSpikers.add(refer.index)
-                              }
-                            }
-
-                            for (const [index, refer] of empter.refers.entries()) {
-                              refer.colSpan = index === 0 ? empter.refers.length : 0
-                              refer.colCount = index === 0 ? 0 : -1
-                              cellEmpters.add(refer.index)
-                              cellSpikers.add(refer.index)
-                            }
-                          }
-
-                          if (megre) {
-                            for (const cacher of emptys) {
-                              if (cellCacher.colCount < 1) {
-                                break
-                              }
-
-                              cellEmpters.add(cacher.index)
-                              cellSpikers.add(cacher.index)
-
-                              cellCacher.colSpan = cacher.cellRender ? cellCacher.colSpan : cellCacher.colSpan - 1
-                              cellCacher.colCount = cellCacher.colCount - 1
-                            }
-
-                            cellCacher.colSpan = cellCacher.colSpan - (cellCacher.colCount > 0 ? cellCacher.colCount : 0)
-                            cellCacher.colSpan = cellCacher.colSpan > 0 ? cellCacher.colSpan : 0
-                            cellCacher.colCount = 0
-                          }
-
-                          cellSpikers.add(cellCacher.index)
-                        }
-
-                        if (!cellSpiker && colCount !== 0 && !cellRender) {
-                          const megre = colCount > 0
-                          const empty = colCount < 0
-                          const queues = Array.from(cellCachers.values()).filter(cacher => !cellSpikers.has(cacher.index) && cacher.index > colIndex)
-                          const emptys = queues.filter(cacher => cacher.colCount < 0)
-                          const exists = queues.filter(cacher => cacher.colCount > 0)
-
-                          if (empty) {
-                            for (const caher of exists) {
-                              caher.colSpan--
-                              caher.colCount--
-                              caher.colCount === 0 && cellSpikers.add(caher.index)
-                              break
-                            }
-                          }
-
-                          if (megre) {
-                            const empter = {
-                              taskers: [] as { render: boolean, refers: typeof queues }[]
-                            }
-
-                            for (const cacher of emptys) {
-                              if (cellCacher.colCount < 1) {
-                                break
-                              }
-
-                              const render = cacher.cellRender
-                              const tasker = empter.taskers.slice(-1)[0]
-
-                              if (!tasker || tasker.render !== render) {
-                                empter.taskers.push({
-                                  render: cacher.cellRender,
-                                  refers: [cacher]
-                                })
-                              }
-
-                              if (tasker && tasker.render === render) {
-                                tasker.refers.push(cacher)
-                              }
-
-                              cellCacher.colCount--
-                            }
-
-                            for (const tasker of empter.taskers) {
-                              const render = tasker.render
-                              const refers = tasker.refers
-
-                              for (const [index, refer] of refers.entries()) {
-                                refer.colSpan = render && index === 0 ? refers.length : 0
-                                refer.colCount = render && index === 0 ? 0 : -1
-                                cellEmpters.add(refer.index)
-                                cellSpikers.add(refer.index)
-                              }
-                            }
-
-                            cellCacher.colSpan = cellCacher.colSpan - (cellCacher.colCount > 0 ? cellCacher.colCount : 0)
-                            cellCacher.colSpan = cellCacher.colSpan > 0 ? cellCacher.colSpan : 0
-                            cellCacher.colCount = 0
-                          }
-
-                          cellSpikers.add(cellCacher.index)
-                        }
-
-                        colSpan = cellCacher.colSpan
-                        rowSpan = cellCacher.rowSpan
+                        const cellRender = options.cacher.cellRender
+                        const cellValue = options.cacher.cellValue
+                        const cellProps = options.cacher.cellProps
+                        const cellAttrs = options.cacher.cellAttrs
+                        const rowSpan = options.cacher.rowSpan
+                        const colSpan = options.cacher.colSpan
 
                         if (cellRender && rowSpan >= 1 && colSpan >= 1) {
-                          const records = Computer.filterPageSources.value.filter(refer => refer.rowGroupLevel === 1)
-                          const sources = readonly(records.map(refer => refer.referRecord))
+                          const array = Computer.filterPageSources.value.filter(refer => refer.rowGroupLevel === 1)
+                          const column = filterColumns.find(col => col.colIndex === refer.colIndex)!
+                          const sources = readonly(array.map(refer => refer.referRecord))
                           const paginate = readonly(Paginator.paginate)
 
                           const options = {
                             value: cellValue,
-                            column: readonly(column),
                             record: readonly(summary),
+                            column: readonly(column),
                             rowIndex: rowIndex,
                             colIndex: colIndex,
                             paginate: paginate,
