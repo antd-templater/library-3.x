@@ -405,9 +405,9 @@ export const STable = defineComponent({
       }>>,
 
       // column - resizable
-      resizeRcordX: 0,
-      resizeRcordWidth: 0,
-      resizeRcordColumn: null as STableColumnType | null | undefined
+      resizeRcordSpot: 0,
+      resizeRcordQueues: [] as { column: STableColumnType; width: number; minWidth: number; maxWidth: number; }[],
+      resizeRcordActivate: false
 
       // column - draggable
     }
@@ -607,7 +607,7 @@ export const STable = defineComponent({
         type CellEmpters = Set<number>
         type CellSpikers = Set<number>
         type CellCachers = Map<number, STableCellMegreType>
-        type CellMegrers = ReturnType<typeof Methoder.takeCellMegre>[]
+        type CellMegrers = Array<ReturnType<typeof Methoder.takeCellMegre> & { cacher: { resizable?: boolean } }>
 
         const cellMegrers: CellMegrers = []
         const cellCachers: CellCachers = new Map()
@@ -659,16 +659,21 @@ export const STable = defineComponent({
           }
 
           for (const [index, column] of columns.entries()) {
-            cellMegrers.push(
-              Methoder.takeCellMegre({
-                index: index,
-                colIndex: column.colIndex,
-                rowIndex: column.rowIndex,
-                cachers: cellCachers,
-                spikers: cellSpikers,
-                empters: cellEmpters
-              })
-            )
+            const megrer = Methoder.takeCellMegre({
+              index: index,
+              colIndex: column.colIndex,
+              rowIndex: column.rowIndex,
+              cachers: cellCachers,
+              spikers: cellSpikers,
+              empters: cellEmpters
+            })
+
+            const filters = columns.filter((_, i) => i === index || (i > index && i < index + megrer.cacher.colSpan))
+            const resizable = filters.some(column => column.resizable !== false)
+
+            Object.assign(megrer.cacher, { resizable })
+
+            cellMegrers.push(megrer)
           }
         }
 
@@ -676,15 +681,16 @@ export const STable = defineComponent({
           let skip = 0
           let offset = parent ? parent.referColumn.colOffset : 0
 
-          for (const [index, column] of columns.entries()) {
-            const rowIndex = column.referColumn.rowIndex
-            const colIndex = column.referColumn.colIndex
+          for (const [index, wrap] of columns.entries()) {
+            const rowIndex = wrap.referColumn.rowIndex
+            const colIndex = wrap.referColumn.colIndex
             const refCacher = cellMegrers.find(opt => opt.rowIndex === rowIndex && opt.colIndex === colIndex)?.cacher
             const refRowSpan = refCacher ? (helper.isFiniteNumber(refCacher?.rowSpan) && refCacher.rowSpan > 0 ? refCacher.rowSpan : 0) : 1
             const refColSpan = refCacher ? (helper.isFiniteNumber(refCacher?.colSpan) && refCacher.colSpan > 0 ? refCacher.colSpan : 0) : 1
-            const refCellProp = toRaw(unref(columnCellProps.value[rowIndex][colIndex]))
+            const refResizable = refCacher ? (helper.isBoolean(refCacher.resizable) ? refCacher.resizable : true) : wrap.referColumn.resizable
+            const refCellProps = toRaw(unref(columnCellProps.value[rowIndex][colIndex]))
 
-            if (!columnSettingsCheckKeys.value.includes(column.key)) {
+            if (!columnSettingsCheckKeys.value.includes(wrap.key)) {
               skip++
               continue
             }
@@ -694,34 +700,37 @@ export const STable = defineComponent({
             }
 
             const wrapColumn: STableWrapColumnType = {
-              ...column,
+              ...wrap,
               referColumn: reactive({
-                ...column.referColumn,
+                ...wrap.referColumn,
                 colSpan: refColSpan,
                 rowSpan: refRowSpan,
+                resizable: refResizable !== false,
                 colOffset: offset + index - skip,
                 rowOffset: parent ? parent.referColumn.rowIndex + 1 : 0,
                 colMaxSpan: refColSpan,
                 rowMaxSpan: parent ? parent.referColumn.rowMaxSpan + 1 : 1,
-                align: helper.isNotEmptyObject(refCellProp) && Object.hasOwn(refCellProp, 'align') ? refCellProp.align ?? column.referColumn.align : column.referColumn.align,
-                fixed: helper.isNotEmptyObject(refCellProp) && Object.hasOwn(refCellProp, 'fixed') ? refCellProp.fixed ?? column.referColumn.fixed : column.referColumn.fixed,
-                width: helper.isNotEmptyObject(refCellProp) && Object.hasOwn(refCellProp, 'width') ? refCellProp.width ?? column.referColumn.width : column.referColumn.width,
-                minWidth: helper.isNotEmptyObject(refCellProp) && Object.hasOwn(refCellProp, 'minWidth') ? refCellProp.minWidth ?? column.referColumn.minWidth : column.referColumn.minWidth,
-                maxWidth: helper.isNotEmptyObject(refCellProp) && Object.hasOwn(refCellProp, 'maxWidth') ? refCellProp.maxWidth ?? column.referColumn.maxWidth : column.referColumn.maxWidth,
-                ellipsis: helper.isNotEmptyObject(refCellProp) && Object.hasOwn(refCellProp, 'ellipsis') ? refCellProp.ellipsis ?? column.referColumn.ellipsis : column.referColumn.ellipsis,
-                sorter: helper.isNotEmptyObject(refCellProp) && Object.hasOwn(refCellProp, 'sorter') ? refCellProp.sorter ?? column.referColumn.sorter : column.referColumn.sorter
+                align: helper.isNotEmptyObject(refCellProps) && Object.hasOwn(refCellProps, 'align') ? refCellProps.align ?? wrap.referColumn.align : wrap.referColumn.align,
+                fixed: helper.isNotEmptyObject(refCellProps) && Object.hasOwn(refCellProps, 'fixed') ? refCellProps.fixed ?? wrap.referColumn.fixed : wrap.referColumn.fixed,
+                width: helper.isNotEmptyObject(refCellProps) && Object.hasOwn(refCellProps, 'width') ? refCellProps.width ?? wrap.referColumn.width : wrap.referColumn.width,
+                minWidth: helper.isNotEmptyObject(refCellProps) && Object.hasOwn(refCellProps, 'minWidth') ? refCellProps.minWidth ?? wrap.referColumn.minWidth : wrap.referColumn.minWidth,
+                maxWidth: helper.isNotEmptyObject(refCellProps) && Object.hasOwn(refCellProps, 'maxWidth') ? refCellProps.maxWidth ?? wrap.referColumn.maxWidth : wrap.referColumn.maxWidth,
+                ellipsis: helper.isNotEmptyObject(refCellProps) && Object.hasOwn(refCellProps, 'ellipsis') ? refCellProps.ellipsis ?? wrap.referColumn.ellipsis : wrap.referColumn.ellipsis,
+                sorter: helper.isNotEmptyObject(refCellProps) && Object.hasOwn(refCellProps, 'sorter') ? refCellProps.sorter ?? wrap.referColumn.sorter : wrap.referColumn.sorter
               }),
               treeChildren: []
             }
 
-            if (helper.isNotEmptyArray(column.treeChildren)) {
-              const childTrees = filterColumns(column.treeChildren, [], wrapColumn)
+            if (helper.isNotEmptyArray(wrap.treeChildren)) {
+              const childTrees = filterColumns(wrap.treeChildren, [], wrapColumn)
               const filterTrees = childTrees.filter(wrap => wrap.referColumn.rowSpan > 0 && wrap.referColumn.colSpan > 0)
               const cellRowMaxSpan = Math.max(...filterTrees.map(child => child.referColumn.rowMaxSpan), wrapColumn.referColumn.rowMaxSpan)
               const cellColMaxSpan = filterTrees.reduce((colMaxSpan, child) => colMaxSpan + child.referColumn.colMaxSpan, 0)
+              const cellResizable = childTrees.some(wrap => wrap.referColumn.resizable !== false)
 
               wrapColumn.referColumn.rowMaxSpan = cellRowMaxSpan
               wrapColumn.referColumn.colMaxSpan = cellColMaxSpan
+              wrapColumn.referColumn.resizable = cellResizable
               wrapColumn.referColumn.colSpan = cellColMaxSpan
               wrapColumn.treeChildren = childTrees
 
@@ -729,11 +738,11 @@ export const STable = defineComponent({
               helper.isNotEmptyArray(filterTrees) || skip++
             }
 
-            if (!helper.isNotEmptyArray(column.treeChildren)) {
+            if (!helper.isNotEmptyArray(wrap.treeChildren)) {
               wraps.push(wrapColumn)
             }
 
-            offset += Math.max(wrapColumn.referColumn.colSpan - 1, 0)
+            offset += Math.max(wrapColumn.referColumn.colSpan - 1, 0) // fix spik++ when refColSpan === 0 or refRowSpan === 0
           }
 
           return wraps
@@ -1267,8 +1276,8 @@ export const STable = defineComponent({
         let offset = parent ? parent.referColumn.colOffset : 0
 
         for (const [index, column] of columns.entries()) {
-          const columnMinWidth = column.minWidth || 0
-          const columnMaxWidth = column.maxWidth || Infinity
+          const columnMinWidth = helper.isFiniteNumber(column.minWidth) && column.minWidth > 0 ? column.minWidth : 0
+          const columnMaxWidth = helper.isFiniteNumber(column.maxWidth) && column.maxWidth < Infinity ? column.maxWidth : Infinity
           const columnResizable = helper.isBoolean(column.resizable) ? column.resizable : parent?.referColumn.resizable ?? props.columnPresetResizable
 
           const wrapColumn: STableWrapColumnType = {
@@ -2134,7 +2143,7 @@ export const STable = defineComponent({
             const colOffset = column.colOffset
             const minWidth = column.minWidth || 0
             const maxWidth = column.maxWidth || Infinity
-            const tableThead = Optionser.refTableWrapper.value?.querySelector<HTMLElement>(`.s-table-thead-th[row-index="${rowIndex}"][col-index="${colIndex}"]`)
+            const tableThead = Optionser.refTableWrapper.value?.querySelector<HTMLElement>(`.s-nested-table > colgroup > col[col-index="${colIndex}"]`)
 
             Optionser.tableTheadSizes.value[index].rowSpan = rowSpan
             Optionser.tableTheadSizes.value[index].colSpan = colSpan
@@ -2159,7 +2168,7 @@ export const STable = defineComponent({
             const colOffset = column.colOffset
             const minWidth = column.minWidth || 0
             const maxWidth = column.maxWidth || Infinity
-            const tableThead = Optionser.refTableWrapper.value?.querySelector<HTMLElement>(`.s-table-thead-th[row-index="${rowIndex}"][col-index="${colIndex}"]`)
+            const tableThead = Optionser.refTableWrapper.value?.querySelector<HTMLElement>(`.s-nested-table > colgroup > col[col-index="${colIndex}"]`)
 
             return {
               rowSpan,
@@ -2194,34 +2203,51 @@ export const STable = defineComponent({
       },
 
       documentMouseMove(event: MouseEvent) {
-        if (Optionser.resizeRcordColumn) {
-          const offsetX = event.clientX - Optionser.resizeRcordX
-          const maxWidth = Optionser.resizeRcordColumn.maxWidth || Infinity
-          const minWidth = Optionser.resizeRcordColumn.minWidth || 0
-          const nowWidth = Optionser.resizeRcordWidth + offsetX || 0
+        if (Optionser.resizeRcordActivate) {
+          const queues = Optionser.resizeRcordQueues
+          const point = Optionser.resizeRcordSpot
+          const range = event.clientX - point
 
-          Optionser.resizeRcordColumn.width = nowWidth
-          Optionser.resizeRcordColumn.width = Optionser.resizeRcordColumn.width < maxWidth ? Optionser.resizeRcordColumn.width : maxWidth
-          Optionser.resizeRcordColumn.width = Optionser.resizeRcordColumn.width > minWidth ? Optionser.resizeRcordColumn.width : minWidth
-          Optionser.resizeRcordColumn.width = Optionser.resizeRcordColumn.width > 0 ? Optionser.resizeRcordColumn.width : 0
+          const store = {
+            queues: queues,
+            range: Math.abs(range)
+          }
+
+          queues.sort((next, prev) => {
+            if (store.range > 0) return Math.abs(next.maxWidth - next.width) - Math.abs(prev.maxWidth - prev.width)
+            if (store.range < 0) return Math.abs(next.minWidth - next.width) - Math.abs(prev.minWidth - prev.width)
+            return 0
+          })
+
+          for (const [index, opt] of queues.entries()) {
+            // knowledge: ~~Number.MAX_SAFE_INTEGER === -1
+            const num = Math.abs(store.range / (queues.length - index))
+            const max = Math.abs(range > 0 ? opt.maxWidth - opt.width : range < 0 ? opt.minWidth - opt.width : 0)
+
+            range <= 0 && (opt.column.width = opt.width - ~~Math.min(num, max))
+            range > 0 && (opt.column.width = opt.width + ~~Math.min(num, max))
+
+            store.range = store.range - Math.min(num, max)
+          }
 
           nextTick(() => Eventer.updateTheadContainer())
         }
       },
 
       documentMouseup(event: MouseEvent) {
-        if (Optionser.resizeRcordColumn) {
-          const width = Optionser.resizeRcordColumn.width
-          const rowIndex = Optionser.resizeRcordColumn.rowIndex
-          const colIndex = Optionser.resizeRcordColumn.colIndex
-          const treeColumn = Methoder.findTreeColumns(treeColumns.value, rowIndex, colIndex)!
-          treeColumn.referColumn.width = width
-          treeColumn.cacheColumn.width = width
+        if (Optionser.resizeRcordActivate) {
+          for (const opt of Optionser.resizeRcordQueues) {
+            const rowIndex = opt.column.rowIndex
+            const colIndex = opt.column.colIndex
+            const treeColumn = Methoder.findTreeColumns(treeColumns.value, rowIndex, colIndex)!
+            treeColumn.referColumn.width = opt.column.width
+            treeColumn.cacheColumn.width = opt.column.width
+          }
         }
 
-        Optionser.resizeRcordX = 0
-        Optionser.resizeRcordWidth = 0
-        Optionser.resizeRcordColumn = null
+        Optionser.resizeRcordSpot = 0
+        Optionser.resizeRcordQueues = []
+        Optionser.resizeRcordActivate = false
         document.body.classList.remove('user-select-none')
         document.body.classList.remove('cursor-column-resize')
       }
@@ -2306,7 +2332,7 @@ export const STable = defineComponent({
       const RenderColGroup = () => {
         return (
           <colgroup>
-            { ref(Computer.filterDataColumns).value.map(column => <col style={Eventer.computeTableGroupStyle(column)}/>) }
+            { ref(Computer.filterDataColumns).value.map(column => <col col-index={column.colIndex} style={Eventer.computeTableGroupStyle(column)}/>) }
           </colgroup>
         )
       }
@@ -2822,36 +2848,53 @@ export const STable = defineComponent({
           return
         }
 
-        if (!Optionser.resizeRcordColumn && event.target.classList.contains('s-table-thead-th-resizable')) {
+        if (!Optionser.resizeRcordActivate && event.target.classList.contains('s-table-thead-th-resizable')) {
+          const point = event.clientX
           const $target = event.target
           const $wrapper = Optionser.refTableWrapper.value!
           const $theader = $target.closest('.s-table-thead-th')!
           const rowIndex = +$theader.getAttribute('row-index')!
           const colIndex = +$theader.getAttribute('col-index')!
-          const findColumn = rowIndex >= 0 && colIndex >= 0 && Methoder.findListColumns(Computer.filterListColumns.value, rowIndex, colIndex)
+          const dataColumns = [...Computer.filterDataColumns.value]
+          const listColumns = [...Computer.filterListColumns.value]
+          const findColumn = rowIndex >= 0 && colIndex >= 0 && Methoder.findListColumns(listColumns, rowIndex, colIndex)
 
           if (findColumn) {
-            Optionser.resizeRcordColumn = Computer.filterDataColumns.value.findLast(column => {
-              return (
-                column.rowSpan > 0 &&
-                column.colSpan > 0 &&
-                column.resizable === true &&
-                column.colOffset >= findColumn.colOffset &&
-                column.colOffset + column.colSpan <= findColumn.colOffset + findColumn.colSpan
-              )
-            })
-          }
+            for (let index = dataColumns.length - 1; index >= 0; index--) {
+              const rowSpan = dataColumns[index].rowSpan
+              const colSpan = dataColumns[index].colSpan
+              const colOffset = dataColumns[index].colOffset
+              const leftOutBound = colOffset < findColumn.colOffset
+              const rightOutBound = colOffset + colSpan > findColumn.colOffset + findColumn.colSpan
+              const cellResizable = dataColumns.filter((_, num) => num >= index && num < index + colSpan).some(col => col.resizable)
 
-          if (Optionser.resizeRcordColumn) {
-            const rowIndex = Optionser.resizeRcordColumn.rowIndex
-            const colIndex = Optionser.resizeRcordColumn.colIndex
-            const $theader = $wrapper.querySelector(`.s-table-thead-th[row-index="${rowIndex}"][col-index="${colIndex}"]`)!
-            const theaderRect = $theader.getBoundingClientRect()
+              if (rowSpan > 0 && colSpan > 0 && !leftOutBound && !rightOutBound && cellResizable) {
+                let num = 0
 
-            Optionser.resizeRcordX = event.clientX
-            Optionser.resizeRcordWidth = theaderRect.width
-            document.body.classList.add('cursor-column-resize')
-            document.body.classList.add('user-select-none')
+                while (num < colSpan) {
+                  const column = dataColumns[index + num]
+                  const $theader = $wrapper.querySelector(`.s-nested-table > colgroup > col[col-index="${column.colIndex}"]`)!
+                  const $recter = $theader.getBoundingClientRect()
+
+                  if (column.resizable) {
+                    Optionser.resizeRcordQueues.push({
+                      width: $recter.width,
+                      minWidth: helper.isFiniteNumber(column.minWidth) && column.minWidth > 0 ? column.minWidth : 0,
+                      maxWidth: helper.isFiniteNumber(column.maxWidth) && column.maxWidth > 0 ? column.maxWidth : Number.MAX_SAFE_INTEGER,
+                      column: column
+                    })
+                  }
+
+                  num++
+                }
+
+                Optionser.resizeRcordSpot = point
+                Optionser.resizeRcordActivate = true
+                document.body.classList.add('user-select-none')
+                document.body.classList.add('cursor-column-resize')
+                break
+              }
+            }
           }
         }
       }
