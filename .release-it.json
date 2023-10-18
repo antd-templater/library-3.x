@@ -10,11 +10,23 @@
           },
           {
             "type": "feat",
-            "section": "🚀 New Features"
+            "section": "✨ Features | 新功能"
           },
           {
             "type": "fix",
-            "section": "🐛 Bug Fixes"
+            "section": "🐛 Bug Fixes | Bug 修复"
+          },
+          {
+            "type": "perf",
+            "section": "🚀 Performance Improvements | 性能优化"
+          },
+          {
+            "type": "revert",
+            "hidden": "📝 Reverts | 回退"
+          },
+          {
+            "type": "refactor",
+            "section": "📦 Code Refactoring | 代码重构"
           }
         ]
       },
@@ -22,11 +34,12 @@
     }
   },
   "git": {
-    "commitMessage": "chore: Add new Tag and Release v${version}"
+    "commitMessage": "chore: add new tag and release v${version}"
   },
   "github": {
     "release": true,
-    "draft": false
+    "draft": false,
+    "web": true
   },
   "npm": {
     "publish": true
