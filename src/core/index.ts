@@ -1,4 +1,5 @@
 import { App } from 'vue'
+import { STable, tableResponser } from './S-Table/index'
 import { SIcon, isIconType, forIconType } from './S-Icon/index'
 import { SForm, formGroupsDefiner, formValidator } from './S-Form/index'
 import { SEditCellDatePicker } from './S-EditCell/date-picker'
@@ -8,14 +9,14 @@ import { SEditCellSelect } from './S-EditCell/select'
 import { SEditCellInput } from './S-EditCell/input'
 import { SIconSelect } from './S-IconSelect/index'
 import { SEllipsis } from './S-Ellipsis/index'
-import { STable } from './S-Table/index'
 import { STree } from './S-Tree/index'
 
 export {
   isIconType,
   forIconType,
-  formValidator,
   formGroupsDefiner,
+  formValidator,
+  tableResponser,
 
   SEditCellInput,
   SEditCellSelect,

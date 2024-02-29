@@ -26,10 +26,11 @@
     }
   },
   "include": [
+    "src/core/index.ts",
     "src/core/S-*/**/*.vue",
     "src/core/S-*/**/*.tsx",
     "src/core/S-*/**/*.ts",
-    "src/core/index.ts"
+    "src/typing/**/*.ts"
   ],
   "references": [
     {

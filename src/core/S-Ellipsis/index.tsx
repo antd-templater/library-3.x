@@ -63,7 +63,7 @@ export const SEllipsis = defineComponent({
         return (
           <ATooltip
             { ...binds }
-            { ...{ 'onUpdate:visible': visible => emit('update:visible', updateVisible(visible)) } }
+            { ...{ 'onUpdate:visible': (visible: boolean) => emit('update:visible', updateVisible(visible)) } }
             v-slots={{ title: slots.title || slots.default }}
           >
             <div

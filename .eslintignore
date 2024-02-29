@@ -7,6 +7,6 @@
 *.log
 *.lock
 
-/dist/*
 /node_modules/*
-/*.d.ts
+/src/**/*.d.ts
+/dist/*

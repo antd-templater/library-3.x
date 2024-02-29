@@ -85,7 +85,7 @@ export const SForm = defineComponent({
 
       if (syncModel) {
         for (const item of rawItems.value) {
-          if (helper.isNotEmptyArray(item.field)) {
+          if (helper.isNonEmptyArray(item.field)) {
             syncHandler(item, { syncModel, refModel })
           }
         }
@@ -100,16 +100,16 @@ export const SForm = defineComponent({
           label: node.label || Normalize[node.type].label,
           field: helper.isArray(node.field) ? node.field : node.field.trim() ? node.field.split('.').filter(t => !!t.trim()) : [],
 
-          grid: node.grid || helper.toDeepClone(Normalize[node.type].grid),
-          rules: node.rules || helper.toDeepClone(Normalize[node.type].rules),
-          layer: node.layer || helper.toDeepClone(Normalize[node.type].layer),
+          grid: node.grid || helper.deepClone(Normalize[node.type].grid),
+          rules: node.rules || helper.deepClone(Normalize[node.type].rules),
+          layer: node.layer || helper.deepClone(Normalize[node.type].layer),
 
-          props: node.props || helper.toDeepClone(Normalize[node.type].props),
-          slots: node.slots || helper.toDeepClone(Normalize[node.type].slots),
+          props: node.props || helper.deepClone(Normalize[node.type].props),
+          slots: node.slots || helper.deepClone(Normalize[node.type].slots),
 
           default: {
-            input: node?.default?.input || helper.isFunction(Normalize[node.type].default.input) ? Normalize[node.type].default.input : helper.toDeepClone(Normalize[node.type].default.input),
-            output: node?.default?.output || helper.isFunction(Normalize[node.type].default.output) ? Normalize[node.type].default.output : helper.toDeepClone(Normalize[node.type].default.output)
+            input: node?.default?.input || helper.isFunction(Normalize[node.type].default.input) ? Normalize[node.type].default.input : helper.deepClone(Normalize[node.type].default.input),
+            output: node?.default?.output || helper.isFunction(Normalize[node.type].default.output) ? Normalize[node.type].default.output : helper.deepClone(Normalize[node.type].default.output)
           },
 
           transfer: {
@@ -189,12 +189,12 @@ export const SForm = defineComponent({
             label: node.label || Normalize[node.type].label,
             field: helper.isArray(node.field) ? node.field : node.field.trim() ? node.field.split('.').filter(t => !!t.trim()) : [],
 
-            grid: node.grid || helper.toDeepClone(Normalize[node.type].grid),
-            rules: node.rules || helper.toDeepClone(Normalize[node.type].rules),
-            layer: node.layer || helper.toDeepClone(Normalize[node.type].layer),
+            grid: node.grid || helper.deepClone(Normalize[node.type].grid),
+            rules: node.rules || helper.deepClone(Normalize[node.type].rules),
+            layer: node.layer || helper.deepClone(Normalize[node.type].layer),
 
-            props: node.props || helper.toDeepClone(Normalize[node.type].props),
-            slots: node.slots || helper.toDeepClone(Normalize[node.type].slots),
+            props: node.props || helper.deepClone(Normalize[node.type].props),
+            slots: node.slots || helper.deepClone(Normalize[node.type].slots),
 
             default: {
               input: node?.default?.input || Normalize[node.type].default.input,
@@ -242,7 +242,7 @@ export const SForm = defineComponent({
         if (!isChanged) {
           isChanged = index < item.field.length - 1
             ? !helper.isObject(tempOldModel) || !helper.isObject(tempNewModel)
-            : !helper.toDeepEqual(tempOldModel, tempNewModel)
+            : !helper.deepEqual(tempOldModel, tempNewModel)
         }
 
         if (index < item.field.length - 1) {
@@ -278,7 +278,7 @@ export const SForm = defineComponent({
           const refSyncModel = toRaw(tempRefModel?.[field] !== undefined ? tempRefModel[field] : defModel)
           const newSyncModel = item.transfer.output(refSyncModel, { helper, self: readonly(item) })
 
-          if (!helper.toDeepEqual(oldSyncModel, newSyncModel)) {
+          if (!helper.deepEqual(oldSyncModel, newSyncModel)) {
             tempSyncModel[field] = newSyncModel
           }
 
@@ -495,12 +495,12 @@ export const SForm = defineComponent({
       const groups = props.groups
       const oldModel = rawModel.value
 
-      rawModel.value = helper.toDeepClone(model)
+      rawModel.value = helper.deepClone(model)
       refGroups.value = groupsHandler(groups)
       rawItems.value = itemsHandler(groups)
 
       for (const item of rawItems.value) {
-        if (helper.isNotEmptyArray(item.field)) {
+        if (helper.isNonEmptyArray(item.field)) {
           modelHandler(item, { first: first.value, oldModel, newModel: rawModel.value, refModel })
         }
       }

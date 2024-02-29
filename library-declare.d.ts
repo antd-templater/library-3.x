@@ -1,8 +1,6 @@
 // @ts-nocheck
 
-import '@vue/runtime-core'
-
-declare module '@vue/runtime-core' {
+declare module 'vue' {
   export interface GlobalComponents {
     SEditCellDatePicker: typeof import('./dist/S-EditCell/date-picker')['default']
     SEditCellTreeSelect: typeof import('./dist/S-EditCell/tree-select')['default']
@@ -23,7 +21,7 @@ declare global {
   export type forIconType = typeof import('./dist/S-Icon')['forIconType']
   export type formValidator = typeof import('./dist/S-Form')['formValidator']
   export type formGroupsDefiner = typeof import('./dist/S-Form')['formGroupsDefiner']
-  
+
   export type SEditCellDatePicker = typeof import('./dist/S-EditCell/date-picker')['default']
   export type SEditCellTreeSelect = typeof import('./dist/S-EditCell/tree-select')['default']
   export type SEditCellTextarea = typeof import('./dist/S-EditCell/textarea')['default']
@@ -44,27 +42,29 @@ declare global {
   export type {
     SFormType,
     SFormGridGutter,
-    SFormGrid, 
-    SFormColItem, 
+    SFormGrid,
+    SFormColItem,
     SFormColPartItem,
-    SFormRowItem, 
+    SFormRowItem,
     SFormGroupItem,
     SFormGroupPartItem,
     SFormNormalizeType,
     SFormValidatorRule,
     SFormGroupsDefiner,
-    SFormValidatorManager,
+    SFormValidatorManager
   } from './dist/S-Form'
 
-
-  export type  {
+  export type {
     STableStickyType,
     STableScrollType,
     STableSorterType,
     STableRecordType,
     STablePaginateType,
+    STableCellIndexType,
+    STableCellSizesType,
+    STableCellCacheType,
     STableCellMegreType,
-    STableCellMegreOpts,
+    STableCellFixedType,
     STableRowKey,
     STableTreeKey,
     STableLoadSource,
@@ -83,14 +83,15 @@ declare global {
     STableColumnType,
     STableKey,
     STableSize,
-    STableSortDirections,
     STablePartStickyType,
     STablePartScrollType,
     STablePartPaginate,
     STableRefWrapper,
+    STablePromiser,
+    STableValuer
   } from './dist/S-Table'
 
-  export type  {
+  export type {
     STreeFilterProps,
     STreeFieldNames,
     STreeSourceNode,
@@ -115,7 +116,7 @@ declare global {
     STreeTargetNodes,
     STreeSpreadNodes,
     STreePartTargetNode,
-    STreePartSourceNode,
+    STreePartSourceNode
   } from './dist/S-Tree'
 }
 
