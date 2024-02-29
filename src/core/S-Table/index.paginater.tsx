@@ -1,6 +1,6 @@
 import 'ant-design-vue/es/pagination/style/index.less'
 import Pagination from 'ant-design-vue/es/pagination'
-import { defineComponent } from 'vue'
+import { defineComponent, nextTick, ref } from 'vue'
 import * as VueTypes from 'vue-types'
 
 export const STablePaginate = defineComponent({
@@ -34,34 +34,48 @@ export const STablePaginate = defineComponent({
       context.emit('pageChange', current, size)
     }
 
+    const container = ref(null as HTMLElement | null)
     const style: any = context.attrs.style
 
-    return () => (
-      <div
-        class='s-table-paginate-container'
-        style={style}
-      >
-        <div class='s-table-paginate-content'>
-          <Pagination
-            size={props.size}
-            simple={props.simple}
-            current={props.pageNo}
-            total={props.totalSize}
-            pageSize={props.pageSize}
-            disabled={props.disabled}
-            showTotal={props.showTotal}
-            hideOnSinglePage={props.hideOnSinglePage}
-            defaultPageSize={props.defaultPageSize}
-            pageSizeOptions={props.pageSizeOptions}
-            showSizeChanger={props.showSizeChanger}
-            showQuickJumper={props.showQuickJumper}
-            showLessItems={props.showLessItems}
-            onShowSizeChange={pageSizeChange}
-            onChange={pageChange}
-          />
+    return () => {
+      if (props.size === 'default') {
+        nextTick(() => {
+          if (container.value instanceof HTMLElement) {
+            for (const element of Array.from(container.value.querySelectorAll('.ant-select-lg'))) {
+              element.classList.remove('ant-select-lg')
+            }
+          }
+        })
+      }
+
+      return (
+        <div
+          ref={container}
+          class='s-table-paginate-container'
+          style={style}
+        >
+          <div class='s-table-paginate-content'>
+            <Pagination
+              size={props.size}
+              simple={props.simple}
+              current={props.pageNo}
+              total={props.totalSize}
+              pageSize={props.pageSize}
+              disabled={props.disabled}
+              showTotal={props.showTotal}
+              hideOnSinglePage={props.hideOnSinglePage}
+              defaultPageSize={props.defaultPageSize}
+              pageSizeOptions={props.pageSizeOptions}
+              showSizeChanger={props.showSizeChanger}
+              showQuickJumper={props.showQuickJumper}
+              showLessItems={props.showLessItems}
+              onShowSizeChange={pageSizeChange}
+              onChange={pageChange}
+            />
+          </div>
         </div>
-      </div>
-    )
+      )
+    }
   }
 })
 
