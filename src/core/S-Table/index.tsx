@@ -358,6 +358,11 @@ export const STable = defineComponent({
     selectedRowMode: VueTypes.string<'Radio' | 'Checkbox' | 'None'>().def('None'),
     selectedRowKeys: VueTypes.array<STableKey>().def(() => []),
     expandedRowKeys: VueTypes.array<STableKey>().def(() => []),
+    tHeaderThStyle: VueTypes.object().def({}),
+    tBodyerTdStyle: VueTypes.object().def({}),
+    tFooterTdStyle: VueTypes.object().def({}),
+    expandTdStyle: VueTypes.object().def({}),
+    paginateStyle: VueTypes.object().def({}),
     loadOnScroll: VueTypes.bool().def(false),
     bodyMinRows: VueTypes.number().def(10),
     showHeader: VueTypes.bool().def(true),
@@ -2996,7 +3001,8 @@ export const STable = defineComponent({
 
                   const style: any = {
                     padding: store[Normalizer.size.value] || '18px 6px 14px',
-                    textAlign: 'center'
+                    textAlign: 'center',
+                    ...props.tHeaderThStyle
                   }
 
                   if (Computer.fixedLeftIndex.value > -1) {
@@ -3133,8 +3139,8 @@ export const STable = defineComponent({
                         <th
                           colspan={column.colSpan}
                           rowspan={column.rowSpan}
-                          style={Render.computeTableChildStyle(column, column, 'thead')}
                           { ...Methoder.getValue(columnCellAttrs.value[rowIndex][colIndex]) }
+                          style={{ ...Render.computeTableChildStyle(column, column, 'thead'), ...props.tHeaderThStyle }}
                           class={['s-table-thead-th', { 's-table-thead-leafed-th': column.rowIndex === column.rowMaxSpan - 1, 's-table-thead-draggable-th': props.columnPresetDraggable === true, 's-table-thead-sortable-th': sortable }]}
                           col-index={column.colIndex}
                           row-index={column.rowIndex}
@@ -3196,6 +3202,7 @@ export const STable = defineComponent({
               >
                 <td
                   class='s-table-tbody-td'
+                  style={{ ...props.tBodyerTdStyle }}
                   colspan={Computer.hasSelection.value ? Computer.filterDataColumns.value.length + 1 : Computer.filterDataColumns.value.length}
                 >
                   <STableEmpty/>
@@ -3552,7 +3559,8 @@ export const STable = defineComponent({
 
                 const style: any = {
                   padding: store[Normalizer.size.value] || '16px 6px',
-                  textAlign: 'center'
+                  textAlign: 'center',
+                  ...props.tBodyerTdStyle
                 }
 
                 if (Computer.fixedLeftIndex.value > -1) {
@@ -3680,7 +3688,7 @@ export const STable = defineComponent({
                       <td
                         rowspan={rowSpan}
                         colspan={colSpan}
-                        style={Render.computeTableChildStyle(column, fixeder, 'tbody')}
+                        style={{ ...Render.computeTableChildStyle(column, fixeder, 'tbody'), ...props.tBodyerTdStyle }}
                         { ...Render.computeTableChildAttrs(cellAttrs, 'tbody') }
                         { ...Render.computeTableChildProps(cellProps, 'tbody') }
                         class={'s-table-tbody-td'}
@@ -3759,7 +3767,8 @@ export const STable = defineComponent({
 
                 const tdStyle: any = {
                   'position': 'relative',
-                  'z-index': 8
+                  'z-index': 8,
+                  ...props.expandTdStyle
                 }
 
                 const divStyle: any = {
@@ -3780,7 +3789,6 @@ export const STable = defineComponent({
 
                 return (
                   <tr
-                    style={tdStyle}
                     class={['s-table-tbody-tr', 's-table-tbody-expand-tr']}
                     { ...Methoder.getValue(sourceRowAttrs.value[globalIndex]) }
                     row-global-index={record.rowGlobalIndex}
@@ -3796,6 +3804,7 @@ export const STable = defineComponent({
                       row-group-index={groupIndex}
                       row-group-level={groupLevel}
                       row-index={rowIndex}
+                      style={tdStyle}
                     >
                       <div style={divStyle}>
                         { expandedNode }
@@ -3839,7 +3848,8 @@ export const STable = defineComponent({
 
               const style: any = {
                 padding: store[Normalizer.size.value] || '16px 6px',
-                textAlign: 'center'
+                textAlign: 'center',
+                ...props.tBodyerTdStyle
               }
 
               if (Computer.fixedLeftIndex.value > -1) {
@@ -3872,7 +3882,7 @@ export const STable = defineComponent({
 
                 return (
                   <td
-                    style={Render.computeTableChildStyle(column, fixeder, 'tbody')}
+                    style={{ ...Render.computeTableChildStyle(column, fixeder, 'tbody'), ...props.tBodyerTdStyle }}
                     class={['s-table-tbody-td', 's-table-tbody-empty-td']}
                   />
                 )
@@ -4118,7 +4128,7 @@ export const STable = defineComponent({
                             <td
                               rowspan={rowSpan}
                               colspan={colSpan + (colPrefix > 0 ? colPrefix-- : 0)}
-                              style={Render.computeTableChildStyle(column, fixeder, 'tfoot')}
+                              style={{ ...Render.computeTableChildStyle(column, fixeder, 'tfoot'), ...props.tFooterTdStyle }}
                               { ...Render.computeTableChildAttrs(cellAttrs, 'tfoot') }
                               { ...Render.computeTableChildProps(cellProps, 'tfoot') }
                               class={'s-table-tfoot-td'}
@@ -4145,7 +4155,12 @@ export const STable = defineComponent({
           return
         }
 
-        const style: any = { 'position': 'relative', 'z-index': 1000 }
+        const style: any = {
+          position: 'relative',
+          zIndex: 1000,
+          ...props.paginateStyle
+        }
+
         const bottomFooter = Normalizer.sticky.value.bottomFooter
         const paginateFixed = Paginator.paginate.fixed ?? bottomFooter
 

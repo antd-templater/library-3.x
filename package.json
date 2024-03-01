@@ -4,7 +4,7 @@
   "homepage": "https://github.com/antd-templater/antd-template-lib3.x",
   "author": "lin pengteng <china.linpengteng@gmail.com>",
   "license": "MIT",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "keywords": [
     "form",
     "tree",
@@ -70,7 +70,7 @@
     "@rollup/plugin-typescript": "^11.1.6",
     "@rollup/pluginutils": "^5.1.0",
     "@types/eslint": "^8.56.5",
-    "@types/node": "^20.11.22",
+    "@types/node": "^20.11.24",
     "@typescript-eslint/eslint-plugin": "^7.1.0",
     "@typescript-eslint/parser": "^7.1.0",
     "@typescript-eslint/typescript-estree": "^7.1.0",
