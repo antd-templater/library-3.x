@@ -1579,8 +1579,8 @@ export const STable = defineComponent({
           rowKey = helper.isNonEmptyString(props.rowKey) ? props.rowKey : rowKey
           rowKey = helper.isNonEmptyString(rowKey) ? rowKey.trim() : ''
 
-          if (partRecord === referRecord) {
-            continue
+          if (partRecord !== referRecord) {
+            return true
           }
 
           if (helper.isNonEmptyString(treeKey) && !helper.isArray(partRecord[treeKey])) {
