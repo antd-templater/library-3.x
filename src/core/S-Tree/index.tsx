@@ -206,18 +206,30 @@ export interface STreeEmiterCheck {
   checkedKeys: STreeKeys;
   delCheckedKeys: STreeKeys;
   addCheckedKeys: STreeKeys;
+  addCheckedNodes: STreeSourceNodes;
+  delCheckedNodes: STreeSourceNodes;
+  checkedNodes: STreeSourceNodes;
+  checkedNode: STreePartSourceNode;
 }
 
 export interface STreeEmiterSelect {
   selectedKeys: STreeKeys;
   delSelectedKeys: STreeKeys;
   addSelectedKeys: STreeKeys;
+  addSelectedNodes: STreeSourceNodes;
+  delSelectedNodes: STreeSourceNodes;
+  selectedNodes: STreeSourceNodes;
+  selectedNode: STreePartSourceNode;
 }
 
 export interface STreeEmiterExpand {
   expandedKeys: STreeKeys;
   delExpandedKeys: STreeKeys;
   addExpandedKeys: STreeKeys;
+  addExpandedNodes: STreeSourceNodes;
+  delExpandedNodes: STreeSourceNodes;
+  expandedNodes: STreeSourceNodes;
+  expandedNode: STreePartSourceNode;
 }
 
 export interface STreeEmiterChange {
@@ -2551,10 +2563,17 @@ export const STree = defineComponent({
 
           context.emit('update:checkedKeys', [...allCheckedKeys])
 
+          const delCheckedKeys = propCheckedKeys.filter(key => !allCheckedKeys.includes(key))
+          const addCheckedKeys = allCheckedKeys.filter(key => !propCheckedKeys.includes(key))
+
           context.emit('check', {
             checkedKeys: allCheckedKeys,
-            delCheckedKeys: propCheckedKeys.filter(key => !allCheckedKeys.includes(key)),
-            addCheckedKeys: allCheckedKeys.filter(key => !propCheckedKeys.includes(key))
+            delCheckedKeys: delCheckedKeys,
+            addCheckedKeys: addCheckedKeys,
+            addCheckedNodes: addCheckedKeys.map(key => Stater.flatTreeNodes.find(every => every.key === key)!.referenceSourceNode),
+            delCheckedNodes: delCheckedKeys.map(key => Stater.flatTreeNodes.find(every => every.key === key)!.referenceSourceNode),
+            checkedNodes: allCheckedKeys.map(key => Stater.flatTreeNodes.find(every => every.key === key)!.referenceSourceNode),
+            checkedNode: Stater.flatTreeNodes.find(every => every.key === allCheckedKeys[0])?.referenceSourceNode || null
           })
         }
       },
@@ -2569,10 +2588,17 @@ export const STree = defineComponent({
 
           context.emit('update:selectedKeys', [...newSelectedKeys])
 
+          const delSelectedKeys = propSelectedKeys.filter(key => !newSelectedKeys.includes(key))
+          const addSelectedKeys = newSelectedKeys.filter(key => !propSelectedKeys.includes(key))
+
           context.emit('select', {
             selectedKeys: newSelectedKeys,
-            delSelectedKeys: propSelectedKeys.filter(key => !newSelectedKeys.includes(key)),
-            addSelectedKeys: newSelectedKeys.filter(key => !propSelectedKeys.includes(key))
+            delSelectedKeys: delSelectedKeys,
+            addSelectedKeys: addSelectedKeys,
+            addSelectedNodes: addSelectedKeys.map(key => Stater.flatTreeNodes.find(every => every.key === key)!.referenceSourceNode),
+            delSelectedNodes: delSelectedKeys.map(key => Stater.flatTreeNodes.find(every => every.key === key)!.referenceSourceNode),
+            selectedNodes: newSelectedKeys.map(key => Stater.flatTreeNodes.find(every => every.key === key)!.referenceSourceNode),
+            selectedNode: Stater.flatTreeNodes.find(every => every.key === newSelectedKeys[0])?.referenceSourceNode || null
           })
         }
       },
@@ -2585,10 +2611,17 @@ export const STree = defineComponent({
 
           context.emit('update:expandedKeys', [...newExpandedKeys])
 
+          const delExpandedKeys = propExpandedKeys.filter(key => !newExpandedKeys.includes(key))
+          const addExpandedKeys = newExpandedKeys.filter(key => !propExpandedKeys.includes(key))
+
           context.emit('expand', {
             expandedKeys: newExpandedKeys,
-            delExpandedKeys: propExpandedKeys.filter(key => !newExpandedKeys.includes(key)),
-            addExpandedKeys: newExpandedKeys.filter(key => !propExpandedKeys.includes(key))
+            delExpandedKeys: delExpandedKeys,
+            addExpandedKeys: addExpandedKeys,
+            addExpandedNodes: addExpandedKeys.map(key => Stater.flatTreeNodes.find(every => every.key === key)!.referenceSourceNode),
+            delExpandedNodes: delExpandedKeys.map(key => Stater.flatTreeNodes.find(every => every.key === key)!.referenceSourceNode),
+            expandedNodes: newExpandedKeys.map(key => Stater.flatTreeNodes.find(every => every.key === key)!.referenceSourceNode),
+            expandedNode: Stater.flatTreeNodes.find(every => every.key === newExpandedKeys[0])?.referenceSourceNode || null
           })
         }
       },
