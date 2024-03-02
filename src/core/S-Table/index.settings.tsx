@@ -20,14 +20,14 @@ export const STableSettings = defineComponent({
   name: 'STableSettings',
   inheritAttrs: false,
   props: {
-    style: VueTypes.object().def({}),
+    style: VueTypes.object().def(() => ({})),
     title: VueTypes.string().def('列选项'),
     multiline: VueTypes.bool().def(false),
-    treeData: VueTypes.array<STableSettingsType>().def([]),
+    treeData: VueTypes.array<STableSettingsType>().def(() => []),
     dropHandler: VueTypes.func<(_: STableDropOptionsType) => boolean | void>().def(() => false),
-    expandedKeys: VueTypes.array<string>().def([]),
-    checkedKeys: VueTypes.array<string>().def([]),
-    allTreeKeys: VueTypes.array<string>().def([]),
+    expandedKeys: VueTypes.array<string>().def(() => []),
+    checkedKeys: VueTypes.array<string>().def(() => []),
+    allTreeKeys: VueTypes.array<string>().def(() => []),
     draggable: VueTypes.bool().def(false)
   },
   emits: {
