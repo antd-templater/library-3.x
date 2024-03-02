@@ -3,7 +3,7 @@ import 'ant-design-vue/es/tree/style/index.less'
 import 'ant-design-vue/es/spin/style/index.less'
 
 import * as VueTypes from 'vue-types'
-import { SlotsType, ShallowReactive, ShallowRef, shallowReactive, defineComponent, shallowRef, watch, onMounted, toRaw } from 'vue'
+import { SlotsType, ShallowReactive, ShallowRef, shallowReactive, defineComponent, shallowRef, watch, onMounted, toRaw, unref } from 'vue'
 import { Key, EventDataNode } from 'ant-design-vue/es/vc-tree/interface'
 import SIcon, { isIconType } from '@/S-Icon/index'
 import SEllipsis from '@/S-Ellipsis/index'
@@ -206,9 +206,6 @@ export interface STreeEmiterCheck {
   checkedKeys: STreeKeys;
   delCheckedKeys: STreeKeys;
   addCheckedKeys: STreeKeys;
-  addCheckedNodes: STreeSourceNodes;
-  delCheckedNodes: STreeSourceNodes;
-  checkedNodes: STreeSourceNodes;
   checkedNode: STreePartSourceNode;
 }
 
@@ -216,9 +213,6 @@ export interface STreeEmiterSelect {
   selectedKeys: STreeKeys;
   delSelectedKeys: STreeKeys;
   addSelectedKeys: STreeKeys;
-  addSelectedNodes: STreeSourceNodes;
-  delSelectedNodes: STreeSourceNodes;
-  selectedNodes: STreeSourceNodes;
   selectedNode: STreePartSourceNode;
 }
 
@@ -226,9 +220,6 @@ export interface STreeEmiterExpand {
   expandedKeys: STreeKeys;
   delExpandedKeys: STreeKeys;
   addExpandedKeys: STreeKeys;
-  addExpandedNodes: STreeSourceNodes;
-  delExpandedNodes: STreeSourceNodes;
-  expandedNodes: STreeSourceNodes;
   expandedNode: STreePartSourceNode;
 }
 
@@ -303,8 +294,8 @@ export const STree = defineComponent({
   inheritAttrs: true,
   props: {
     bgColor: VueTypes.string().def('transparent'),
+    treeData: VueTypes.array<STreeSourceNode>().def(() => []),
     loadData: VueTypes.func<STreeLoadData>().def(undefined),
-    treeData: VueTypes.array<STreeSourceNode>().def(undefined),
     dropHandler: VueTypes.func<STreeEventDropHandler>().def(undefined),
     checkedKeys: VueTypes.array<string | number>().def(() => []),
     selectedKeys: VueTypes.array<string | number>().def(() => []),
@@ -496,14 +487,22 @@ export const STree = defineComponent({
         const forceCleanWhenRemoveTreeNode = props.forceCleanWhenRemoveTreeNode
         const forceCleanWhenNotInTreeNodes = props.forceCleanWhenNotInTreeNodes
 
-        if (!types || types.includes('checked')) {
-          if (forceCleanWhenRemoveTreeNode !== false) {
+        if (forceCleanWhenRemoveTreeNode !== false) {
+          if (!types || types.includes('checked')) {
             checkedKeys.splice(0, Stater.checkedKeys.length, ...checkedKeys.filter(key => flatTreeNodes.some(every => every.key === key)))
-            selectedKeys.splice(0, Stater.selectedKeys.length, ...selectedKeys.filter(key => flatTreeNodes.some(every => every.key === key)))
-            expandedKeys.splice(0, Stater.expandedKeys.length, ...expandedKeys.filter(key => flatTreeNodes.some(every => every.key === key)))
             halfCheckedKeys.splice(0, Stater.halfCheckedKeys.length, ...halfCheckedKeys.filter(key => flatTreeNodes.some(every => every.key === key)))
           }
 
+          if (!types || types.includes('selected')) {
+            selectedKeys.splice(0, Stater.selectedKeys.length, ...selectedKeys.filter(key => flatTreeNodes.some(every => every.key === key)))
+          }
+
+          if (!types || types.includes('expanded')) {
+            expandedKeys.splice(0, Stater.expandedKeys.length, ...expandedKeys.filter(key => flatTreeNodes.some(every => every.key === key)))
+          }
+        }
+
+        if (!types || types.includes('checked')) {
           const linkAllCheckedKeys = Array.from(new Set([...checkedKeys, ...halfCheckedKeys, ...outCheckedKeys]))
           const selfAllCheckedKeys = Array.from(new Set([...checkedKeys, ...outCheckedKeys]))
 
@@ -961,7 +960,7 @@ export const STree = defineComponent({
             filterValue: filterValue.value
           })
 
-          context.emit('update:treeData', [...Cacher.treeData])
+          context.emit('update:treeData', [...toRaw(unref(Cacher.treeData))])
 
           context.emit('change', {
             type: 'reload',
@@ -1076,7 +1075,7 @@ export const STree = defineComponent({
             filterValue: filterValue.value
           })
 
-          context.emit('update:treeData', [...Cacher.treeData])
+          context.emit('update:treeData', [...toRaw(unref(Cacher.treeData))])
 
           context.emit('change', {
             type: 'append',
@@ -1124,17 +1123,7 @@ export const STree = defineComponent({
           return
         }
 
-        if (!helper.isNonEmptyObject(parentTreeNode)) {
-          Cacher.treeData.splice(0, Cacher.treeData.length, ...Cacher.treeData.filter(every => !findTargetRemoveNodes.some(remove => remove.key === every[replaceFieldKey])))
-          Stater.propTreeNodes.splice(0, Stater.propTreeNodes.length, ...Stater.propTreeNodes.filter(every => !findTargetRemoveNodes.some(remove => remove.key === every[replaceFieldKey])))
-
-          loadKeys.splice(0, loadKeys.length, ...loadKeys.filter(key => !flatTargetRemoveNodes.some(node => node.key === key)))
-          loadedKeys.splice(0, loadedKeys.length, ...loadedKeys.filter(key => !flatTargetRemoveNodes.some(node => node.key === key)))
-          loadKeys.sort((a, b) => flatTreeNodes.findIndex(every => every.key === a) - flatTreeNodes.findIndex(every => every.key === b))
-          loadedKeys.sort((a, b) => flatTreeNodes.findIndex(every => every.key === a) - flatTreeNodes.findIndex(every => every.key === b))
-        }
-
-        if (helper.isNonEmptyObject(parentTreeNode)) {
+        if (helper.isNonEmptyArray(flatTargetRemoveNodes)) {
           for (const removeNode of findTargetRemoveNodes) {
             const removeKey = removeNode.key
             const childNodes = childTreeNodes.value[removeKey] || []
@@ -1142,6 +1131,16 @@ export const STree = defineComponent({
             loadKeys.splice(0, loadKeys.length, ...loadKeys.filter(key => key !== removeKey && !childNodes.some(child => child.key === key)))
           }
 
+          loadKeys.sort((a, b) => flatTreeNodes.findIndex(every => every.key === a) - flatTreeNodes.findIndex(every => every.key === b))
+          loadedKeys.sort((a, b) => flatTreeNodes.findIndex(every => every.key === a) - flatTreeNodes.findIndex(every => every.key === b))
+        }
+
+        if (!helper.isNonEmptyObject(parentTreeNode)) {
+          Cacher.treeData.splice(0, Cacher.treeData.length, ...Cacher.treeData.filter(every => !findTargetRemoveNodes.some(remove => remove.key === every[replaceFieldKey])))
+          Stater.propTreeNodes.splice(0, Stater.propTreeNodes.length, ...Stater.propTreeNodes.filter(every => !findTargetRemoveNodes.some(remove => remove.key === every[replaceFieldKey])))
+        }
+
+        if (helper.isNonEmptyObject(parentTreeNode)) {
           if (helper.isNonEmptyArray(parentTreeNode.referenceSourceNode[replaceFieldChildren])) {
             parentTreeNode.referenceSourceNode[replaceFieldChildren] = parentTreeNode.referenceSourceNode[replaceFieldChildren].filter((child: STreeSourceNode) => !findTargetRemoveNodes.some(node => node.key === child[replaceFieldKey]))
           }
@@ -1159,9 +1158,6 @@ export const STree = defineComponent({
             icon: parentTreeNode.level === 1 ? 'iconRoot' : helper.isNonEmptyArray(parentTreeNode.children) ? 'iconParent' : 'iconLeaf',
             title: parentTreeNode.level === 1 ? 'titleRoot' : helper.isNonEmptyArray(parentTreeNode.children) ? 'titleParent' : 'titleLeaf'
           }
-
-          loadKeys.sort((a, b) => flatTreeNodes.findIndex(every => every.key === a) - flatTreeNodes.findIndex(every => every.key === b))
-          loadedKeys.sort((a, b) => flatTreeNodes.findIndex(every => every.key === a) - flatTreeNodes.findIndex(every => every.key === b))
         }
 
         if (helper.isNonEmptyObject(parentTreeNode)) {
@@ -1199,7 +1195,7 @@ export const STree = defineComponent({
           Methoder.cleanTreeStater(force)
           Methoder.checkTreeStater(force)
 
-          context.emit('update:treeData', [...Cacher.treeData])
+          context.emit('update:treeData', [...toRaw(unref(Cacher.treeData))])
 
           context.emit('change', {
             type: 'remove',
@@ -1232,7 +1228,7 @@ export const STree = defineComponent({
         nodes = nodes.map(node => flatTreeNodes.find(every => every.key === node[replaceFieldKey])?.referenceSourceNode || node)
         nodes = nodes.filter(node => !parentTreeNode || !parentTreeNodes.value[parentTreeNode.key] || !parentTreeNodes.value[parentTreeNode.key].some(parent => parent.key === node[replaceFieldKey]))
         nodes = nodes.filter(node => !parentTreeNode || parentTreeNode.key !== node[replaceFieldKey])
-        nodes = nodes.map(node => toRaw(node))
+        nodes = nodes.map(node => toRaw(unref(node)))
 
         // fix bug: update node change
         // if (!helper.isNonEmptyArray(nodes)) {
@@ -1332,10 +1328,6 @@ export const STree = defineComponent({
               icon: parentTreeNode.level === 1 ? 'iconRoot' : helper.isNonEmptyArray(parentTreeNode.children) ? 'iconParent' : 'iconLeaf',
               title: parentTreeNode.level === 1 ? 'titleRoot' : helper.isNonEmptyArray(parentTreeNode.children) ? 'titleParent' : 'titleLeaf'
             }
-
-            loadKeys.splice(0, loadKeys.length, ...loadKeys.filter(key => key !== parentTreeNode.key))
-            loadKeys.sort((a, b) => flatTreeNodes.findIndex(every => every.key === a) - flatTreeNodes.findIndex(every => every.key === b))
-            loadedKeys.sort((a, b) => flatTreeNodes.findIndex(every => every.key === a) - flatTreeNodes.findIndex(every => every.key === b))
           }
 
           if (helper.isNonEmptyObject(parentTreeNode)) {
@@ -1379,13 +1371,12 @@ export const STree = defineComponent({
 
           Methoder.cleanTreeStater(force)
           Methoder.checkTreeStater(force)
+          Methoder.filterTreeNodes({ filterField: filterField.value, filterValue: filterValue.value })
 
-          Methoder.filterTreeNodes({
-            filterField: filterField.value,
-            filterValue: filterValue.value
-          })
+          loadKeys.sort((a, b) => flatTreeNodes.findIndex(every => every.key === a) - flatTreeNodes.findIndex(every => every.key === b))
+          loadedKeys.sort((a, b) => flatTreeNodes.findIndex(every => every.key === a) - flatTreeNodes.findIndex(every => every.key === b))
 
-          context.emit('update:treeData', [...Cacher.treeData])
+          context.emit('update:treeData', [...toRaw(unref(Cacher.treeData))])
 
           context.emit('change', {
             type: 'change',
@@ -2563,16 +2554,10 @@ export const STree = defineComponent({
 
           context.emit('update:checkedKeys', [...allCheckedKeys])
 
-          const delCheckedKeys = propCheckedKeys.filter(key => !allCheckedKeys.includes(key))
-          const addCheckedKeys = allCheckedKeys.filter(key => !propCheckedKeys.includes(key))
-
           context.emit('check', {
             checkedKeys: allCheckedKeys,
-            delCheckedKeys: delCheckedKeys,
-            addCheckedKeys: addCheckedKeys,
-            addCheckedNodes: addCheckedKeys.map(key => Stater.flatTreeNodes.find(every => every.key === key)!.referenceSourceNode),
-            delCheckedNodes: delCheckedKeys.map(key => Stater.flatTreeNodes.find(every => every.key === key)!.referenceSourceNode),
-            checkedNodes: allCheckedKeys.map(key => Stater.flatTreeNodes.find(every => every.key === key)!.referenceSourceNode),
+            delCheckedKeys: propCheckedKeys.filter(key => !allCheckedKeys.includes(key)),
+            addCheckedKeys: allCheckedKeys.filter(key => !propCheckedKeys.includes(key)),
             checkedNode: Stater.flatTreeNodes.find(every => every.key === allCheckedKeys[0])?.referenceSourceNode || null
           })
         }
@@ -2588,16 +2573,10 @@ export const STree = defineComponent({
 
           context.emit('update:selectedKeys', [...newSelectedKeys])
 
-          const delSelectedKeys = propSelectedKeys.filter(key => !newSelectedKeys.includes(key))
-          const addSelectedKeys = newSelectedKeys.filter(key => !propSelectedKeys.includes(key))
-
           context.emit('select', {
             selectedKeys: newSelectedKeys,
-            delSelectedKeys: delSelectedKeys,
-            addSelectedKeys: addSelectedKeys,
-            addSelectedNodes: addSelectedKeys.map(key => Stater.flatTreeNodes.find(every => every.key === key)!.referenceSourceNode),
-            delSelectedNodes: delSelectedKeys.map(key => Stater.flatTreeNodes.find(every => every.key === key)!.referenceSourceNode),
-            selectedNodes: newSelectedKeys.map(key => Stater.flatTreeNodes.find(every => every.key === key)!.referenceSourceNode),
+            delSelectedKeys: propSelectedKeys.filter(key => !newSelectedKeys.includes(key)),
+            addSelectedKeys: newSelectedKeys.filter(key => !propSelectedKeys.includes(key)),
             selectedNode: Stater.flatTreeNodes.find(every => every.key === newSelectedKeys[0])?.referenceSourceNode || null
           })
         }
@@ -2611,16 +2590,10 @@ export const STree = defineComponent({
 
           context.emit('update:expandedKeys', [...newExpandedKeys])
 
-          const delExpandedKeys = propExpandedKeys.filter(key => !newExpandedKeys.includes(key))
-          const addExpandedKeys = newExpandedKeys.filter(key => !propExpandedKeys.includes(key))
-
           context.emit('expand', {
             expandedKeys: newExpandedKeys,
-            delExpandedKeys: delExpandedKeys,
-            addExpandedKeys: addExpandedKeys,
-            addExpandedNodes: addExpandedKeys.map(key => Stater.flatTreeNodes.find(every => every.key === key)!.referenceSourceNode),
-            delExpandedNodes: delExpandedKeys.map(key => Stater.flatTreeNodes.find(every => every.key === key)!.referenceSourceNode),
-            expandedNodes: newExpandedKeys.map(key => Stater.flatTreeNodes.find(every => every.key === key)!.referenceSourceNode),
+            delExpandedKeys: propExpandedKeys.filter(key => !newExpandedKeys.includes(key)),
+            addExpandedKeys: newExpandedKeys.filter(key => !propExpandedKeys.includes(key)),
             expandedNode: Stater.flatTreeNodes.find(every => every.key === newExpandedKeys[0])?.referenceSourceNode || null
           })
         }
@@ -2696,10 +2669,6 @@ export const STree = defineComponent({
             propSelectedNodes.splice(0, propSelectedNodes.length, ...propSelectedNodes.filter(node => node.disabled || !parentKeys.includes(node.key)))
             helpSelectedNodes.splice(0, helpSelectedNodes.length, ...helpSelectedNodes.filter(node => node.disabled || !parentKeys.includes(node.key)))
           }
-        }
-
-        if (props.selectedMode !== 'link') {
-          propSelectedNodes.push(...props.selectedKeys.filter(key => flatTreeNodes.some(every => every.key === key)).map(key => flatTreeNodes.find(every => every.key === key)!))
         }
 
         if (!propSelectedNodes.every((prop, index) => cacheSelectedKeys[index] === prop.key) || !cacheSelectedKeys.every((key, index) => propSelectedNodes[index]?.key === key)) {
@@ -3043,24 +3012,50 @@ export const STree = defineComponent({
       }
 
       if (!isReloadTreeNodes) {
-        const rawPropTreeData = toRaw(props.treeData)
-        const rawCacheTreeData = toRaw(Cacher.treeData)
-        const propSpreadTreeData = Methoder.spreadTreeNodes(rawPropTreeData, Infinity)
-        const cacheSpreadTreeData = Methoder.spreadTreeNodes(rawCacheTreeData, Infinity)
+        if (newTreeNodes !== oldTreeNodes) {
+          const newPropTreeData = toRaw(unref(newTreeNodes)) || []
+          const oldPropTreeData = toRaw(unref(oldTreeNodes)) || []
+          const newSpreadTreeData = Methoder.spreadTreeNodes(newPropTreeData, Infinity)
+          const oldSpreadTreeData = Methoder.spreadTreeNodes(oldPropTreeData, Infinity)
 
-        isReloadTreeNodes = (
-          !propSpreadTreeData.every((propNode, index) => propNode === cacheSpreadTreeData[index]) ||
-          !cacheSpreadTreeData.every((cacheNode, index) => cacheNode === propSpreadTreeData[index])
-        )
+          isReloadTreeNodes = (
+            !newSpreadTreeData.every((propNode, index) => propNode === oldSpreadTreeData[index]) ||
+            !oldSpreadTreeData.every((cacheNode, index) => cacheNode === newSpreadTreeData[index])
+          )
+        }
       }
 
       if (!isReloadTreeStater) {
+        if (newCheckedKeys !== oldCheckedKeys) {
+          isChangeCheckedKeys = (
+            !helper.isArray(newCheckedKeys) ||
+            !helper.isArray(oldCheckedKeys) ||
+            newCheckedKeys.length !== oldCheckedKeys.length ||
+            newCheckedKeys.some(key => !oldCheckedKeys.includes(key))
+          )
+        }
+
+        if (newSelectedKeys !== oldSelectedKeys) {
+          isChangeSelectedKeys = (
+            !helper.isArray(newSelectedKeys) ||
+            !helper.isArray(oldSelectedKeys) ||
+            newSelectedKeys.length !== oldSelectedKeys.length ||
+            newSelectedKeys.some(key => !oldSelectedKeys.includes(key))
+          )
+        }
+
+        if (newExpandedKeys !== oldExpandedKeys) {
+          isChangeExpandedKeys = (
+            !helper.isArray(newExpandedKeys) ||
+            !helper.isArray(oldExpandedKeys) ||
+            newExpandedKeys.length !== oldExpandedKeys.length ||
+            newExpandedKeys.some(key => !oldExpandedKeys.includes(key))
+          )
+        }
+
         isChangeCheckable = newCheckable !== oldCheckable
         isChangeCheckedMode = newCheckedMode !== oldCheckedMode
         isChangeSelectedMode = newSelectedMode !== oldSelectedMode
-        isChangeCheckedKeys = newCheckedKeys.length !== Cacher.checkedKeys.length || !newCheckedKeys.every(key => Cacher.checkedKeys.includes(key))
-        isChangeSelectedKeys = newSelectedKeys.length !== Cacher.selectedKeys.length || !newSelectedKeys.every(key => Cacher.selectedKeys.includes(key))
-        isChangeExpandedKeys = newExpandedKeys.length !== Cacher.expandedKeys.length || !newExpandedKeys.every(key => Cacher.expandedKeys.includes(key))
         isReloadTreeStater = isChangeCheckable || isChangeCheckedMode || isChangeSelectedMode || isChangeCheckedKeys || isChangeSelectedKeys || isChangeExpandedKeys
         isForcedCleanStater = isChangeCheckable
       }
