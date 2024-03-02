@@ -53,7 +53,6 @@ body {
             Arial;
           font-size: 14px;
           line-height: 1.5;
-          font-weight: 500;
           color: #303133;
           text-align: left;
           list-style: none;
@@ -77,7 +76,7 @@ body {
           }
 
           & > .s-table-thead > .s-table-thead-tr > .s-table-thead-th {
-            padding: 18px 16px 14px;
+            padding: 16px;
             color: #303133;
             font-size: 14px;
             line-height: 1.5;
@@ -116,11 +115,11 @@ body {
           }
 
           & > .s-table-tbody > .s-table-tbody-tr > .s-table-tbody-td {
-            padding: 16px 16px;
+            padding: 16px;
             color: rgba(0, 0, 0, 0.8);
             font-size: 14px;
             line-height: 1.5;
-            font-weight: 500;
+            font-weight: 400;
             text-align: left;
             background-color: #ffffff;
             box-sizing: border-box;
@@ -181,11 +180,11 @@ body {
           }
 
           & > .s-table-tfoot > .s-table-tfoot-tr > .s-table-tfoot-td {
-            padding: 16px 16px;
+            padding: 16px;
             color: rgba(0, 0, 0, 0.8);
             font-size: 14px;
             line-height: 1.5;
-            font-weight: 500;
+            font-weight: 400;
             text-align: left;
             background-color: #ffffff;
             box-sizing: border-box;
@@ -256,12 +255,12 @@ body {
     }
   }
 
-  &.s-middle > .s-table-spining-container {
+  &.s-middle-table-container > .s-table-spining-container {
     & > .s-table-spining-content {
       & > .s-nested-table-wrapper {
         & > .s-nested-table {
           & > .s-table-thead > .s-table-thead-tr > .s-table-thead-th {
-            padding: 14px 8px 10px;
+            padding: 12px 8px;
           }
 
           & > .s-table-tbody > .s-table-tbody-tr > .s-table-tbody-td {
@@ -311,16 +310,16 @@ body {
     }
   }
 
-  &.s-small > .s-table-spining-container {
+  &.s-small-table-container > .s-table-spining-container {
     & > .s-table-spining-content {
       & > .s-nested-table-wrapper {
         & > .s-nested-table {
           & > .s-table-thead > .s-table-thead-tr > .s-table-thead-th {
-            padding: 10px 8px 6px;
+            padding: 8px;
           }
 
           & > .s-table-tbody > .s-table-tbody-tr > .s-table-tbody-td {
-            padding: 8px 8px;
+            padding: 8px;
 
             & > .s-table-tbody-expand-container + .s-table-tbody-valuer-container {
               margin-left: 22px;
@@ -346,7 +345,7 @@ body {
           }
 
           & > .s-table-tfoot > .s-table-tfoot-tr > .s-table-tfoot-td {
-            padding: 8px 8px;
+            padding: 8px;
           }
         }
 
@@ -384,7 +383,7 @@ body {
     width: 12px;
     height: 100%;
     margin-right: 5px;
-    padding: 17px 0 15px;
+    padding: 17px 12px 15px;
     cursor: pointer;
   }
 
@@ -439,8 +438,8 @@ body {
     align-items: center;
     float: right;
     height: 28px;
-    margin: -1px 2px -28px -64px;
-    padding: 2px 5px;
+    margin: -1px 0 -28px -64px;
+    padding: 1px 0;
     position: absolute;
     cursor: pointer;
     z-index: 999998;
@@ -450,16 +449,16 @@ body {
     & > .s-table-settings-icon {
       flex: 0 0 auto;
       display: inline-block;
-      margin-right: 2px;
-      font-size: 14px;
+      font-size: 17px;
       box-sizing: border-box;
     }
 
     & > .s-table-settings-title {
       flex: 0 0 auto;
       display: inline-block;
+      margin-left: 2px;
       color: rgba(0, 0, 0, 0.65);
-      font-size: 13px;
+      font-size: 15px;
       font-weight: 500;
     }
 
@@ -605,21 +604,21 @@ body {
     }
   }
 
-  &.s-middle {
+  &.s-middle-table-container {
     .s-table-sorter-container {
-      padding: 13px 8px 11px;
+      padding: 12px 8px;
     }
     .s-table-settings-container {
-      height: 26px;
-      padding: 1px 3px;
-      margin: -2px 2px -28px -64px;
+      height: 24px;
+      padding: 1px 0;
+      margin: -2px 0 -28px -64px;
 
       & > .s-table-settings-icon {
-        font-size: 13px;
+        font-size: 16px;
       }
 
       & > .s-table-settings-title {
-        font-size: 12px;
+        font-size: 14px;
       }
     }
     .s-table-loading-container {
@@ -650,21 +649,20 @@ body {
     }
   }
 
-  &.s-small {
+  &.s-small-table-container {
     .s-table-sorter-container {
-      padding: 9px 8px 7px;
+      padding: 8px;
     }
     .s-table-settings-container {
       height: 22px;
-      padding: 0 2px;
-      margin: -2px 2px -28px -64px;
+      margin: -2px 0 -28px -64px;
 
       & > .s-table-settings-icon {
-        font-size: 12px;
+        font-size: 15px;
       }
 
       & > .s-table-settings-title {
-        font-size: 11px;
+        font-size: 13px;
       }
     }
     .s-table-loading-container {

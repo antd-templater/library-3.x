@@ -20,8 +20,8 @@ export const STableSettings = defineComponent({
   name: 'STableSettings',
   inheritAttrs: false,
   props: {
+    title: VueTypes.string().def(''),
     style: VueTypes.object().def(() => ({})),
-    title: VueTypes.string().def('列选项'),
     multiline: VueTypes.bool().def(false),
     treeData: VueTypes.array<STableSettingsType>().def(() => []),
     dropHandler: VueTypes.func<(_: STableDropOptionsType) => boolean | void>().def(() => false),
@@ -91,7 +91,7 @@ export const STableSettings = defineComponent({
           onClick={toggler}
         >
           <div class='s-table-settings-icon'>
-            <SettingOutlined style={{ color: 'rgba(0, 0, 0, 0.65)' }}/>
+            <SettingOutlined style={{ color: 'var(--ant-primary-color)' }}/>
           </div>
 
           <div class='s-table-settings-title'>

@@ -16,8 +16,6 @@ import STableSorter from './index.sorter'
 import STableEmpty from './index.empty'
 import './index.style.less'
 
-export * from './res'
-
 export interface STableStickyType {
   topHeader: boolean | number;
   leftFooter: boolean;
@@ -2995,12 +2993,14 @@ export const STable = defineComponent({
                   }
 
                   const store: any = {
-                    small: '10px 5px 6px',
-                    middle: '14px 7px 10px'
+                    small: '8px 5px',
+                    middle: '12px 7px',
+                    default: '16px 6px',
+                    large: '16px 6px'
                   }
 
                   const style: any = {
-                    padding: store[Normalizer.size.value] || '18px 6px 14px',
+                    padding: store[Normalizer.size.value] || '16px 6px',
                     textAlign: 'center',
                     ...props.tHeaderThStyle
                   }
@@ -3554,7 +3554,9 @@ export const STable = defineComponent({
 
                 const store: any = {
                   small: '8px 5px',
-                  middle: '12px 7px'
+                  middle: '12px 7px',
+                  default: '16px 6px',
+                  large: '16px 6px'
                 }
 
                 const style: any = {
@@ -3843,7 +3845,9 @@ export const STable = defineComponent({
 
               const store: any = {
                 small: '8px 5px',
-                middle: '12px 7px'
+                middle: '12px 7px',
+                default: '16px 6px',
+                large: '16px 6px'
               }
 
               const style: any = {
@@ -4443,10 +4447,14 @@ export const STable = defineComponent({
         return <STableLoading optionser={Optionser} />
       }
 
+      const overflow = Computer.tableBodyOverflow.value
+      const width = Computer.tableBodyWidth.value
+
       return (
         <section
           ref={Optionser.refTableContainer}
-          class={['s-table-container', `s-${Normalizer.size.value}`]}
+          class={['s-table-container', `s-${Normalizer.size.value}-table-container`]}
+          style={{ width: width === 'max-content' && overflow === 'visible' ? 'max-content' : '100%', minWidth: width === 'max-content' && overflow === 'visible' ? '100%' : '0' }}
         >
           <div class='s-table-spining-container'>
             <div class={['s-table-spining-content', { spining: loading }]}>
@@ -4466,3 +4474,4 @@ export const STable = defineComponent({
 })
 
 export default STable
+export * from './res'
