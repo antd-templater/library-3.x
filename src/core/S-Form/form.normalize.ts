@@ -73,8 +73,8 @@ export const SFormNormalize: SFormNormalizeType = {
       output: ({ self }) => self.props.unCheckedValue !== undefined ? self.props.unCheckedValue : false
     },
     transfer: {
-      input: (value, { self }) => value === self.props.checkedValue || value === self.props.uncheckedValue ? value : self.props.unCheckedValue !== undefined ? self.props.unCheckedValue : value === true,
-      output: (value, { self }) => value === self.props.checkedValue || value === self.props.uncheckedValue ? value : self.props.unCheckedValue !== undefined ? self.props.unCheckedValue : value === true
+      input: (value, { self }) => value === self.props.checkedValue || value === self.props.unCheckedValue ? value : self.props.unCheckedValue !== undefined ? self.props.unCheckedValue : value === true,
+      output: (value, { self }) => value === self.props.checkedValue || value === self.props.unCheckedValue ? value : self.props.unCheckedValue !== undefined ? self.props.unCheckedValue : value === true
     },
 
     readonly: false,

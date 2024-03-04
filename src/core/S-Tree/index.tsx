@@ -136,7 +136,7 @@ export interface STreeMethoder {
 
   pickUpperTreeNodes: (key: STreeKey, level?: number) => Array<STreeSourceNode>;
   pickLowerTreeNodes: (key: STreeKey, level?: number) => Array<STreeSourceNode>;
-  pickMatchTreeNodes: (key: STreeKey, level?: number) => Array<STreeSourceNode>;
+  pickMatchTreeNode: (key: STreeKey, level?: number) => STreeSourceNode | null;
 
   expandTreeNodes: (keys: STreeKeys) => void;
   collapseTreeNodes: (keys: STreeKeys) => void;
@@ -248,7 +248,7 @@ type STreeDefineMethods = Pick<STreeMethoder,
   'filterTreeNodes' |
   'pickUpperTreeNodes' |
   'pickLowerTreeNodes' |
-  'pickMatchTreeNodes' |
+  'pickMatchTreeNode' |
   'doTreeAllExpanded' |
   'doTreeAllCollapsed' |
   'doTreeToggleExpanded' |
@@ -1510,16 +1510,15 @@ export const STree = defineComponent({
         return treeNodes
       },
 
-      pickMatchTreeNodes(key, level) {
-        const treeNodes = []
+      pickMatchTreeNode(key, level) {
         const flatTreeNodes = Stater.flatTreeNodes
         const currentSourceNode = flatTreeNodes.find(every => every.key === key)
 
         if (currentSourceNode && (!helper.isNumber(level) || currentSourceNode.level === level)) {
-          treeNodes.push(currentSourceNode.referenceSourceNode)
+          return currentSourceNode.referenceSourceNode
         }
 
-        return treeNodes
+        return null
       },
 
       expandTreeNodes(keys) {
@@ -3107,7 +3106,7 @@ export const STree = defineComponent({
 
       pickUpperTreeNodes: Methoder.pickUpperTreeNodes,
       pickLowerTreeNodes: Methoder.pickLowerTreeNodes,
-      pickMatchTreeNodes: Methoder.pickMatchTreeNodes,
+      pickMatchTreeNode: Methoder.pickMatchTreeNode,
 
       doTreeAllExpanded: Methoder.doTreeAllExpanded,
       doTreeAllCollapsed: Methoder.doTreeAllCollapsed,

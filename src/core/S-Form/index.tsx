@@ -299,11 +299,11 @@ export const SForm = defineComponent({
 
     const GroupHeaderRender = (opt: SFormProps & SFormGroupProps, ctx: typeof context) => {
       const group = opt.group
-      const border = opt.border === 'no' || opt.border === false ? opt.border : unref(group.border)
+      const border = unref(group.border) ?? opt.border
       const disabled = [unref(opt.disabled), unref(group.disabled)].includes(true)
       const readonly = [unref(opt.readonly), unref(group.readonly)].includes(true)
-      const className = 's-form-group-item-header-title'
       const slotRender = ctx.slots[`s-header-${group.slot.replace(/^s-header-/, '')}`]
+      const className = 's-form-group-item-header-title'
 
       const attrs = {
         border: border !== false && border !== 'no'

@@ -1,4 +1,4 @@
-import { Fragment, VNode, HTMLAttributes, SlotsType, DeepReadonly, ComputedRef, MaybeRef, UnwrapRef, Ref, isVNode, nextTick, renderSlot, defineComponent, onMounted, computed, reactive, ref, inject, watch, readonly, toRaw, unref } from 'vue'
+import { Fragment, VNode, HTMLAttributes, SlotsType, ComputedRef, MaybeRef, UnwrapRef, Ref, isVNode, nextTick, renderSlot, defineComponent, onMounted, computed, reactive, ref, inject, watch, toRaw, unref } from 'vue'
 import { defaultConfigProvider } from 'ant-design-vue/es/config-provider'
 import { PlusOutlined, MinusOutlined } from '@ant-design/icons-vue'
 import * as VueTypes from 'vue-types'
@@ -114,11 +114,11 @@ export interface STableCellFixedType {
 }
 
 export interface STableRowKey<RecordType = STableRecordType> {
-  (record: DeepReadonly<RecordType>): string
+  (record: RecordType): string
 }
 
 export interface STableTreeKey<RecordType = STableRecordType> {
-  (record: DeepReadonly<RecordType>): string
+  (record: RecordType): string
 }
 
 export interface STableLoadSource<RecordType = STableRecordType> {
@@ -138,11 +138,11 @@ export interface STableSettingsType<RecordType = STableRecordType> {
 }
 
 export interface STableExpanderRender<RecordType = STableRecordType> {
-  (option: { record: DeepReadonly<RecordType>; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: Record<number, number>; globalIndex: number; }): VNode;
+  (option: { record: RecordType; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: Record<number, number>; globalIndex: number; }): VNode;
 }
 
 export interface STableHeaderCellRender<RecordType = STableRecordType> {
-  (option: { title: string | number; column: DeepReadonly<STableColumnType<RecordType>>; rowIndex: number; colIndex: number; }): VNode | STableRefWrapper<{
+  (option: { title: string | number; column: STableColumnType<RecordType>; rowIndex: number; colIndex: number; }): VNode | STableRefWrapper<{
     attrs?: HTMLAttributes;
     props?: {
       align?: 'left' | 'center' | 'right';
@@ -161,7 +161,7 @@ export interface STableHeaderCellRender<RecordType = STableRecordType> {
 }
 
 export interface STableBodyerCellRender<RecordType = STableRecordType> {
-  (option: { value: any; record: DeepReadonly<RecordType>; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: Record<number, number>; globalIndex: number; column: DeepReadonly<STableColumnType<RecordType>>; colIndex: number; }): VNode | STableRefWrapper<{
+  (option: { value: any; record: RecordType; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: Record<number, number>; globalIndex: number; column: STableColumnType<RecordType>; colIndex: number; }): VNode | STableRefWrapper<{
     attrs?: HTMLAttributes;
     props?: {
       align?: 'left' | 'center' | 'right';
@@ -175,7 +175,7 @@ export interface STableBodyerCellRender<RecordType = STableRecordType> {
 }
 
 export interface STableFooterCellRender<RecordType = STableRecordType> {
-  (option: { value: any; record: DeepReadonly<RecordType>; rowIndex: number; column: DeepReadonly<STableColumnType<RecordType>>; colIndex: number; sources: DeepReadonly<RecordType[]>; paginate: DeepReadonly<STablePaginateType>; }): VNode | STableRefWrapper<{
+  (option: { value: any; record: RecordType; rowIndex: number; column: STableColumnType<RecordType>; colIndex: number; sources: RecordType[]; paginate: STablePaginateType; }): VNode | STableRefWrapper<{
     attrs?: HTMLAttributes;
     props?: {
       align?: 'left' | 'center' | 'right';
@@ -189,22 +189,22 @@ export interface STableFooterCellRender<RecordType = STableRecordType> {
 }
 
 export interface STableCustomHeaderRowAttrs<RecordType = STableRecordType> {
-  (options: { columns: DeepReadonly<STableColumnType<RecordType>[]>; rowIndex: number; }): STableRefWrapper<HTMLAttributes>;
+  (options: { columns: STableColumnType<RecordType>[]; rowIndex: number; }): STableRefWrapper<HTMLAttributes>;
 }
 
 export interface STableCustomBodyerRowAttrs<RecordType = STableRecordType> {
-  (options: { record: DeepReadonly<RecordType>; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: Record<number, number>; globalIndex: number; }): STableRefWrapper<HTMLAttributes>;
+  (options: { record: RecordType; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: Record<number, number>; globalIndex: number; }): STableRefWrapper<HTMLAttributes>;
 }
 
 export interface STableCustomBodyerRowStates<RecordType = STableRecordType> {
-  (options: { record: DeepReadonly<RecordType>; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: Record<number, number>; globalIndex: number; }): STableRefWrapper<{
+  (options: { record: RecordType; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: Record<number, number>; globalIndex: number; }): STableRefWrapper<{
     selectable?: STableRefWrapper<boolean>;
     expandable?: STableRefWrapper<boolean>;
   }>;
 }
 
 export interface STableCustomFooterRowAttrs<RecordType = STableRecordType> {
-  (options: { record: DeepReadonly<RecordType>; rowIndex: number; sources: DeepReadonly<RecordType[]>; paginate: DeepReadonly<STablePaginateType>; }): STableRefWrapper<HTMLAttributes>;
+  (options: { record: RecordType; rowIndex: number; sources: RecordType[]; paginate: STablePaginateType; }): STableRefWrapper<HTMLAttributes>;
 }
 
 export interface STableWrapRecordType<RecordType = STableRecordType> {
@@ -301,11 +301,12 @@ type STableeDefineSlots<RecordType = STableRecordType> = SlotsType<{
 }>
 
 type STableDefineMethods = {
-  reload: (delay?: Promise<void> | number) => Promise<void>;
-  refresh: (delay?: Promise<void> | number) => Promise<void>;
+  reload: (delay?: Promise<void> | boolean | number, force?: boolean) => Promise<void>;
+  refresh: (delay?: Promise<void> | boolean | number, force?: boolean) => Promise<void>;
   select: (keys: STableKey[]) => void;
   expand: (keys: STableKey[]) => void;
-  update: () => void;
+  update: (clean?: boolean) => void;
+  clear: (clean?: boolean) => void;
 }
 
 export type STableKey = string | number
@@ -380,9 +381,9 @@ export const STable = defineComponent({
     'update:expandedRowKeys': (keys: Array<STableKey>) => true,
     'pageSizeChange': (pageNo: number, pageSize: number) => true,
     'pageChange': (pageNo: number, pageSize: number) => true,
-    'sorter': (values: Array<STableSorterType>) => true,
-    'expand': (keys: Array<STableKey>) => true,
-    'select': (keys: Array<STableKey>) => true
+    'expand': (keys: Array<STableKey>, nodes: Array<STableRecordType | null>) => true,
+    'select': (keys: Array<STableKey>, nodes: Array<STableRecordType | null>) => true,
+    'sorter': (values: Array<STableSorterType>) => true
   },
   setup(props, context) {
     const watchOptions = { immediate: true }
@@ -588,11 +589,21 @@ export const STable = defineComponent({
       parse: (page: STablePaginateType) => {
 
       },
-      reload: (delay: Promise<void> | number = 0) => {
-        return helper.toPromise(delay).then(() => Requester.core({ ...Paginator.paginate }))
+      reload: async(delay?: Promise<void> | boolean | number, force?: boolean) => {
+        force = helper.isBoolean(delay) ? delay : force === true
+        delay = !helper.isBoolean(delay) ? delay : Promise.resolve()
+
+        const update = () => { force && Methoder.forceUpdate() }
+        const request = () => Requester.core({ ...Paginator.paginate })
+        return helper.toPromise(delay).then(() => request()).finally(() => update)
       },
-      refresh: (delay: Promise<void> | number = 0) => {
-        return helper.toPromise(delay).then(() => Requester.core({ ...Paginator.paginate, pageNo: 1 }))
+      refresh: async(delay?: Promise<void> | boolean | number, force?: boolean) => {
+        force = helper.isBoolean(delay) ? delay : force === true
+        delay = !helper.isBoolean(delay) ? delay : Promise.resolve()
+
+        const update = () => { force && Methoder.forceUpdate() }
+        const request = () => Requester.core({ ...Paginator.paginate, pageNo: 1 })
+        return helper.toPromise(delay).then(() => request()).finally(() => update)
       }
     }
 
@@ -692,7 +703,11 @@ export const STable = defineComponent({
         )
       }),
       isFixedTop: computed(() => {
-        return /^[+-]?\d+\.?\d*(px)?$/.test(`${Normalizer.scroll.value.y}`)
+        return (
+          Normalizer.sticky.value.topHeader === true ||
+          helper.isFiniteNumber(Normalizer.sticky.value.topHeader) ||
+          (/^[+-]?\d+\.?\d*(px)?$/).test(`${Normalizer.scroll.value.y}`)
+        )
       }),
       fixedLeftIndex: computed(() => {
         const indexs: number[] = []
@@ -1844,7 +1859,7 @@ export const STable = defineComponent({
           }
 
           if (helper.isFunction(props.customHeaderRowAttrs)) {
-            columnRowAttrs.value[rowIndex] = props.customHeaderRowAttrs({ columns: readonly(columns), rowIndex })
+            columnRowAttrs.value[rowIndex] = props.customHeaderRowAttrs({ columns, rowIndex })
           }
 
           if (columnRowAttrs.value[rowIndex] === undefined) {
@@ -1878,7 +1893,7 @@ export const STable = defineComponent({
             const renderNode = Methoder.getValue(
               props.customHeaderCellRender({
                 title: column.title,
-                column: readonly(column),
+                column,
                 rowIndex,
                 colIndex
               })
@@ -1896,7 +1911,7 @@ export const STable = defineComponent({
           if (helper.isFunction(column.customHeaderCellRender)) {
             const renderNode = column.customHeaderCellRender({
               title: column.title,
-              column: readonly(column),
+              column,
               rowIndex,
               colIndex
             })
@@ -1931,7 +1946,7 @@ export const STable = defineComponent({
             continue
           }
 
-          const record = readonly(option.referRecord)
+          const record = option.referRecord
           const rowIndex = option.rowGroupIndex
           const groupLevel = option.rowGroupLevel
           const groupIndex = option.rowGroupIndex
@@ -1956,13 +1971,13 @@ export const STable = defineComponent({
         }
 
         for (const item of dataColumns.value) {
-          const column = readonly(item)
+          const column = item
           const columnKey = column.key
           const colIndex = column.colIndex
           const dataIndex = column.dataIndex
 
           for (const option of sources) {
-            const record = readonly(option.referRecord)
+            const record = option.referRecord
             const rowIndex = option.rowGroupIndex
             const groupLevel = option.rowGroupLevel
             const groupIndex = option.rowGroupIndex
@@ -2061,8 +2076,8 @@ export const STable = defineComponent({
 
       normalizeInitSummary(summarys: STableRecordType[]) {
         const records = Computer.filterPageSources.value.filter(refer => refer.rowGroupLevel === 1)
-        const sources = readonly(records.map(refer => refer.referRecord))
-        const paginate = readonly(Paginator.paginate)
+        const sources = records.map(refer => refer.referRecord)
+        const paginate = Paginator.paginate
 
         for (const [rowIndex, record] of summarys.entries()) {
           if (Methoder.isOwnProperty(summaryRowAttrs.value, [rowIndex])) {
@@ -2070,7 +2085,7 @@ export const STable = defineComponent({
           }
 
           if (helper.isFunction(props.customFooterRowAttrs)) {
-            summaryRowAttrs.value[rowIndex] = props.customFooterRowAttrs({ record: readonly(record), rowIndex, sources, paginate })
+            summaryRowAttrs.value[rowIndex] = props.customFooterRowAttrs({ record, rowIndex, sources, paginate })
           }
 
           if (summaryRowAttrs.value[rowIndex] === undefined) {
@@ -2079,7 +2094,7 @@ export const STable = defineComponent({
         }
 
         for (const item of dataColumns.value) {
-          const column = readonly(item)
+          const column = item
           const columnKey = column.key
           const colIndex = column.colIndex
           const dataIndex = column.dataIndex
@@ -2230,21 +2245,56 @@ export const STable = defineComponent({
 
         if (props.preserveSelectedRowKeys !== true && !selectedRowKeys.value.every(key => sourceRowKeys.value.includes(key))) {
           selectedRowKeys.value = selectedRowKeys.value.filter(key => sourceRowKeys.value.includes(key))
+          Emiter.select([...selectedRowKeys.value], selectedRowKeys.value.map(key => Methoder.getValue(listSources.value.find(record => record.key === key)?.referRecord || null)))
         }
       },
 
       cleanExpandedRowKeys() {
         if (props.preserveExpandedRowKeys !== true && !expandedRowKeys.value.every(key => sourceRowKeys.value.includes(key))) {
           expandedRowKeys.value = expandedRowKeys.value.filter(key => sourceRowKeys.value.includes(key))
+          Emiter.expand([...expandedRowKeys.value], expandedRowKeys.value.map(key => Methoder.getValue(listSources.value.find(record => record.key === key)?.referRecord || null)))
         }
       },
 
-      forceUpdate() {
+      forceUpdate(clean?: boolean) {
+        if (clean === true) {
+          // Clean Keys
+          selectedRowKeys.value = []
+          expandedRowKeys.value = []
+
+          // Clean Columns
+          columnRowAttrs.value = []
+          columnCellAttrs.value = []
+          columnCellProps.value = []
+          columnCellRender.value = []
+          columnSettingsAllKeys.value = []
+          columnSettingsAllTrees.value = []
+          columnSettingsCheckKeys.value = []
+
+          // Clean DataSources
+          sourceRowKeys.value = []
+          sourceRowAttrs.value = []
+          sourceRowStates.value = []
+          sourceCellProps.value = []
+          sourceCellAttrs.value = []
+          sourceCellRender.value = []
+
+          // Clean Summarys
+          summaryRowAttrs.value = []
+          summaryCellProps.value = []
+          summaryCellAttrs.value = []
+          summaryCellRender.value = []
+        }
+
+        // Update loading
+        loading.value = false
+
         // Update Columns
         columnRowAttrs.value = []
         columnCellAttrs.value = []
         columnCellProps.value = []
         columnCellRender.value = []
+        columnSettingsAllKeys.value = []
         columnSettingsAllTrees.value = []
         treeColumns.value = Methoder.normalizeTreeColumns(props.columns, [])
         listColumns.value = Methoder.normalizeListColumns(treeColumns.value, [])
@@ -2253,12 +2303,84 @@ export const STable = defineComponent({
         Methoder.normalizeInitColumns(listColumns.value)
 
         // Update DataSources
+        sourceRowKeys.value = []
         sourceRowAttrs.value = []
         sourceRowStates.value = []
         sourceCellProps.value = []
         sourceCellAttrs.value = []
         sourceCellRender.value = []
         treeSources.value = Methoder.normalizeTreeSources(props.sources, [])
+        listSources.value = Methoder.normalizeListSources(treeSources.value, [])
+        Methoder.normalizeInitSources(listSources.value)
+
+        // Update Summarys
+        summaryRowAttrs.value = []
+        summaryCellProps.value = []
+        summaryCellAttrs.value = []
+        summaryCellRender.value = []
+        listSummary.value = Methoder.normalizeListSummary(props.summarys)
+        Methoder.normalizeInitSummary(listSummary.value)
+
+        // Update Clean RowKeys
+        Methoder.cleanSelectedRowKeys()
+        Methoder.cleanExpandedRowKeys()
+      },
+
+      forceClear(clean?: boolean) {
+        if (clean === true) {
+          // Clean Keys
+          sourceRowKeys.value = []
+          selectedRowKeys.value = []
+          expandedRowKeys.value = []
+
+          // Clean Columns
+          columnRowAttrs.value = []
+          columnCellAttrs.value = []
+          columnCellProps.value = []
+          columnCellRender.value = []
+          columnSettingsAllKeys.value = []
+          columnSettingsAllTrees.value = []
+          columnSettingsCheckKeys.value = []
+
+          // Clean DataSources
+          sourceRowKeys.value = []
+          sourceRowAttrs.value = []
+          sourceRowStates.value = []
+          sourceCellProps.value = []
+          sourceCellAttrs.value = []
+          sourceCellRender.value = []
+
+          // Clean Summarys
+          summaryRowAttrs.value = []
+          summaryCellProps.value = []
+          summaryCellAttrs.value = []
+          summaryCellRender.value = []
+        }
+
+        // Update loading
+        loading.value = false
+
+        // Update Columns
+        columnRowAttrs.value = []
+        columnCellAttrs.value = []
+        columnCellProps.value = []
+        columnCellRender.value = []
+        columnSettingsAllKeys.value = []
+        columnSettingsAllTrees.value = []
+        treeColumns.value = Methoder.normalizeTreeColumns(props.columns, [])
+        listColumns.value = Methoder.normalizeListColumns(treeColumns.value, [])
+        dataColumns.value = Methoder.normalizeDataColumns(listColumns.value)
+        Methoder.normalizeTreeSettings(treeColumns.value)
+        Methoder.normalizeInitColumns(listColumns.value)
+
+        // Update DataSources
+        sourceRowKeys.value = []
+        sourceRowAttrs.value = []
+        sourceRowStates.value = []
+        sourceCellProps.value = []
+        sourceCellAttrs.value = []
+        sourceCellRender.value = []
+        treeSources.value = Methoder.normalizeTreeSources([], [])
         listSources.value = Methoder.normalizeListSources(treeSources.value, [])
         Methoder.normalizeInitSources(listSources.value)
 
@@ -2750,10 +2872,6 @@ export const STable = defineComponent({
     }
 
     const Emiter = {
-      pageSizeChange: (pageNo: number, pageSize: number) => {
-        pageSize === Paginator.paginate.pageSize && context.emit('pageSizeChange', pageNo, pageSize)
-        pageSize !== Paginator.paginate.pageSize && context.emit('pageSizeChange', 1, pageSize)
-      },
       pageChange: (pageNo: number, pageSize: number) => {
         const pageSizeChanged = pageSize === Paginator.paginate.pageSize
 
@@ -2765,15 +2883,19 @@ export const STable = defineComponent({
         pageSizeChanged || Paginator.update({ pageNo: 1, pageSize })
         pageSizeChanged || Requester.refresh()
       },
+      pageSizeChange: (pageNo: number, pageSize: number) => {
+        pageSize === Paginator.paginate.pageSize && context.emit('pageSizeChange', pageNo, pageSize)
+        pageSize !== Paginator.paginate.pageSize && context.emit('pageSizeChange', 1, pageSize)
+      },
+      expand: (keys: Array<STableKey>, nodes: Array<STableRecordType | null>) => {
+        context.emit('expand', keys, nodes)
+      },
+      select: (keys: Array<STableKey>, nodes: Array<STableRecordType | null>) => {
+        context.emit('select', keys, nodes)
+      },
       sorter: (values: Array<STableSorterType>) => {
         context.emit('sorter', values)
         Requester.refresh()
-      },
-      expand: (keys: Array<STableKey>) => {
-        context.emit('expand', keys)
-      },
-      select: (keys: Array<STableKey>) => {
-        context.emit('select', keys)
       }
     }
 
@@ -2797,6 +2919,7 @@ export const STable = defineComponent({
       }
 
       if (sourcesReseted) {
+        sourceRowKeys.value = []
         sourceRowAttrs.value = []
         sourceRowStates.value = []
         sourceCellProps.value = []
@@ -2887,7 +3010,8 @@ export const STable = defineComponent({
       refresh: Requester.refresh,
       select: Methoder.updateSetupSelectedRowKeys,
       expand: Methoder.updateSetupExpandedRowKeys,
-      update: Methoder.forceUpdate
+      update: Methoder.forceUpdate,
+      clear: Methoder.forceClear
     })
 
     const RenderTableScroller = (ctx: typeof context) => {
@@ -2910,7 +3034,7 @@ export const STable = defineComponent({
           const childKeys = record.childKeys
           const rowGlobalIndex = record.rowGlobalIndex
           const rowState = Methoder.getValue(sourceRowStates.value[rowGlobalIndex])
-          const selectable = Methoder.getValue(rowState?.selectable)
+          const selectable = Methoder.getValue(rowState?.selectable) !== false
 
           if (selectable && !disableKeys.includes(rowKey) && !enableKeys.includes(rowKey)) {
             enableKeys.push(rowKey)
@@ -3035,12 +3159,12 @@ export const STable = defineComponent({
                   const doCheck = (checked: boolean) => {
                     if (!checked) {
                       selectedRowKeys.value.splice(0, selectedRowKeys.value.length, ...selectedKeys.filter(key => !enableKeys.includes(key)))
-                      Emiter.select([...selectedRowKeys.value])
+                      Emiter.select([...selectedRowKeys.value], selectedRowKeys.value.map(key => Methoder.getValue(listSources.value.find(record => record.key === key)?.referRecord || null)))
                     }
 
                     if (checked) {
                       selectedRowKeys.value.splice(0, selectedRowKeys.value.length, ...Array.from(new Set([...enableKeys, ...selectedKeys])))
-                      Emiter.select([...selectedRowKeys.value])
+                      Emiter.select([...selectedRowKeys.value], selectedRowKeys.value.map(key => Methoder.getValue(listSources.value.find(record => record.key === key)?.referRecord || null)))
                     }
                   }
 
@@ -3081,7 +3205,7 @@ export const STable = defineComponent({
 
                       const renderTitle = Methoder.getValue(columnCellRender.value[rowIndex][colIndex])
                       const computeTitle = !Methoder.isVueNode(renderTitle) && helper.isFunction(ctx.slots.headerCell)
-                        ? Methoder.getVNodes(renderSlot(ctx.slots, 'headerCell', { title: renderTitle, column: readonly(column), rowIndex, colIndex }))
+                        ? Methoder.getVNodes(renderSlot(ctx.slots, 'headerCell', { title: renderTitle, column, rowIndex, colIndex }))
                         : renderTitle
 
                       const sorterChanger = (options: STableSorterType) => {
@@ -3159,19 +3283,12 @@ export const STable = defineComponent({
                   })
                 }
 
-                const doTrEvent = {
-                  click: (event: MouseEvent) => {
-                    event.stopPropagation()
-                  }
-                }
-
                 return (
                   <tr
                     { ...Methoder.getValue(columnRowAttrs.value[rowIndex]) }
                     style={{ 'position': 'relative', 'z-index': listColumns.value.length - rowIndex }}
                     class='s-table-thead-tr'
                     row-index={rowIndex}
-                    onClick={doTrEvent.click}
                   >
                     { RenderSelection() }
                     { RenderContent() }
@@ -3185,21 +3302,12 @@ export const STable = defineComponent({
 
       const RenderTableTBody = () => {
         if (!Computer.hasBodyer.value) {
-          const doTrEvent = {
-            click: (event: MouseEvent) => {
-              event.stopPropagation()
-            }
-          }
-
           return (
             <tbody
               class={['s-table-tbody', { 's-border-table': ([] as any).concat(props.border).includes('tbody') }]}
               style={{ 'position': 'relative', 'z-index': 10 }}
             >
-              <tr
-                class='s-table-tbody-tr'
-                onClick={doTrEvent.click}
-              >
+              <tr class='s-table-tbody-tr'>
                 <td
                   class='s-table-tbody-td'
                   style={{ ...props.tBodyerTdStyle }}
@@ -3397,7 +3505,7 @@ export const STable = defineComponent({
             expandedNodes.push({
               vnode: Methoder.getVNodes(
                 renderSlot(ctx.slots, 'expander', {
-                  record: readonly(referRecord),
+                  record: referRecord,
                   rowIndex,
                   groupIndex,
                   groupLevel,
@@ -3436,7 +3544,7 @@ export const STable = defineComponent({
             const expandedNode = expandedNodes[index].vnode
 
             const sourceRowState = Methoder.getValue(sourceRowStates.value[globalIndex])
-            const rowExpandable = Methoder.getValue(sourceRowState?.expandable)
+            const rowExpandable = Methoder.getValue(sourceRowState?.expandable) !== false
 
             const RenderExpandIcon = (column: STableColumnType) => {
               if (!expandIcon) {
@@ -3467,12 +3575,12 @@ export const STable = defineComponent({
 
               if (expandedRowKeys.value.includes(sourceRowUuid)) {
                 const updateExpandedRowKeys = (event: MouseEvent) => {
-                  if (rowExpandable !== false) {
+                  if (rowExpandable) {
                     const length = expandedRowKeys.value.length
                     const presets = expandedRowKeys.value.filter(key => !childKeys.includes(key) && key !== sourceRowUuid)
 
                     expandedRowKeys.value.splice(0, length, ...presets)
-                    Emiter.expand([...expandedRowKeys.value])
+                    Emiter.expand([...expandedRowKeys.value], expandedRowKeys.value.map(key => Methoder.getValue(listSources.value.find(record => record.key === key)?.referRecord || null)))
                   }
                   event.stopPropagation()
                 }
@@ -3483,7 +3591,7 @@ export const STable = defineComponent({
                     style={{ left: width + 'px' }}
                   >
                     <div
-                      class={['s-table-tbody-expand-button', { 's-table-tbody-expand-disabled': rowExpandable === false }]}
+                      class={['s-table-tbody-expand-button', { 's-table-tbody-expand-disabled': rowExpandable }]}
                       onClick={updateExpandedRowKeys}
                     >
                       <MinusOutlined class='s-table-tbody-expand-icon'/>
@@ -3494,9 +3602,9 @@ export const STable = defineComponent({
 
               if (!expandedRowKeys.value.includes(sourceRowUuid)) {
                 const toggleExpandedRowKeys = (event: MouseEvent) => {
-                  if (rowExpandable !== false) {
+                  if (rowExpandable) {
                     expandedRowKeys.value.push(sourceRowUuid)
-                    Emiter.expand([...expandedRowKeys.value])
+                    Emiter.expand([...expandedRowKeys.value], expandedRowKeys.value.map(key => Methoder.getValue(listSources.value.find(record => record.key === key)?.referRecord || null)))
                   }
                   event.stopPropagation()
                 }
@@ -3507,7 +3615,7 @@ export const STable = defineComponent({
                     style={{ left: width + 'px' }}
                   >
                     <div
-                      class={['s-table-tbody-expand-button', { 's-table-tbody-expand-disabled': rowExpandable === false }]}
+                      class={['s-table-tbody-expand-button', { 's-table-tbody-expand-disabled': rowExpandable }]}
                       onClick={toggleExpandedRowKeys}
                     >
                       <PlusOutlined class='s-table-tbody-expand-icon'/>
@@ -3581,13 +3689,13 @@ export const STable = defineComponent({
                 const doCheck = (checked: boolean) => {
                   if (props.selectedRowMode === 'Radio' && (selectedRowKeys.value.length !== 1 || selectedRowKeys.value[0] !== rowKey)) {
                     selectedRowKeys.value.splice(0, selectedRowKeys.value.length, rowKey)
-                    Emiter.select([...selectedRowKeys.value])
+                    Emiter.select([...selectedRowKeys.value], selectedRowKeys.value.map(key => Methoder.getValue(listSources.value.find(record => record.key === key)?.referRecord || null)))
                   }
 
                   if (props.selectedRowMode === 'Checkbox' && !checked) {
                     checkStrictly || selectedRowKeys.value.splice(0, selectedRowKeys.value.length, ...selectedKeys.filter(key => key !== rowKey && !parentKeys?.includes(key) && !childKeys.includes(key) || disableKeys.includes(key)))
                     checkStrictly && selectedRowKeys.value.splice(0, selectedRowKeys.value.length, ...selectedKeys.filter(key => key !== rowKey || disableKeys.includes(key)))
-                    Emiter.select([...selectedRowKeys.value])
+                    Emiter.select([...selectedRowKeys.value], selectedRowKeys.value.map(key => Methoder.getValue(listSources.value.find(record => record.key === key)?.referRecord || null)))
                   }
 
                   if (props.selectedRowMode === 'Checkbox' && checked) {
@@ -3610,7 +3718,7 @@ export const STable = defineComponent({
                       }
                     }
 
-                    Emiter.select([...selectedRowKeys.value])
+                    Emiter.select([...selectedRowKeys.value], selectedRowKeys.value.map(key => Methoder.getValue(listSources.value.find(record => record.key === key)?.referRecord || null)))
                   }
                 }
 
@@ -3666,13 +3774,13 @@ export const STable = defineComponent({
 
                     const options = {
                       value: cellValue,
-                      record: readonly(referRecord),
+                      record: referRecord,
                       rowIndex,
                       groupIndex,
                       groupLevel,
                       groupIndexs,
                       globalIndex,
-                      column: readonly(column),
+                      column,
                       colIndex
                     }
 
@@ -3709,43 +3817,62 @@ export const STable = defineComponent({
                 })
               }
 
-              const doTrEvent = {
-                click: (event: MouseEvent) => {
-                  if (props.rowExpandedByClick === true) {
+              const rowExpandedByClick = props.rowExpandedByClick === true
+              const rowExpandedRender = treeChildren.length > 0 || !!expandedNode
+
+              if (!rowExpandedByClick || !rowExpandedRender) {
+                return (
+                  <tr
+                    { ...Methoder.getValue(sourceRowAttrs.value[globalIndex]) }
+                    row-global-index={record.rowGlobalIndex}
+                    row-group-index={record.rowGroupIndex}
+                    row-group-level={record.rowGroupLevel}
+                    row-index={record.rowGroupIndex}
+                    class={['s-table-tbody-tr']}
+                  >
+                    { RenderSelection() }
+                    { RenderContent() }
+                  </tr>
+                )
+              }
+
+              if (rowExpandedByClick && rowExpandedRender) {
+                const doTrEvent = {
+                  click: (event: MouseEvent) => {
                     const isExpaned = expandedRowKeys.value.includes(sourceRowUuid)
                     const expandable = rowExpandable !== false
 
                     if (expandable && !isExpaned) {
                       expandedRowKeys.value.push(sourceRowUuid)
-                      Emiter.expand([...expandedRowKeys.value])
+                      Emiter.expand([...expandedRowKeys.value], expandedRowKeys.value.map(key => Methoder.getValue(listSources.value.find(record => record.key === key)?.referRecord || null)))
                     }
 
                     if (expandable && isExpaned) {
                       const length = expandedRowKeys.value.length
                       const values = expandedRowKeys.value.filter(key => !childKeys.includes(key) && key !== sourceRowUuid)
                       expandedRowKeys.value.splice(0, length, ...values)
-                      Emiter.expand([...expandedRowKeys.value])
+                      Emiter.expand([...expandedRowKeys.value], expandedRowKeys.value.map(key => Methoder.getValue(listSources.value.find(record => record.key === key)?.referRecord || null)))
                     }
+
+                    event.stopPropagation()
                   }
-
-                  event.stopPropagation()
                 }
-              }
 
-              return (
-                <tr
-                  { ...Methoder.getValue(sourceRowAttrs.value[globalIndex]) }
-                  class={['s-table-tbody-tr', { 's-table-tbody-click-tr': props.rowExpandedByClick === true && (treeChildren.length > 0 || !!expandedNode) }]}
-                  row-global-index={record.rowGlobalIndex}
-                  row-group-index={record.rowGroupIndex}
-                  row-group-level={record.rowGroupLevel}
-                  row-index={record.rowGroupIndex}
-                  onClick={doTrEvent.click}
-                >
-                  { RenderSelection() }
-                  { RenderContent() }
-                </tr>
-              )
+                return (
+                  <tr
+                    { ...Methoder.getValue(sourceRowAttrs.value[globalIndex]) }
+                    class={['s-table-tbody-tr', 's-table-tbody-click-tr']}
+                    row-global-index={record.rowGlobalIndex}
+                    row-group-index={record.rowGroupIndex}
+                    row-group-level={record.rowGroupLevel}
+                    row-index={record.rowGroupIndex}
+                    onClick={doTrEvent.click}
+                  >
+                    { RenderSelection() }
+                    { RenderContent() }
+                  </tr>
+                )
+              }
             }
 
             const RenderExpandNode = () => {
@@ -3783,21 +3910,13 @@ export const STable = defineComponent({
                   'padding-left': (props.expandIndentSize > 0 ? props.expandIndentSize : totalWidth) + 'px'
                 }
 
-                const doTrEvent = {
-                  click: (event: MouseEvent) => {
-                    event.stopPropagation()
-                  }
-                }
-
                 return (
                   <tr
                     class={['s-table-tbody-tr', 's-table-tbody-expand-tr']}
-                    { ...Methoder.getValue(sourceRowAttrs.value[globalIndex]) }
                     row-global-index={record.rowGlobalIndex}
                     row-group-index={record.rowGroupIndex}
                     row-group-level={record.rowGroupLevel}
                     row-index={record.rowGroupIndex}
-                    onClick={doTrEvent.click}
                   >
                     <td
                       colspan={Computer.hasSelection.value ? Computer.filterDataColumns.value.length + 1 : Computer.filterDataColumns.value.length}
@@ -3893,17 +4012,8 @@ export const STable = defineComponent({
               })
             }
 
-            const doTrEvent = {
-              click: (event: MouseEvent) => {
-                event.stopPropagation()
-              }
-            }
-
             return (
-              <tr
-                class={['s-table-tbody-tr', 's-table-tbody-empty-tr']}
-                onClick={doTrEvent.click}
-              >
+              <tr class={['s-table-tbody-tr', 's-table-tbody-empty-tr']}>
                 { RenderSelection() }
                 { RenderContent() }
               </tr>
@@ -4067,18 +4177,11 @@ export const STable = defineComponent({
                 const cellSpikers = StoreSpikers[rowIndex]
                 const cellEmpters = StoreEmpters[rowIndex]
 
-                const doTrEvent = {
-                  click: (event: MouseEvent) => {
-                    event.stopPropagation()
-                  }
-                }
-
                 return (
                   <tr
                     { ...Methoder.getValue(summaryRowAttrs.value[rowIndex]) }
                     class={'s-table-tfoot-tr'}
                     row-index={rowIndex}
-                    onClick={doTrEvent.click}
                   >
                     {
                       presetColumns.map((refer, colIndex) => {
@@ -4105,13 +4208,13 @@ export const STable = defineComponent({
                         if (cellRender && rowSpan >= 1 && colSpan >= 1) {
                           const array = Computer.filterPageSources.value.filter(refer => refer.rowGroupLevel === 1)
                           const column = filterColumns.find(col => col.colIndex === refer.colIndex)!
-                          const sources = readonly(array.map(refer => refer.referRecord))
-                          const paginate = readonly(Paginator.paginate)
+                          const sources = array.map(refer => refer.referRecord)
+                          const paginate = Paginator.paginate
 
                           const options = {
                             value: cellValue,
-                            record: readonly(summary),
-                            column: readonly(column),
+                            record: summary,
+                            column: column,
                             rowIndex: rowIndex,
                             colIndex: colIndex,
                             paginate: paginate,
