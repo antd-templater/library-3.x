@@ -1,5 +1,13 @@
 
 
+## [1.1.0](https://github.com/antd-templater/antd-template-lib3.x/compare/1.0.0...1.1.0) (2024-03-05)
+
+
+### 🐛 Bug Fixes | Bug 修复
+
+* **S-Table:** fix the bug of isSourcesChanged API ([d21f152](https://github.com/antd-templater/antd-template-lib3.x/commit/d21f152197d97966f24743a7d4ee5089af1c0ce5))
+* **S-Tree:** fix some bug in STree ([663a2f0](https://github.com/antd-templater/antd-template-lib3.x/commit/663a2f0f24227fe7d014fada0b2ac7ebd4399288))
+
 ## 1.0.0 (2024-02-29)
 
 
