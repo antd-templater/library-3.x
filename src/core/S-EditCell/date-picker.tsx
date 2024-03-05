@@ -35,6 +35,7 @@ export const SEditCellDatePicker = defineComponent({
     showTime: VueTypes.bool().def(false),
     valueFormat: VueTypes.string().def(),
     inputReadOnly: VueTypes.bool().def(false),
+    empty: VueTypes.string().def(''),
     text: VueTypes.string().def(''),
     edit: VueTypes.bool().def(true),
     check: VueTypes.bool().def(true),
@@ -174,9 +175,13 @@ export const SEditCellDatePicker = defineComponent({
     }
 
     const RenderEditableCellText = () => {
-      return slots.editableCellText
-        ? slots.editableCellText({ text: props.text, ...toRaw(proxy) })
-        : props.text
+      const slotText = slots.editableCellText ? slots.editableCellText({ text: props.text, ...toRaw(proxy) }) : null
+      const cellText = slotText ?? props.text as any
+      const empty = props.empty
+
+      return cellText || cellText === 0
+        ? cellText
+        : empty
     }
 
     const provider = inject('configProvider', defaultConfigProvider)

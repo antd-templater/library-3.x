@@ -4,6 +4,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     SEditCellDatePicker: typeof import('./dist/S-EditCell/date-picker')['default']
     SEditCellTreeSelect: typeof import('./dist/S-EditCell/tree-select')['default']
+    SEditCellSelectIcon: typeof import('./dist/S-EditCell/select-icon')['default']
     SEditCellTextarea: typeof import('./dist/S-EditCell/textarea')['default']
     SEditCellSelect: typeof import('./dist/S-EditCell/select')['default']
     SEditCellInput: typeof import('./dist/S-EditCell/input')['default']
@@ -24,6 +25,7 @@ declare global {
 
   export type SEditCellDatePicker = typeof import('./dist/S-EditCell/date-picker')['default']
   export type SEditCellTreeSelect = typeof import('./dist/S-EditCell/tree-select')['default']
+  export type SEditCellSelectIcon = typeof import('./dist/S-EditCell/select-icon')['default']
   export type SEditCellTextarea = typeof import('./dist/S-EditCell/textarea')['default']
   export type SEditCellSelect = typeof import('./dist/S-EditCell/select')['default']
   export type SEditCellInput = typeof import('./dist/S-EditCell/input')['default']
@@ -105,7 +107,7 @@ declare global {
     STreeCacher,
     STreeKey,
     STreeKeys,
-    STreeEventDropHandler,
+    STreeDropHandler,
     STreeEventDragstart,
     STreeEventDrop,
     STreeEmiterCheck,

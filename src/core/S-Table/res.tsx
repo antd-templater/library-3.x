@@ -1,6 +1,6 @@
 import helper from '@/helper'
 
-export const tableResponser = {
+export const tableResponserDefiner = {
   interceptor: (response: any) => {
     if (helper.isObject(response)) {
       if (helper.isObject(response.result)) {
@@ -60,4 +60,4 @@ export const tableResponser = {
   }
 }
 
-export default tableResponser
+export default tableResponserDefiner

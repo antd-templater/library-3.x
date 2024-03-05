@@ -6,6 +6,7 @@ import 'ant-design-vue/es/form/style/index.less'
 import * as VueTypes from 'vue-types'
 import Normalize from './form.normalize'
 import SFormComponent from './index.component'
+import { SFormValidatorRule } from './form.declare'
 import { SFormGrid, SFormColItem, SFormColPartItem, SFormRowItem, SFormRowPartItem, SFormGroupItem, SFormGroupPartItem } from './form.declare'
 import { SlotsType, Ref, defineComponent, watchEffect, watch, shallowRef, toRaw, unref, ref, readonly, PropType, inject } from 'vue'
 import { Rule, NamePath, InternalNamePath, ValidateOptions } from 'ant-design-vue/es/form/interface'
@@ -66,7 +67,7 @@ export const SForm = defineComponent({
   name: 'SForm',
   props: {
     rules: {
-      type: Object as PropType<SFormGroupsRules<Rule>>,
+      type: Object as PropType<Record<string, Rule | SFormValidatorRule | Array<Rule | SFormValidatorRule>>>,
       default: () => ({})
     },
     grid: VueTypes.object<Partial<SFormGrid>>().def(() => ({})),

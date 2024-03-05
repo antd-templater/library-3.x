@@ -28,6 +28,7 @@ export const SEditCellSelect = defineComponent({
   inheritAttrs: false,
   props: {
     text: VueTypes.string().def(''),
+    empty: VueTypes.string().def(''),
     edit: VueTypes.bool().def(true),
     check: VueTypes.bool().def(true),
     synced: VueTypes.bool().def(false),
@@ -174,9 +175,13 @@ export const SEditCellSelect = defineComponent({
       const fieldOptions = props.fieldNames.options
       const isPrimitive = typeof text === 'string' || typeof text === 'number'
 
-      return slots.editableCellText
-        ? slots.editableCellText({ text: props.text, ...toRaw(proxy) })
-        : isPrimitive ? helper.takeLabelByKey(props.options, text, fieldLabel, fieldValue, fieldOptions) || props.text : props.text
+      const slotText = slots.editableCellText ? slots.editableCellText({ text: props.text, ...toRaw(proxy) }) : null
+      const cellText = slotText ?? (isPrimitive ? helper.takeLabelByKey(props.options, text, fieldLabel, fieldValue, fieldOptions) || props.text : props.text) as any
+      const empty = props.empty
+
+      return cellText || cellText === 0
+        ? cellText
+        : empty
     }
 
     const provider = inject('configProvider', defaultConfigProvider)

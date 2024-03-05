@@ -3,7 +3,7 @@ import 'ant-design-vue/es/tree/style/index.less'
 import 'ant-design-vue/es/spin/style/index.less'
 
 import * as VueTypes from 'vue-types'
-import { SlotsType, ShallowReactive, ShallowRef, shallowReactive, defineComponent, shallowRef, watch, onMounted, toRaw, unref } from 'vue'
+import { SlotsType, ShallowReactive, ShallowRef, shallowReactive, defineComponent, shallowRef, watch, onMounted, toRaw, unref, ref } from 'vue'
 import { Key, EventDataNode } from 'ant-design-vue/es/vc-tree/interface'
 import SIcon, { isIconType } from '@/S-Icon/index'
 import SEllipsis from '@/S-Ellipsis/index'
@@ -55,10 +55,6 @@ export interface STreeTargetNode {
   parentNode: STreeTargetNode | null;
   children: STreeTargetNode[];
   [any: string]: any;
-}
-
-export interface STreeLoadData {
-  (treeNode: STreeSourceNode, options: { loadKeys: STreeKeys, loadedKeys: STreeKeys, checkedKeys: STreeKeys; outCheckedKeys: STreeKeys; selectedKeys: STreeKeys; expandedKeys: STreeKeys; }): Promise<STreeSourceNodes>;
 }
 
 export interface STreeTargeter {
@@ -180,7 +176,7 @@ export interface STreeTransformer {
   resetStaterLinkTreeNodes: (force?: boolean) => void;
 }
 
-export interface STreeEventDropHandler {
+export interface STreeDropHandler {
   (options: {
     reloadNodes: Array<{ parentNode?: STreePartSourceNode | null; rootChildNodes: STreeSourceNodes; oldChildNodes: STreeSourceNodes; newChildNodes: STreeSourceNodes; }>;
     appendNodes: Array<{ parentNode?: STreePartSourceNode | null; rootChildNodes: STreeSourceNodes; appendChildNodes: STreeSourceNodes; }>;
@@ -230,6 +226,10 @@ export interface STreeEmiterChange {
   removeNodes: Array<{ parentNode?: STreePartSourceNode | null; rootChildNodes: STreeSourceNodes; removeChildNodes: STreeSourceNodes }>;
   loadedKeys: STreeKeys;
   loadKeys: STreeKeys;
+}
+
+export interface STreeLoadData<T = STreeSourceNode> {
+  (treeNode: T, options?: { loadKeys: STreeKeys, loadedKeys: STreeKeys, checkedKeys: STreeKeys; outCheckedKeys: STreeKeys; selectedKeys: STreeKeys; expandedKeys: STreeKeys; }): Promise<STreeSourceNodes>;
 }
 
 export type STreeKey = Key
@@ -296,7 +296,7 @@ export const STree = defineComponent({
     bgColor: VueTypes.string().def('transparent'),
     treeData: VueTypes.array<STreeSourceNode>().def(() => []),
     loadData: VueTypes.func<STreeLoadData>().def(undefined),
-    dropHandler: VueTypes.func<STreeEventDropHandler>().def(undefined),
+    dropHandler: VueTypes.func<STreeDropHandler>().def(undefined),
     checkedKeys: VueTypes.array<string | number>().def(() => []),
     selectedKeys: VueTypes.array<string | number>().def(() => []),
     expandedKeys: VueTypes.array<string | number>().def(() => []),
@@ -3146,5 +3146,15 @@ export const STree = defineComponent({
   slots: {} as STreeDefineSlots,
   methods: {} as STreeDefineMethods
 })
+
+export const treeDataDefiner = <T extends Record<string, any> = Record<string, any>>(treeData: T[]) => ref(treeData)
+export const treeLoadDataDefiner = <T extends Record<string, any> = Record<string, any>>(loadData: STreeLoadData<T>) => loadData
+export const treeDropHandlerDefiner = (dropHandler: STreeDropHandler) => dropHandler
+export const treeReplaceFieldsDefiner = (replaceFields: STreeFieldNames) => ref(replaceFields)
+
+export const treeEmitCheckDefiner = (func: (emiter: STreeEmiterCheck) => void) => func
+export const treeEmitSelectDefiner = (func: (emiter: STreeEmiterSelect) => void) => func
+export const treeEmitExpandDefiner = (func: (emiter: STreeEmiterExpand) => void) => func
+export const treeEmitChangeDefiner = (func: (emiter: STreeEmiterChange) => void) => func
 
 export default STree

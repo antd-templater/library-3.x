@@ -5,6 +5,7 @@ import * as VueTypes from 'vue-types'
 import helper from '@/helper'
 import Res from './res'
 
+import SEllipsis from '@/S-Ellipsis/index'
 import STableSelection from './index.selection'
 import STablePaginater from './index.paginater'
 import STableScrollbar from './index.scrollbar'
@@ -150,6 +151,7 @@ export interface STableHeaderCellRender<RecordType = STableRecordType> {
       width?: number;
       minWidth?: number;
       maxWidth?: number;
+      tooltip?: boolean;
       ellipsis?: boolean;
       cellSpan?: boolean;
       colSpan?: number;
@@ -165,6 +167,7 @@ export interface STableBodyerCellRender<RecordType = STableRecordType> {
     attrs?: HTMLAttributes;
     props?: {
       align?: 'left' | 'center' | 'right';
+      tooltip?: boolean;
       ellipsis?: boolean;
       cellSpan?: boolean;
       colSpan?: number;
@@ -179,6 +182,7 @@ export interface STableFooterCellRender<RecordType = STableRecordType> {
     attrs?: HTMLAttributes;
     props?: {
       align?: 'left' | 'center' | 'right';
+      tooltip?: boolean;
       ellipsis?: boolean;
       cellSpan?: boolean;
       colSpan?: number;
@@ -250,6 +254,7 @@ export interface STablePartColumnType<RecordType = STableRecordType> {
   maxWidth?: number;
   resizable?: boolean;
   ellipsis?: boolean;
+  tooltip?: boolean;
   colSpan?: number;
   rowSpan?: number;
   sorter?: boolean;
@@ -274,6 +279,7 @@ export interface STableColumnType<RecordType = STableRecordType> {
   maxWidth: number;
   resizable: boolean;
   ellipsis: boolean;
+  tooltip: boolean;
   colIndex: number;
   rowIndex: number;
   colOffset: number;
@@ -322,7 +328,6 @@ export const STable = defineComponent({
   name: 'STable',
   props: {
     size: VueTypes.string<STableSize>().def(undefined),
-    layout: VueTypes.string<'auto' | 'fixed'>().def('auto'),
     rowKey: VueTypes.any<string | STableRowKey>().def(''),
     treeKey: VueTypes.any<string | STableTreeKey>().def('children'),
     border: VueTypes.any<'thead' | 'tbody' | 'tfoot' | boolean | Array<'thead' | 'tbody' | 'tfoot'>>().def(false),
@@ -333,6 +338,7 @@ export const STable = defineComponent({
     summarys: VueTypes.array<STableRecordType>().def(() => ([])),
     paginate: VueTypes.any<STablePartPaginate>().def(() => ({})),
     loadData: VueTypes.func<STableLoadSource>().def(undefined),
+    tableLayout: VueTypes.string<'auto' | 'fixed'>().def(undefined),
     persistSourceRanges: VueTypes.any<Array<[number, number]> | boolean>().def(false),
     customHeaderRowAttrs: VueTypes.func<STableCustomHeaderRowAttrs>().def(undefined),
     customBodyerRowAttrs: VueTypes.func<STableCustomBodyerRowAttrs>().def(undefined),
@@ -375,6 +381,7 @@ export const STable = defineComponent({
   emits: {
     'update:loading': (loading: boolean) => true,
     'update:sources': (sources: STableRecordType[]) => true,
+    'update:summarys': (sources: STableRecordType[]) => true,
     'update:paginate': (paginate: STablePaginateType) => true,
     'update:columns': (columns: STablePartColumnType[]) => true,
     'update:selectedRowKeys': (keys: Array<STableKey>) => true,
@@ -391,6 +398,10 @@ export const STable = defineComponent({
     const renderRowPresets = reactive({ minBuffer: 5, maxBuffer: 10, minHeight: 32 })
     const renderRowRanger = reactive({ renderOffset: [0, ~~(window.innerHeight / renderRowPresets.minHeight)], renderBuffer: [0, 10] })
     const configProvider = inject('configProvider', defaultConfigProvider)
+
+    const propColumns = ref([...props.columns])
+    const propSources = ref([...props.sources])
+    const propSummarys = ref([...props.summarys])
 
     const listSorters: Ref<STableSorterType[]> = ref([])
     const treeColumns: Ref<STableWrapColumnType[]> = ref([])
@@ -414,7 +425,7 @@ export const STable = defineComponent({
     const sourceCellAttrs: Ref<Record<string, STableRefWrapper<HTMLAttributes>>[]> = ref([])
     const sourceCellRender: Ref<Array<Record<string, any>>> = ref([])
 
-    const listSummary: Ref<STableRecordType[]> = ref([])
+    const listSummarys: Ref<STableRecordType[]> = ref([])
     const summaryRowAttrs: Ref<STableRefWrapper<HTMLAttributes>[]> = ref([])
     const summaryCellProps: Ref<Record<string, STableRefWrapper<UnwrapRef<Exclude<ReturnType<STableFooterCellRender>, VNode>>['props']>>[]> = ref([])
     const summaryCellAttrs: Ref<Record<string, STableRefWrapper<HTMLAttributes>>[]> = ref([])
@@ -694,7 +705,7 @@ export const STable = defineComponent({
         return props.showBodyer !== false && listSources.value.length > 0
       }),
       hasFooter: computed(() => {
-        return props.showFooter !== false && listSummary.value.length > 0
+        return props.showFooter !== false && listSummarys.value.length > 0
       }),
       hasSelection: computed(() => {
         return (
@@ -1026,6 +1037,7 @@ export const STable = defineComponent({
                 minWidth: helper.isNonEmptyObject(refCellProps) && Object.hasOwn(refCellProps, 'minWidth') ? refCellProps.minWidth ?? wrap.referColumn.minWidth : wrap.referColumn.minWidth,
                 maxWidth: helper.isNonEmptyObject(refCellProps) && Object.hasOwn(refCellProps, 'maxWidth') ? refCellProps.maxWidth ?? wrap.referColumn.maxWidth : wrap.referColumn.maxWidth,
                 ellipsis: helper.isNonEmptyObject(refCellProps) && Object.hasOwn(refCellProps, 'ellipsis') ? refCellProps.ellipsis ?? wrap.referColumn.ellipsis : wrap.referColumn.ellipsis,
+                tooltip: helper.isNonEmptyObject(refCellProps) && Object.hasOwn(refCellProps, 'tooltip') ? refCellProps.tooltip ?? wrap.referColumn.tooltip : wrap.referColumn.tooltip,
                 sorter: helper.isNonEmptyObject(refCellProps) && Object.hasOwn(refCellProps, 'sorter') ? refCellProps.sorter ?? wrap.referColumn.sorter : wrap.referColumn.sorter
               }
             }
@@ -1172,7 +1184,7 @@ export const STable = defineComponent({
         return renderRangerArr.filter(filterByExpander).filter(filterByGroupRanger)
       }),
       filterPageSummarys: computed(() => {
-        return listSummary.value.filter(summary => summary)
+        return listSummarys.value.filter(summary => summary)
       }),
       overflowScrollBottom: computed(() => {
         return Optionser.wrapperScrollBottom.value > 1 || Optionser.resizerScrollBottom.value > 1
@@ -1429,17 +1441,7 @@ export const STable = defineComponent({
 
       restoreSources(parts: STableWrapRecordType[]) {
         return parts.map<STableRecordType>(part => {
-          const record: STableRecordType = {
-            ...part.referRecord,
-
-            [part.rowTreeKeyField]: helper.isNonEmptyArray(part.treeChildren)
-              ? Methoder.restoreSources(part.treeChildren)
-              : !helper.isArray(part.referRecord[part.rowTreeKeyField])
-                ? part.referRecord[part.rowTreeKeyField]
-                : []
-          }
-
-          return record
+          return part.referRecord
         })
       },
 
@@ -1541,6 +1543,7 @@ export const STable = defineComponent({
               'maxWidth',
               'resizable',
               'ellipsis',
+              'tooltip',
               'colSpan',
               'rowSpan',
               'sorter',
@@ -1659,6 +1662,7 @@ export const STable = defineComponent({
               maxWidth: columnMaxWidth,
               resizable: (columnMinWidth < columnMaxWidth) && columnResizable === true,
               ellipsis: column.ellipsis ?? parent?.referColumn.ellipsis ?? false,
+              tooltip: column.tooltip ?? parent?.referColumn.tooltip ?? false,
               colIndex: offset + index,
               rowIndex: parent ? parent.referColumn.rowIndex + 1 : 0,
               colOffset: offset + index,
@@ -2187,14 +2191,26 @@ export const STable = defineComponent({
       },
 
       updatePropColumns(columns: STableWrapColumnType[]) {
+        propColumns.value = Methoder.restoreColumns(columns)
+
         if (Methoder.isColumnsChanged(props.columns, columns)) {
           context.emit('update:columns', Methoder.restoreColumns(columns))
         }
       },
 
       updatePropSources(sources: STableWrapRecordType[]) {
+        propSources.value = Methoder.restoreSources(sources)
+
         if (Methoder.isSourcesChanged(props.sources, sources)) {
           context.emit('update:sources', Methoder.restoreSources(sources))
+        }
+      },
+
+      updatePropSummarys(summarys: STableRecordType[]) {
+        propSummarys.value = [...summarys]
+
+        if (props.summarys.length !== summarys.length || !summarys.every((every, index) => every === props.summarys[index])) {
+          context.emit('update:summarys', [...summarys])
         }
       },
 
@@ -2296,7 +2312,7 @@ export const STable = defineComponent({
         columnCellRender.value = []
         columnSettingsAllKeys.value = []
         columnSettingsAllTrees.value = []
-        treeColumns.value = Methoder.normalizeTreeColumns(props.columns, [])
+        treeColumns.value = Methoder.normalizeTreeColumns(propColumns.value, [])
         listColumns.value = Methoder.normalizeListColumns(treeColumns.value, [])
         dataColumns.value = Methoder.normalizeDataColumns(listColumns.value)
         Methoder.normalizeTreeSettings(treeColumns.value)
@@ -2309,7 +2325,7 @@ export const STable = defineComponent({
         sourceCellProps.value = []
         sourceCellAttrs.value = []
         sourceCellRender.value = []
-        treeSources.value = Methoder.normalizeTreeSources(props.sources, [])
+        treeSources.value = Methoder.normalizeTreeSources(propSources.value, [])
         listSources.value = Methoder.normalizeListSources(treeSources.value, [])
         Methoder.normalizeInitSources(listSources.value)
 
@@ -2318,8 +2334,8 @@ export const STable = defineComponent({
         summaryCellProps.value = []
         summaryCellAttrs.value = []
         summaryCellRender.value = []
-        listSummary.value = Methoder.normalizeListSummary(props.summarys)
-        Methoder.normalizeInitSummary(listSummary.value)
+        listSummarys.value = Methoder.normalizeListSummary(propSummarys.value)
+        Methoder.normalizeInitSummary(listSummarys.value)
 
         // Update Clean RowKeys
         Methoder.cleanSelectedRowKeys()
@@ -2367,7 +2383,7 @@ export const STable = defineComponent({
         columnCellRender.value = []
         columnSettingsAllKeys.value = []
         columnSettingsAllTrees.value = []
-        treeColumns.value = Methoder.normalizeTreeColumns(props.columns, [])
+        treeColumns.value = Methoder.normalizeTreeColumns(propColumns.value, [])
         listColumns.value = Methoder.normalizeListColumns(treeColumns.value, [])
         dataColumns.value = Methoder.normalizeDataColumns(listColumns.value)
         Methoder.normalizeTreeSettings(treeColumns.value)
@@ -2389,8 +2405,8 @@ export const STable = defineComponent({
         summaryCellProps.value = []
         summaryCellAttrs.value = []
         summaryCellRender.value = []
-        listSummary.value = Methoder.normalizeListSummary(props.summarys)
-        Methoder.normalizeInitSummary(listSummary.value)
+        listSummarys.value = Methoder.normalizeListSummary(propSummarys.value)
+        Methoder.normalizeInitSummary(listSummarys.value)
 
         // Update Clean RowKeys
         Methoder.cleanSelectedRowKeys()
@@ -2800,14 +2816,6 @@ export const STable = defineComponent({
           })
         }
 
-        if (column.ellipsis === true) {
-          Object.assign(style, {
-            'overflow': 'hidden',
-            'white-space': 'nowrap',
-            'text-overflow': 'ellipsis'
-          })
-        }
-
         if (currentFixedLeft === true) {
           const offsetWidth = !isTfoot || fixeder.colOffset > 0 ? OffsetLeftWidth : 0
           const leftWidth = tableTheadSizes.reduce((total, item, index) => index < fixeder.colOffset ? total + item.width : total, 0)
@@ -2856,14 +2864,6 @@ export const STable = defineComponent({
             })
           }
 
-          if (marks.ellipsis === true) {
-            Object.assign(attrs.style, {
-              'overflow': 'hidden',
-              'white-space': 'nowrap',
-              'text-overflow': 'ellipsis'
-            })
-          }
-
           return attrs
         }
 
@@ -2899,11 +2899,11 @@ export const STable = defineComponent({
       }
     }
 
-    watch([() => props.columns, () => props.sources, () => props.summarys], () => {
-      const columnsChanged = Methoder.isColumnsChanged(props.columns, treeColumns.value)
-      const sourcesChanged = Methoder.isSourcesChanged(props.sources, treeSources.value)
-      const summaryChanged = Methoder.isSummaryChanged(props.summarys, listSummary.value)
-      const sourcesReseted = sourcesChanged && Methoder.isSourcesChanged(props.sources.slice(0, treeSources.value.length), treeSources.value)
+    watch([() => props.columns, () => props.sources, () => props.summarys], ([newColumns, newSources, newSummarys], [oldColumns, oldSources, oldSummarys]) => {
+      const columnsChanged = newColumns !== oldColumns && Methoder.isColumnsChanged(propColumns.value, treeColumns.value)
+      const sourcesChanged = newSources !== oldSources && Methoder.isSourcesChanged(propSources.value, treeSources.value)
+      const summaryChanged = newSummarys !== oldSummarys && Methoder.isSummaryChanged(propSummarys.value, listSummarys.value)
+      const sourcesReseted = sourcesChanged && Methoder.isSourcesChanged(propSources.value.slice(0, treeSources.value.length), treeSources.value)
 
       if (columnsChanged) {
         columnRowAttrs.value = []
@@ -2911,7 +2911,8 @@ export const STable = defineComponent({
         columnCellProps.value = []
         columnCellRender.value = []
         columnSettingsAllTrees.value = []
-        treeColumns.value = Methoder.normalizeTreeColumns(props.columns, [])
+        propColumns.value = [...props.columns]
+        treeColumns.value = Methoder.normalizeTreeColumns(propColumns.value, [])
         listColumns.value = Methoder.normalizeListColumns(treeColumns.value, [])
         dataColumns.value = Methoder.normalizeDataColumns(listColumns.value)
         Methoder.normalizeTreeSettings(treeColumns.value)
@@ -2928,7 +2929,8 @@ export const STable = defineComponent({
       }
 
       if (sourcesChanged) {
-        treeSources.value = Methoder.normalizeTreeSources(props.sources, [])
+        propSources.value = [...props.sources]
+        treeSources.value = Methoder.normalizeTreeSources(propSources.value, [])
         listSources.value = Methoder.normalizeListSources(treeSources.value, [])
         Methoder.normalizeInitSources(listSources.value)
         Methoder.cleanSelectedRowKeys()
@@ -2940,8 +2942,9 @@ export const STable = defineComponent({
         summaryCellProps.value = []
         summaryCellAttrs.value = []
         summaryCellRender.value = []
-        listSummary.value = Methoder.normalizeListSummary(props.summarys)
-        Methoder.normalizeInitSummary(listSummary.value)
+        propSummarys.value = [...props.summarys]
+        listSummarys.value = Methoder.normalizeListSummary(propSummarys.value)
+        Methoder.normalizeInitSummary(listSummarys.value)
       }
     }, watchDeepOptions)
 
@@ -2960,6 +2963,7 @@ export const STable = defineComponent({
     watch(() => Paginator.paginate, () => { Methoder.updatePropPaginate(Paginator.paginate) }, watchDeepOptions)
     watch(() => treeColumns.value, () => { Methoder.updatePropColumns(treeColumns.value) }, watchDeepOptions)
     watch(() => treeSources.value, () => { Methoder.updatePropSources(treeSources.value) }, watchDeepOptions)
+    watch(() => listSummarys.value, () => { Methoder.updatePropSummarys(listSummarys.value) }, watchDeepOptions)
     watch(() => loading.value, () => { context.emit('update:loading', loading.value) }, watchDeepOptions)
 
     onMounted(() => {
@@ -3149,7 +3153,6 @@ export const STable = defineComponent({
                         col-offset={-1}
                         row-offset={0}
                       />
-
                     )
                   }
 
@@ -3271,7 +3274,13 @@ export const STable = defineComponent({
                           col-offset={column.colOffset}
                           row-offset={column.rowOffset}
                         >
-                          { computeTitle ?? renderTitle }
+                          <SEllipsis
+                            visible={column.tooltip === true ? undefined : false}
+                            tooltip={column.tooltip === true || column.ellipsis === true}
+                            ellipsis={column.tooltip === true || column.ellipsis === true}
+                          >
+                            { computeTitle ?? renderTitle }
+                          </SEllipsis>
 
                           <div class='s-table-thead-th-functional'>
                             { sortable ? <STableSorter field={sorterField} value={sorterValue} onChange={sorterChanger} /> : null }
@@ -3810,7 +3819,14 @@ export const STable = defineComponent({
                         row-index={rowIndex}
                       >
                         { RenderExpandIcon(column) }
-                        { RenderValuerNode(column, computeValue) }
+
+                        <SEllipsis
+                          visible={(helper.isBoolean(cellProps?.tooltip) ? cellProps?.tooltip : column.tooltip === true) ? undefined : false}
+                          tooltip={(helper.isBoolean(cellProps?.tooltip) ? cellProps?.tooltip : column.tooltip === true) || (helper.isBoolean(cellProps?.ellipsis) ? cellProps?.ellipsis : column.ellipsis === true)}
+                          ellipsis={(helper.isBoolean(cellProps?.tooltip) ? cellProps?.tooltip : column.tooltip === true) || (helper.isBoolean(cellProps?.ellipsis) ? cellProps?.ellipsis : column.ellipsis === true)}
+                        >
+                          { RenderValuerNode(column, computeValue) }
+                        </SEllipsis>
                       </td>
                     )
                   }
@@ -4243,7 +4259,13 @@ export const STable = defineComponent({
                               col-offset={column.colOffset}
                               row-index={rowIndex}
                             >
-                              { computeValue }
+                              <SEllipsis
+                                visible={(helper.isBoolean(cellProps?.tooltip) ? cellProps?.tooltip : column.tooltip === true) ? undefined : false}
+                                tooltip={(helper.isBoolean(cellProps?.tooltip) ? cellProps?.tooltip : column.tooltip === true) || (helper.isBoolean(cellProps?.ellipsis) ? cellProps?.ellipsis : column.ellipsis === true)}
+                                ellipsis={(helper.isBoolean(cellProps?.tooltip) ? cellProps?.tooltip : column.tooltip === true) || (helper.isBoolean(cellProps?.ellipsis) ? cellProps?.ellipsis : column.ellipsis === true)}
+                              >
+                                { computeValue }
+                              </SEllipsis>
                             </td>
                           )
                         }
@@ -4451,7 +4473,7 @@ export const STable = defineComponent({
           <table
             ref={Optionser.refTableNoder}
             class={['s-nested-table', WrapperTableClass]}
-            style={{ tableLayout: props.layout, width: WrapperScollerStyle.overflow === 'auto' ? 'max-content' : '100%' }}
+            style={{ tableLayout: props.tableLayout ?? 'fixed' }}
           >
             { RenderColGroup() }
             { RenderTableThead() }
@@ -4550,14 +4572,16 @@ export const STable = defineComponent({
         return <STableLoading optionser={Optionser} />
       }
 
-      const overflow = Computer.tableBodyOverflow.value
-      const width = Computer.tableBodyWidth.value
+      const refTableContainerStyle = {
+        width: Computer.tableBodyWidth.value === 'max-content' && Computer.tableBodyOverflow.value === 'visible' ? 'max-content' : '100%',
+        minWidth: Computer.tableBodyWidth.value === 'max-content' && Computer.tableBodyOverflow.value === 'visible' ? '100%' : '0'
+      }
 
       return (
         <section
           ref={Optionser.refTableContainer}
+          style={refTableContainerStyle}
           class={['s-table-container', `s-${Normalizer.size.value}-table-container`]}
-          style={{ width: width === 'max-content' && overflow === 'visible' ? 'max-content' : '100%', minWidth: width === 'max-content' && overflow === 'visible' ? '100%' : '0' }}
         >
           <div class='s-table-spining-container'>
             <div class={['s-table-spining-content', { spining: loading }]}>
@@ -4575,6 +4599,28 @@ export const STable = defineComponent({
   slots: {} as STableeDefineSlots<STableRecordType>,
   methods: {} as STableDefineMethods
 })
+
+export const tableCustomHeaderRowAttrsDefiner = (customHeaderRowAttrs: STableCustomHeaderRowAttrs) => customHeaderRowAttrs
+export const tableCustomBodyerRowAttrsDefiner = (customBodyerRowAttrs: STableCustomBodyerRowAttrs) => customBodyerRowAttrs
+export const tableCustomFooterRowAttrsDefiner = (customFooterRowAttrs: STableCustomFooterRowAttrs) => customFooterRowAttrs
+export const tableCustomBodyerRowStatesDefiner = (customBodyerRowStates: STableCustomBodyerRowStates) => customBodyerRowStates
+export const tableCustomHeaderCellRenderDefiner = (customHeaderCellRender: STableHeaderCellRender) => customHeaderCellRender
+export const tableCustomBodyerCellRenderDefiner = (customBodyerCellRender: STableBodyerCellRender) => customBodyerCellRender
+export const tableCustomFooterCellRenderDefiner = (customFooterCellRender: STableFooterCellRender) => customFooterCellRender
+
+export const tableEmitPageSizeChangeDefiner = (func: (pageNo: number, pageSize: number) => void) => func
+export const tableEmitPageChangeDefiner = (func: (pageNo: number, pageSize: number) => void) => func
+export const tableEmitExpandDefiner = (func: (keys: Array<STableKey>, nodes: Array<STableRecordType | null>) => void) => func
+export const tableEmitSelectDefiner = (func: (keys: Array<STableKey>, nodes: Array<STableRecordType | null>) => void) => func
+export const tableEmitSorterDefiner = (func: (values: Array<STableSorterType>) => void) => func
+
+export const tableSourcesDefiner = <T extends Record<string, any> = Record<string, any>> (sources: T[]) => ref(sources)
+export const tableSummarysDefiner = <T extends Record<string, any> = Record<string, any>> (summarys: T[]) => ref(summarys)
+export const tableLoadDataDefiner = <T extends Record<string, any> = Record<string, any>>(loadData: STableLoadSource<T>) => loadData
+export const tableColumnsDefiner = (columns: STablePartColumnType[]) => ref(columns)
+export const tablePaginateDefiner = (paginate: STablePartPaginate) => ref(paginate)
+export const tableStickyDefiner = (sticky: STablePartStickyType) => ref(sticky)
+export const tableScrollDefiner = (scroll: STablePartScrollType) => ref(scroll)
 
 export default STable
 export * from './res'

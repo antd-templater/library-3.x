@@ -1,7 +1,16 @@
 import helper from '@/helper'
-import { SFormValidatorManager, SFormGroupsDefiner } from './form.declare'
+import { Rule } from 'ant-design-vue/es/form'
+import { SFormValidatorManager } from './form.declare'
+import { SFormValidatorRule } from './form.declare'
+import { SFormGroupPartItem } from './form.declare'
+import { SFormRowPartItem } from './form.declare'
+import { SFormColPartItem } from './form.declare'
+import { SFormGrid } from './form.declare'
+import { ref } from 'vue'
 
-export const formGroupsDefiner: SFormGroupsDefiner = groups => groups
+export const formGroupsDefiner = (groups: Array<SFormGroupPartItem | SFormRowPartItem | SFormColPartItem>) => groups
+export const formRulesDefiner = (rules: Record<string, Rule | SFormValidatorRule | Array<Rule | SFormValidatorRule>>) => ref(rules)
+export const formGridDefiner = (grid: SFormGrid) => ref(grid)
 
 export const formValidator: SFormValidatorManager = {
   password(rule) {
@@ -70,5 +79,7 @@ export const formValidator: SFormValidatorManager = {
 
 export default {
   formGroupsDefiner,
+  formRulesDefiner,
+  formGridDefiner,
   formValidator
 }
