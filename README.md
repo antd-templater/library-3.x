@@ -1,4 +1,4 @@
-## Todo List
+## All Components Features
 
 |Component|Description|Status|
 |:--------|:----------|:-----|

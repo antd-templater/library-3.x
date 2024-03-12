@@ -1,5 +1,5 @@
 import 'ant-design-vue/es/tooltip/style/index.less'
-import { SlotsType, defineComponent, ref } from 'vue'
+import { SlotsType, defineComponent, onMounted, ref } from 'vue'
 import ATooltip from 'ant-design-vue/es/tooltip'
 import * as VueTypes from 'vue-types'
 
@@ -39,17 +39,37 @@ export const SEllipsis = defineComponent({
   setup(props, { emit, slots }) {
     const element: any = ref(null)
     const visible: any = ref(false)
+    const outside: any = ref(false)
+
+    const bounding = (target: any) => {
+      if (target instanceof HTMLElement) {
+        const clientHeight = target.getBoundingClientRect().height
+        const clientWidth = target.getBoundingClientRect().width
+        const outHeight = target.scrollHeight > clientHeight + 1
+        const outWidth = target.scrollWidth > clientWidth + 1
+        return (outside.value = outHeight || outWidth)
+      }
+      return false
+    }
 
     const updateVisible = (state: boolean) => {
-      if (state === true && props.inspect === true && element.value instanceof HTMLElement) {
-        const clientHeight = element.value.getBoundingClientRect().height
-        const clientWidth = element.value.getBoundingClientRect().width
-        const outHeight = element.value.scrollHeight > clientHeight + 2
-        const outWidth = element.value.scrollWidth > clientWidth + 2
-        return (visible.value = outHeight || outWidth)
-      }
-      return (visible.value = state)
+      return state === true && props.inspect === true
+        ? (visible.value = bounding(element.value))
+        : (visible.value = state)
     }
+
+    const observer = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        bounding(entry.target)
+      }
+    })
+
+    onMounted(() => {
+      if (element.value instanceof HTMLElement) {
+        observer.observe(element.value)
+        bounding(element.value)
+      }
+    })
 
     return () => {
       if (props.tooltip === true) {
@@ -72,9 +92,9 @@ export const SEllipsis = defineComponent({
                 width: '100%',
                 height: '100%',
                 display: 'block',
-                overflow: props.ellipsis === true ? 'hidden' : 'inherit',
                 whiteSpace: props.ellipsis === true ? 'nowrap' : 'inherit',
-                textOverflow: props.ellipsis === true ? 'ellipsis' : 'inherit'
+                textOverflow: outside.value && props.ellipsis === true ? 'ellipsis' : 'initial',
+                overflow: outside.value && props.ellipsis === true ? 'hidden' : 'visible'
               }}
             >
               { slots.default?.() }

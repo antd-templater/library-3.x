@@ -76,7 +76,7 @@ export const STableSettings = defineComponent({
               draggable={props.draggable}
               treeData={props.treeData}
               allowSelectToCheck={true}
-              checkedMode='link'
+              checkedMode={'link'}
               selectable={false}
               checkable={true}
             />

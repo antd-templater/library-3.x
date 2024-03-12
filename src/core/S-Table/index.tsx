@@ -50,7 +50,7 @@ export interface STableRecordType {
 export interface STablePaginateType {
   hideOnSinglePage: boolean;
   defaultPageSize: number;
-  pageSizeOptions: Array<string | number>;
+  pageSizeOptions: Array<string>;
   showSizeChanger?: boolean;
   showQuickJumper: boolean;
   showLessItems: boolean;
@@ -134,8 +134,9 @@ export interface STableLoadSource<RecordType = STableRecordType> {
 export interface STableSettingsType<RecordType = STableRecordType> {
   key: string;
   title: string;
+  disabled: boolean;
   children?: STableSettingsType<RecordType>[] | null;
-  column: { rowIndex: number; colIndex: number; }
+  column: STableColumnType<RecordType>
 }
 
 export interface STableExpanderRender<RecordType = STableRecordType> {
@@ -230,6 +231,7 @@ export interface STableWrapRecordType<RecordType = STableRecordType> {
 
 export interface STableWrapColumnType<RecordType = STableRecordType> {
   key: string;
+  title: string;
   parentKey: STableKey | null;
   childKeys: string[];
   parentKeys: string[];
@@ -252,6 +254,7 @@ export interface STablePartColumnType<RecordType = STableRecordType> {
   width?: number;
   minWidth?: number;
   maxWidth?: number;
+  settings?: { checkbox?: boolean; disabled?: boolean; };
   resizable?: boolean;
   ellipsis?: boolean;
   tooltip?: boolean;
@@ -277,6 +280,7 @@ export interface STableColumnType<RecordType = STableRecordType> {
   width?: number;
   minWidth: number;
   maxWidth: number;
+  settings: { checkbox: boolean; disabled: boolean; };
   resizable: boolean;
   ellipsis: boolean;
   tooltip: boolean;
@@ -369,7 +373,7 @@ export const STable = defineComponent({
     expandTdStyle: VueTypes.object().def(() => ({})),
     paginateStyle: VueTypes.object().def(() => ({})),
     loadOnScroll: VueTypes.bool().def(false),
-    bodyMinRows: VueTypes.number().def(10),
+    bodyMinRows: VueTypes.any<number | boolean>().def(false),
     showHeader: VueTypes.bool().def(true),
     showBodyer: VueTypes.bool().def(true),
     showFooter: VueTypes.bool().def(true),
@@ -480,7 +484,7 @@ export const STable = defineComponent({
       paginate: reactive({
         hideOnSinglePage: helper.isBoolean(props.paginate.hideOnSinglePage) ? props.paginate.hideOnSinglePage : false,
         defaultPageSize: helper.isFiniteNumber(props.paginate.defaultPageSize) && props.paginate.defaultPageSize > 0 ? ~~props.paginate.defaultPageSize : 20,
-        pageSizeOptions: helper.isNonEmptyArray(props.paginate.pageSizeOptions) ? props.paginate.pageSizeOptions : [10, 20, 25, 50, 100, 200, 500],
+        pageSizeOptions: helper.isNonEmptyArray(props.paginate.pageSizeOptions) ? props.paginate.pageSizeOptions : ['10', '20', '25', '50', '100', '200', '500'],
         showSizeChanger: helper.isBoolean(props.paginate.showSizeChanger) ? props.paginate.showSizeChanger : undefined,
         showQuickJumper: helper.isBoolean(props.paginate.showQuickJumper) ? props.paginate.showQuickJumper : false,
         showLessItems: helper.isBoolean(props.paginate.showLessItems) ? props.paginate.showLessItems : false,
@@ -510,7 +514,7 @@ export const STable = defineComponent({
         Paginator.paginate.showTotal = !Methoder.isOwnProperty(paginate, ['showTotal']) ? Paginator.paginate.showTotal : helper.isFunction(paginate.showTotal) ? paginate.showTotal : paginate.showTotal === true ? (total: any, range: any) => `第 ${range[0]}-${range[1]} 条 (共 ${total} 条)` : undefined
         Paginator.paginate.showLessItems = !Methoder.isOwnProperty(paginate, ['showLessItems']) ? Paginator.paginate.showLessItems : paginate.showLessItems === true
         Paginator.paginate.defaultPageSize = !Methoder.isOwnProperty(paginate, ['defaultPageSize']) ? Paginator.paginate.defaultPageSize : helper.isFiniteNumber(paginate.defaultPageSize) && paginate.defaultPageSize > 0 ? paginate.defaultPageSize : 20
-        Paginator.paginate.pageSizeOptions = !Methoder.isOwnProperty(paginate, ['pageSizeOptions']) ? Paginator.paginate.pageSizeOptions : helper.isNonEmptyArray(paginate.pageSizeOptions) ? paginate.pageSizeOptions : [10, 20, 25, 50, 100, 200, 500]
+        Paginator.paginate.pageSizeOptions = !Methoder.isOwnProperty(paginate, ['pageSizeOptions']) ? Paginator.paginate.pageSizeOptions : helper.isNonEmptyArray(paginate.pageSizeOptions) ? paginate.pageSizeOptions : ['10', '20', '25', '50', '100', '200', '500']
         Paginator.paginate.showSizeChanger = !Methoder.isOwnProperty(paginate, ['showSizeChanger']) ? Paginator.paginate.showSizeChanger : helper.isBoolean(paginate.showSizeChanger) ? paginate.showSizeChanger : undefined
         Paginator.paginate.showQuickJumper = !Methoder.isOwnProperty(paginate, ['showQuickJumper']) ? Paginator.paginate.showQuickJumper : paginate.showQuickJumper === true
         Paginator.paginate.hideOnSinglePage = !Methoder.isOwnProperty(paginate, ['hideOnSinglePage']) ? Paginator.paginate.hideOnSinglePage : paginate.hideOnSinglePage === true
@@ -583,6 +587,7 @@ export const STable = defineComponent({
 
               Eventer.updateScrollToFirstRange()
 
+              sourceRowKeys.value = []
               treeSources.value = Methoder.normalizeTreeSources(result.data, [])
               listSources.value = Methoder.normalizeListSources(treeSources.value, [])
               Methoder.normalizeInitSources(listSources.value)
@@ -646,6 +651,18 @@ export const STable = defineComponent({
 
       virtual: computed(() => {
         return props.virtual !== false
+      }),
+
+      bodyMinRows: computed(() => {
+        if (props.bodyMinRows === true) {
+          return Math.max(Paginator.paginate.pageSize, 0)
+        }
+
+        if (props.bodyMinRows === false) {
+          return 0
+        }
+
+        return Math.max(props.bodyMinRows, 0)
       }),
 
       loadOnScroll: computed(() => (
@@ -1121,6 +1138,13 @@ export const STable = defineComponent({
       }),
       filterPageSources: computed(() => {
         const filter = (record: STableWrapRecordType) => {
+          const parentKeys = record.parentKeys
+          const expandedKeys = expandedRowKeys.value
+
+          if (parentKeys.some(key => !expandedKeys.includes(key))) {
+            return false
+          }
+
           return (
             Normalizer.loadOnScroll.value === true ||
             record.rowGroupIndex >= Paginator.paginate.pageSize * (Paginator.paginate.pageNo - 1) ||
@@ -1161,16 +1185,16 @@ export const STable = defineComponent({
           }
         }
 
-        const filterByExpander = (record: STableWrapRecordType, index: number) => {
-          return record.parentKeys.every(key => expandedRowKeys.value.includes(key))
-        }
-
         const filterByGroupRanger = (record: STableWrapRecordType, index: number) => {
           if (Normalizer.virtual.value !== true) {
             return true
           }
 
           if (Normalizer.persistSourceRanges.value === true) {
+            return true
+          }
+
+          if (renderRangerArr.length <= Normalizer.bodyMinRows.value) {
             return true
           }
 
@@ -1181,7 +1205,7 @@ export const STable = defineComponent({
           return index >= renderRangerOne && index <= renderRangerTwo
         }
 
-        return renderRangerArr.filter(filterByExpander).filter(filterByGroupRanger)
+        return renderRangerArr.filter(filterByGroupRanger)
       }),
       filterPageSummarys: computed(() => {
         return listSummarys.value.filter(summary => summary)
@@ -1435,6 +1459,10 @@ export const STable = defineComponent({
                 : []
           }
 
+          if (column.children === undefined) {
+            delete column.children
+          }
+
           return column
         })
       },
@@ -1531,7 +1559,7 @@ export const STable = defineComponent({
           const tempColumn = Methoder.getValue(temps[index])
           const cacheColumn = tempColumn.cacheColumn
 
-          changed = !helper.deepEqual(propColumn, cacheColumn, {
+          changed = !helper.equal(propColumn, cacheColumn, {
             include: [
               'key',
               'title',
@@ -1541,6 +1569,7 @@ export const STable = defineComponent({
               'width',
               'minWidth',
               'maxWidth',
+              'settings',
               'resizable',
               'ellipsis',
               'tooltip',
@@ -1620,15 +1649,15 @@ export const STable = defineComponent({
           return true
         }
 
+        if (parts === temps) {
+          return false
+        }
+
         for (const index of parts.keys()) {
           const partRecord = Methoder.getValue(parts[index])
           const tempRecord = Methoder.getValue(temps[index])
 
-          if (parts === temps) {
-            break
-          }
-
-          if (!helper.deepEqual(partRecord, tempRecord)) {
+          if (partRecord !== tempRecord) {
             return true
           }
         }
@@ -1643,9 +1672,11 @@ export const STable = defineComponent({
           const columnMinWidth = helper.isFiniteNumber(column.minWidth) && column.minWidth > 0 ? column.minWidth : 0
           const columnMaxWidth = helper.isFiniteNumber(column.maxWidth) && column.maxWidth < Infinity ? column.maxWidth : Infinity
           const columnResizable = helper.isBoolean(column.resizable) ? column.resizable : parent?.referColumn.resizable ?? props.columnPresetResizable
+          const columnSettings = helper.isNonEmptyObject(column.settings) ? { checkbox: column.settings.checkbox !== false, disabled: column.settings.disabled === true } : { checkbox: true, disabled: false }
 
           const wrapColumn: STableWrapColumnType = {
             key: column.key || (helper.isArray(column.dataIndex) ? column.dataIndex.join('.') : column.dataIndex),
+            title: column.title,
             childKeys: [],
             parentKey: parent ? parent.key : null,
             parentKeys: parent ? [...parent.parentKeys, parent.key] : [],
@@ -1660,6 +1691,7 @@ export const STable = defineComponent({
               width: column.width,
               minWidth: columnMinWidth,
               maxWidth: columnMaxWidth,
+              settings: columnSettings,
               resizable: (columnMinWidth < columnMaxWidth) && columnResizable === true,
               ellipsis: column.ellipsis ?? parent?.referColumn.ellipsis ?? false,
               tooltip: column.tooltip ?? parent?.referColumn.tooltip ?? false,
@@ -1775,24 +1807,51 @@ export const STable = defineComponent({
 
       normalizeTreeSettings(columns: STableWrapColumnType[], settings?: STableSettingsType[]) {
         settings = settings || columnSettingsAllTrees.value
+
         for (const wrap of columns) {
           const setting = {
-            key: wrap.referColumn.key,
-            title: wrap.referColumn.title,
+            key: wrap.key,
+            title: wrap.title,
             children: [],
-            column: {
-              rowIndex: wrap.referColumn.rowIndex,
-              colIndex: wrap.referColumn.colIndex
-            }
+            disabled: wrap.referColumn.settings.disabled,
+            column: wrap.referColumn
           }
 
-          if (!columnSettingsAllKeys.value.includes(wrap.referColumn.key)) {
-            columnSettingsCheckKeys.value.push(wrap.referColumn.key)
-            columnSettingsAllKeys.value.push(wrap.referColumn.key)
+          if (!columnSettingsAllKeys.value.includes(wrap.key)) {
+            columnSettingsAllKeys.value.push(wrap.key)
+          }
+
+          if (!columnSettingsCheckKeys.value.includes(wrap.key)) {
+            if (wrap.referColumn.settings.checkbox) {
+              columnSettingsCheckKeys.value.push(wrap.key)
+            }
           }
 
           if (helper.isNonEmptyArray(wrap.treeChildren)) {
             Methoder.normalizeTreeSettings(wrap.treeChildren, setting.children)
+
+            let checkbox = false
+            let disabled = false
+
+            checkbox = checkbox || wrap.treeChildren.some(column => columnSettingsCheckKeys.value.includes(column.key))
+            disabled = disabled || wrap.treeChildren.some(column => columnSettingsCheckKeys.value.includes(column.key) && column.referColumn.settings.disabled)
+            disabled = disabled || wrap.treeChildren.every(column => column.referColumn.settings.disabled)
+
+            if (!checkbox || disabled) {
+              const settings = wrap.cacheColumn.settings = helper.isObject(wrap.cacheColumn.settings)
+                ? wrap.cacheColumn.settings
+                : {}
+
+              settings.checkbox = checkbox
+              settings.disabled = disabled
+            }
+
+            setting.disabled = disabled
+            wrap.referColumn.settings.checkbox = checkbox
+            wrap.referColumn.settings.disabled = disabled
+
+            checkbox && !columnSettingsCheckKeys.value.includes(wrap.key) && (columnSettingsCheckKeys.value = [...columnSettingsCheckKeys.value, wrap.key])
+            checkbox || !columnSettingsCheckKeys.value.includes(wrap.key) || (columnSettingsCheckKeys.value = columnSettingsCheckKeys.value.filter(key => key !== wrap.key))
           }
 
           settings.push(setting)
@@ -2225,8 +2284,9 @@ export const STable = defineComponent({
 
         if (!keys.every(key => selectedRowKeys.value.includes(key)) || !selectedRowKeys.value.every(key => keys.includes(key))) {
           selectedRowKeys.value = keys
-          Methoder.cleanSelectedRowKeys()
         }
+
+        Methoder.cleanSelectedRowKeys()
       },
 
       updatePropSelectedRowKeys(keys: STableKey[]) {
@@ -2242,8 +2302,9 @@ export const STable = defineComponent({
 
         if (!keys.every(key => expandedRowKeys.value.includes(key)) || !expandedRowKeys.value.every(key => keys.includes(key))) {
           expandedRowKeys.value = keys
-          Methoder.cleanExpandedRowKeys()
         }
+
+        Methoder.cleanExpandedRowKeys()
       },
 
       updatePropExpandedRowKeys(keys: STableKey[]) {
@@ -2275,6 +2336,7 @@ export const STable = defineComponent({
       forceUpdate(clean?: boolean) {
         if (clean === true) {
           // Clean Keys
+          sourceRowKeys.value = []
           selectedRowKeys.value = []
           expandedRowKeys.value = []
 
@@ -2713,6 +2775,45 @@ export const STable = defineComponent({
         }
       },
 
+      updateColCheckRender() {
+        const Updater = {
+          updateColSettings: (wraps: STableWrapColumnType[]) => {
+            for (const wrap of wraps) {
+              const checkbox = columnSettingsCheckKeys.value.includes(wrap.key)
+              const disabled = wrap.referColumn.settings.disabled
+
+              wrap.referColumn.settings.checkbox = checkbox
+              wrap.referColumn.settings.disabled = disabled
+
+              if (checkbox && !disabled) {
+                if (helper.isObject(wrap.cacheColumn.settings)) {
+                  wrap.cacheColumn.settings.checkbox = checkbox
+                  wrap.cacheColumn.settings.disabled = disabled
+                }
+              }
+
+              if (!checkbox || disabled) {
+                if (helper.isObject(wrap.cacheColumn.settings)) {
+                  wrap.cacheColumn.settings.checkbox = checkbox
+                  wrap.cacheColumn.settings.disabled = disabled
+                }
+
+                if (!helper.isObject(wrap.cacheColumn.settings)) {
+                  wrap.cacheColumn.settings = { checkbox, disabled }
+                }
+              }
+
+              if (helper.isArray(wrap.treeChildren)) {
+                Updater.updateColSettings(wrap.treeChildren)
+              }
+            }
+          }
+        }
+
+        Updater.updateColSettings(treeColumns.value)
+        Eventer.updateColumnRender()
+      },
+
       updateColGroupRender() {
         if (Optionser.refTableWrapper.value) {
           Array.from<HTMLElement>(Optionser.refTableWrapper.value.querySelectorAll('table > colgroup > col')).forEach(col => {
@@ -2910,6 +3011,7 @@ export const STable = defineComponent({
         columnCellAttrs.value = []
         columnCellProps.value = []
         columnCellRender.value = []
+        columnSettingsAllKeys.value = []
         columnSettingsAllTrees.value = []
         propColumns.value = [...props.columns]
         treeColumns.value = Methoder.normalizeTreeColumns(propColumns.value, [])
@@ -2920,7 +3022,6 @@ export const STable = defineComponent({
       }
 
       if (sourcesReseted) {
-        sourceRowKeys.value = []
         sourceRowAttrs.value = []
         sourceRowStates.value = []
         sourceCellProps.value = []
@@ -2929,6 +3030,7 @@ export const STable = defineComponent({
       }
 
       if (sourcesChanged) {
+        sourceRowKeys.value = []
         propSources.value = [...props.sources]
         treeSources.value = Methoder.normalizeTreeSources(propSources.value, [])
         listSources.value = Methoder.normalizeListSources(treeSources.value, [])
@@ -2952,11 +3054,12 @@ export const STable = defineComponent({
     watch(() => props.paginate, paginate => { Paginator.update(paginate) }, watchOptions)
     watch(() => props.selectedRowMode, () => { selectedRowKeys.value = [] }, watchOptions)
     watch(() => props.preserveSelectedRowKeys, () => { selectedRowKeys.value = selectedRowKeys.value.filter(key => sourceRowKeys.value.includes(key)) }, watchOptions)
+    watch(() => props.preserveExpandedRowKeys, () => { expandedRowKeys.value = expandedRowKeys.value.filter(key => sourceRowKeys.value.includes(key)) }, watchOptions)
     watch(() => [...props.selectedRowKeys], () => { Methoder.updateSetupSelectedRowKeys(props.selectedRowKeys) }, watchOptions)
     watch(() => [...props.expandedRowKeys], () => { Methoder.updateSetupExpandedRowKeys(props.expandedRowKeys) }, watchOptions)
 
     watch(() => Normalizer.size.value, () => { Eventer.updateColGroupRender() }, watchDeepOptions)
-    watch(() => columnSettingsCheckKeys.value, () => { Eventer.updateColumnRender() }, watchDeepOptions)
+    watch(() => columnSettingsCheckKeys.value, () => { Eventer.updateColCheckRender() }, watchDeepOptions)
     watch(() => Computer.filterDataColumns.value, () => { Eventer.updateColGroupRender() }, watchDeepOptions)
     watch(() => selectedRowKeys.value, () => { Methoder.updatePropSelectedRowKeys(selectedRowKeys.value) }, watchDeepOptions)
     watch(() => expandedRowKeys.value, () => { Methoder.updatePropExpandedRowKeys(expandedRowKeys.value) }, watchDeepOptions)
@@ -3331,14 +3434,15 @@ export const STable = defineComponent({
 
         const presetColumns = ref(dataColumns).value
         const filterColumns = ref(Computer.filterDataColumns).value
-        const filterSources = ref(Computer.filterRangeSources).value
+        const renderSources = ref(Computer.filterPageSources).value
+        const rangerSources = ref(Computer.filterRangeSources).value
         const persistRanges = ref(Normalizer.persistSourceRanges).value
 
         const StoreCachers = {} as Map<number, STableCellCacheType>[]
         const StoreSpikers = {} as Set<number>[]
         const StoreEmpters = {} as Set<number>[]
 
-        for (const [rowIndex, record] of filterSources.entries()) {
+        for (const [rowIndex, record] of rangerSources.entries()) {
           const groupIndex = record.rowGroupIndex
           const globalIndex = record.rowGlobalIndex
 
@@ -3397,7 +3501,7 @@ export const STable = defineComponent({
 
               if (rowCount > 0) {
                 for (let next = 1; next <= rowCount; next++) {
-                  const nextRowNode = filterSources[rowIndex + next]
+                  const nextRowNode = rangerSources[rowIndex + next]
                   const nextRowIndex = nextRowNode?.rowGlobalIndex
 
                   if (!nextRowIndex) {
@@ -3423,7 +3527,7 @@ export const STable = defineComponent({
 
               if (rowCount > 0 && colCount > 0) {
                 for (let row = 1; row <= rowCount; row++) {
-                  const nextRowNode = filterSources[rowIndex + row]
+                  const nextRowNode = rangerSources[rowIndex + row]
                   const nextRowIndex = nextRowNode?.rowGlobalIndex
 
                   if (!nextRowIndex) {
@@ -3496,7 +3600,7 @@ export const STable = defineComponent({
           const childrenNodes = [] as Array<{ parentKey: any; level: number; count: number; }>
           const expandedNodes = [] as Array<{ parentKey: any; level: number; vnode: any; }>
 
-          for (const record of filterSources) {
+          for (const record of rangerSources) {
             const rowIndex = record.rowIndex
             const groupLevel = record.rowGroupLevel
             const groupIndex = record.rowGroupIndex
@@ -3527,7 +3631,7 @@ export const STable = defineComponent({
             })
           }
 
-          return filterSources.map((record, index) => {
+          return rangerSources.map((record, index) => {
             let colOffset = 0
             let expandIcon = true
 
@@ -3962,15 +4066,14 @@ export const STable = defineComponent({
         }
 
         const RenderBodyReserves = () => {
-          if (props.bodyMinRows <= 0 || filterSources.length > props.bodyMinRows) {
+          const totalRows = renderSources.length
+          const bodyerRows = Normalizer.bodyMinRows.value
+
+          if (bodyerRows <= 0 || totalRows >= bodyerRows) {
             return
           }
 
-          const bodyRows = props.bodyMinRows
-          const totalRows = filterSources.length
-          const renderRows = Array.from({ length: bodyRows - totalRows })
-
-          return renderRows.map(() => {
+          return Array.from({ length: bodyerRows - totalRows }, () => {
             let colOffset = 0
 
             const RenderSelection = () => {
@@ -4003,7 +4106,7 @@ export const STable = defineComponent({
               return (
                 <td
                   style={style}
-                  class={['s-table-tbody-td', 's-table-tbody-selection-td']}
+                  class={['s-table-tbody-td', 's-table-tbody-empty-td', 's-table-tbody-selection-td']}
                 />
               )
             }
@@ -4014,17 +4117,19 @@ export const STable = defineComponent({
                   return col.colIndex === refer.colIndex
                 })!
 
-                const fixeder = {
-                  colOffset: colOffset++,
-                  colSpan: 1
-                }
+                if (column) {
+                  const fixeder = {
+                    colOffset: colOffset++,
+                    colSpan: 1
+                  }
 
-                return (
-                  <td
-                    style={{ ...Render.computeTableChildStyle(column, fixeder, 'tbody'), ...props.tBodyerTdStyle }}
-                    class={['s-table-tbody-td', 's-table-tbody-empty-td']}
-                  />
-                )
+                  return (
+                    <td
+                      style={{ ...Render.computeTableChildStyle(column, fixeder, 'tbody'), ...props.tBodyerTdStyle }}
+                      class={['s-table-tbody-td', 's-table-tbody-empty-td']}
+                    />
+                  )
+                }
               })
             }
 
@@ -4455,10 +4560,16 @@ export const STable = defineComponent({
         's-footer-table': Computer.hasFooter.value
       }
 
+      const WrapperTableStyle = {
+        tableLayout: !['fixed', 'auto'].includes(props.tableLayout)
+          ? dataColumns.value.length > 1 ? 'auto' : 'fixed'
+          : props.tableLayout
+      }
+
       const WrapperScollerStyle = {
         width: Computer.tableBodyWidth.value,
         maxHeight: Computer.tableBodyHeight.value,
-        minWidth: Computer.tableBodyWidth.value !== 'auto' && Computer.tableBodyWidth.value !== 'max-content' ? '0px' : '100%',
+        minWidth: Computer.tableBodyWidth.value !== 'auto' && !(['fit-content', 'max-content'].includes(Computer.tableBodyWidth.value)) ? '0px' : '100%',
         overflow: Computer.tableBodyOverflow.value ?? (Computer.tableBodyWidth.value !== '100%' || Computer.tableBodyHeight.value !== 'auto' ? 'auto' : 'visible')
       }
 
@@ -4473,7 +4584,7 @@ export const STable = defineComponent({
           <table
             ref={Optionser.refTableNoder}
             class={['s-nested-table', WrapperTableClass]}
-            style={{ tableLayout: props.tableLayout ?? 'fixed' }}
+            style={WrapperTableStyle}
           >
             { RenderColGroup() }
             { RenderTableThead() }
@@ -4496,8 +4607,8 @@ export const STable = defineComponent({
         }
 
         const currentAllKeys = Methoder.getValue(columnSettingsAllKeys)
-        const expandedAllKeys = ref([...currentAllKeys])
-        const recordedAllKeys = ref([...currentAllKeys])
+        const recordedAllKeys = ref(currentAllKeys.filter(key => listColumns.value.flat().some(column => column?.key === key && (column.settings.checkbox || !column.settings.disabled))))
+        const expandedAllKeys = ref(currentAllKeys.filter(() => true))
 
         const style: any = {}
         const multiline = listColumns.value.length > 1
@@ -4573,8 +4684,8 @@ export const STable = defineComponent({
       }
 
       const refTableContainerStyle = {
-        width: Computer.tableBodyWidth.value === 'max-content' && Computer.tableBodyOverflow.value === 'visible' ? 'max-content' : '100%',
-        minWidth: Computer.tableBodyWidth.value === 'max-content' && Computer.tableBodyOverflow.value === 'visible' ? '100%' : '0'
+        width: ['fit-content', 'max-content'].includes(Computer.tableBodyWidth.value) && Computer.tableBodyOverflow.value === 'visible' ? 'fit-content' : '100%',
+        minWidth: ['fit-content', 'max-content'].includes(Computer.tableBodyWidth.value) && Computer.tableBodyOverflow.value === 'visible' ? '100%' : '0'
       }
 
       return (
@@ -4583,12 +4694,10 @@ export const STable = defineComponent({
           style={refTableContainerStyle}
           class={['s-table-container', `s-${Normalizer.size.value}-table-container`]}
         >
-          <div class='s-table-spining-container'>
-            <div class={['s-table-spining-content', { spining: loading }]}>
-              { RenderTableSettings(ctx) }
-              { RenderTableScroller(ctx) }
-              { RenderTableLoadinger(ctx) }
-            </div>
+          <div class={['s-table-spining-container', { spining: loading }]}>
+            { RenderTableSettings(ctx) }
+            { RenderTableScroller(ctx) }
+            { RenderTableLoadinger(ctx) }
           </div>
         </section>
       )

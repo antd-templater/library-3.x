@@ -1,4 +1,7 @@
 import dayjs from '@/dayjs'
+import { equal } from 'js-simpler'
+import { clone } from 'js-simpler'
+import { assign } from 'js-simpler'
 import { isArray } from 'js-simpler'
 import { isObject } from 'js-simpler'
 import { isString } from 'js-simpler'
@@ -118,5 +121,8 @@ export default {
   deepAssign,
   deepClone,
   deepEqual,
-  toPromise
+  toPromise,
+  assign,
+  clone,
+  equal
 }

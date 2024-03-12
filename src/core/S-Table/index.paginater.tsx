@@ -12,7 +12,7 @@ export const STablePaginate = defineComponent({
     disabled: VueTypes.bool().def(false),
     hideOnSinglePage: VueTypes.bool().def(false),
     defaultPageSize: VueTypes.number().def(20),
-    pageSizeOptions: VueTypes.array<string | number>().def([10, 20, 25, 50, 100, 200, 500]),
+    pageSizeOptions: VueTypes.array<string>().def(['10', '20', '25', '50', '100', '200', '500']),
     showSizeChanger: VueTypes.bool().def(undefined),
     showQuickJumper: VueTypes.bool().def(false),
     showLessItems: VueTypes.bool().def(false),

@@ -25,7 +25,7 @@ export const SIconSelect = defineComponent({
     optionLabelProp: VueTypes.string().def(),
     placeholder: VueTypes.string().def(''),
     showSearch: VueTypes.bool().def(true),
-    allowClear: VueTypes.bool().def(false),
+    allowClear: VueTypes.bool().def(true),
     showArrow: VueTypes.bool().def(true),
     multiple: VueTypes.bool().def(false),
     disabled: VueTypes.bool().def(false),
