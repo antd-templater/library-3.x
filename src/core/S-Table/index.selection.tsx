@@ -1,7 +1,7 @@
-import 'ant-design-vue/es/Radio/style/index.less'
-import 'ant-design-vue/es/Checkbox/style/index.less'
-import Checkbox from 'ant-design-vue/es/Checkbox'
-import Radio from 'ant-design-vue/es/Radio'
+import 'ant-design-vue/es/radio/style/index.less'
+import 'ant-design-vue/es/checkbox/style/index.less'
+import Checkbox from 'ant-design-vue/es/checkbox'
+import Radio from 'ant-design-vue/es/radio'
 import { computed, defineComponent } from 'vue'
 import * as VueTypes from 'vue-types'
 
