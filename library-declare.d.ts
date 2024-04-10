@@ -2,6 +2,8 @@
 
 declare module 'vue' {
   export interface GlobalComponents {
+    SProLayout: typeof import('./dist/S-ProLayout')['SProLayout']
+    SProHeader: typeof import('./dist/S-ProLayout')['SProHeader']
     SEditCellDatePicker: typeof import('./dist/S-EditCell/date-picker')['default']
     SEditCellTreeSelect: typeof import('./dist/S-EditCell/tree-select')['default']
     SEditCellSelectIcon: typeof import('./dist/S-EditCell/select-icon')['default']
@@ -18,11 +20,8 @@ declare module 'vue' {
 }
 
 declare global {
-  export type isIconType = typeof import('./dist/S-Icon')['isIconType']
-  export type forIconType = typeof import('./dist/S-Icon')['forIconType']
-  export type formValidator = typeof import('./dist/S-Form')['formValidator']
-  export type formGroupsDefiner = typeof import('./dist/S-Form')['formGroupsDefiner']
-
+  export type SProLayout = typeof import('./dist/S-ProLayout')['SProLayout']
+  export type SProHeader = typeof import('./dist/S-ProLayout')['SProHeader']
   export type SEditCellDatePicker = typeof import('./dist/S-EditCell/date-picker')['default']
   export type SEditCellTreeSelect = typeof import('./dist/S-EditCell/tree-select')['default']
   export type SEditCellSelectIcon = typeof import('./dist/S-EditCell/select-icon')['default']
@@ -39,86 +38,112 @@ declare global {
   export type { SEditCellSelectValueType, SEditCellSelectOptionType } from './dist/S-EditCell/select'
   export type { SEditCellPanelMode, SEditCellPickerMode } from './dist/S-EditCell/date-picker'
   export type { SEditCellTreeSelectOptionType } from './dist/S-EditCell/tree-select'
-  export type { SIconSelectOptions } from './dist/S-IconSelect'
+  export type { SIconSelectOption } from './dist/S-IconSelect'
 
   export type {
-    SFormType,
-    SFormGridGutter,
-    SFormGrid,
     SFormColItem,
     SFormColPartItem,
-    SFormRowItem,
+    SFormGrid,
+    SFormGridGutter,
     SFormGroupItem,
     SFormGroupPartItem,
-    SFormNormalizeType,
-    SFormValidatorRule,
     SFormGroupsDefiner,
-    SFormValidatorManager
+    SFormNormalizeType,
+    SFormRowItem,
+    SFormType,
+    SFormValidatorManager,
+    SFormValidatorRule
   } from './dist/S-Form'
 
   export type {
-    STableStickyType,
-    STableScrollType,
-    STableSorterType,
-    STableRecordType,
-    STablePaginateType,
-    STableCellIndexType,
-    STableCellSizesType,
-    STableCellCacheType,
-    STableCellMegreType,
-    STableCellFixedType,
-    STableRowKey,
-    STableTreeKey,
-    STableLoadSource,
-    STableSettingsType,
-    STableExpanderRender,
-    STableHeaderCellRender,
+    SProLayoutContentWidth,
+    SProLayoutFormatMessage,
+    SProLayoutHeaderRender,
+    SProLayoutLayoutMode,
+    SProLayoutMenuContentRender,
+    SProLayoutMenuExtraRender,
+    SProLayoutMenuFooterRender,
+    SProLayoutMenuHeaderRender,
+    SProLayoutMenuItem,
+    SProLayoutMenuItemRender,
+    SProLayoutMenuMode,
+    SProLayoutMetaInfo,
+    SProLayoutProps,
+    SProLayoutPureSettings,
+    SProLayoutRenderNode,
+    SProLayoutRightContentRender,
+    SProLayoutRouteContextProps,
+    SProLayoutRouteRequiredProps,
+    SProLayoutSiderBreakpoint,
+    SProLayoutSubMenuItemRender,
+    SProLayoutTheme,
+    SProLayoutWithFalse,
+    SProLayoutWithTrue
+  } from './dist/S-ProLayout'
+
+  export type {
     STableBodyerCellRender,
-    STableFooterCellRender,
-    STableCustomHeaderRowAttrs,
+    STableCellCacheType,
+    STableCellFixedType,
+    STableCellIndexType,
+    STableCellMegreType,
+    STableCellSizesType,
+    STableColumnType,
     STableCustomBodyerRowAttrs,
     STableCustomBodyerRowStates,
     STableCustomFooterRowAttrs,
-    STableWrapRecordType,
-    STableWrapColumnType,
-    STablePartColumnType,
-    STableColumnType,
+    STableCustomHeaderRowAttrs,
+    STableExpanderRender,
+    STableFooterCellRender,
+    STableHeaderCellRender,
     STableKey,
-    STableSize,
-    STablePartStickyType,
-    STablePartScrollType,
+    STableLoadSource,
+    STablePaginateType,
+    STablePartColumnType,
     STablePartPaginate,
-    STableRefWrapper,
+    STablePartScrollType,
+    STablePartStickyType,
     STablePromiser,
-    STableValuer
+    STableRecordType,
+    STableRefWrapper,
+    STableRowKey,
+    STableScrollType,
+    STableSettingsType,
+    STableSize,
+    STableSorterType,
+    STableStickyType,
+    STableTreeKey,
+    STableValuer,
+    STableWrapColumnType,
+    STableWrapRecordType
   } from './dist/S-Table'
 
   export type {
-    STreeFilterProps,
-    STreeFieldNames,
-    STreeSourceNode,
-    STreeTargetNode,
-    STreeLoadData,
-    STreeMethoder,
-    STreeTransformer,
-    STreeTargeter,
-    STreeSourcer,
-    STreeStater,
     STreeCacher,
-    STreeKey,
-    STreeKeys,
     STreeDropHandler,
+    STreeEmiterCheck,
+    STreeEmiterChange,
+    STreeEmiterExpand,
+    STreeEmiterSelect,
     STreeEventDragstart,
     STreeEventDrop,
-    STreeEmiterCheck,
-    STreeEmiterSelect,
-    STreeEmiterExpand,
-    STreeEmiterChange,
-    STreeSourceNodes,
-    STreeTargetNodes,
-    STreeSpreadNodes,
+    STreeFieldNames,
+    STreeFilterProps,
+    STreeKey,
+    STreeKeys,
+    STreeLoadData,
+    STreeMethoder,
+    STreePartSourceNode,
     STreePartTargetNode,
-    STreePartSourceNode
+    STreeSourceNode,
+    STreeSourceNodes,
+    STreeSourcer,
+    STreeSpreadNodes,
+    STreeStater,
+    STreeTargeter,
+    STreeTargetNode,
+    STreeTargetNodes,
+    STreeTransformer
   } from './dist/S-Tree'
 }
 

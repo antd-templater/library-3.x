@@ -1,12 +1,10 @@
 import './input.less'
-import 'ant-design-vue/es/input/style/index.less'
-import 'ant-design-vue/es/button/style/index.less'
 
 import * as VueTypes from 'vue-types'
 import SEllipsis from '../S-Ellipsis/index'
 import { CheckOutlined, EditOutlined } from '@ant-design/icons-vue'
-import { SlotsType, defineComponent, reactive, toRaw, watch, watchEffect, inject } from 'vue'
-import { defaultConfigProvider } from 'ant-design-vue/es/config-provider'
+import { SlotsType, defineComponent, reactive, toRaw, watch, watchEffect } from 'vue'
+import { useConfigContextInject } from 'ant-design-vue/es/config-provider/context'
 import AButton from 'ant-design-vue/es/button'
 import AInput from 'ant-design-vue/es/input'
 
@@ -84,7 +82,7 @@ export const SEditCellInput = defineComponent({
             class='s-editable-cell-button-check'
             type='link'
             icon={<CheckOutlined/>}
-            style={{ color: 'var(--ant-primary-color, #1890ff)', ...props.cellStyle.check }}
+            style={{ ...props.cellStyle.check }}
             onClick={(event: Event) => doConfirm(event)}
           />
         )
@@ -115,9 +113,9 @@ export const SEditCellInput = defineComponent({
           >
             <AInput
               v-model={[proxy.value, 'value']}
+              size={provider.componentSize?.value}
               class='s-editable-cell-input'
               style={props.cellStyle.input}
-              size={provider.componentSize}
               allowClear={props.allowClear}
               placeholder={props.placeholder}
               onPressEnter={(event: Event) => doConfirm(event)}
@@ -157,7 +155,7 @@ export const SEditCellInput = defineComponent({
         : empty
     }
 
-    const provider = inject('configProvider', defaultConfigProvider)
+    const provider = useConfigContextInject()
 
     const proxy = reactive({
       value: props.text,

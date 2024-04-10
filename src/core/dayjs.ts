@@ -8,13 +8,9 @@ import customParseFormat from 'dayjs/plugin/customParseFormat'
 import quarterOfYear from 'dayjs/plugin/quarterOfYear'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
 
-import 'dayjs/locale/en'
-import 'dayjs/locale/zh-cn'
-
 /**
  * 配置 dayjs 插件
  */
-dayjs.locale('zh-cn')
 dayjs.extend(isToday)
 dayjs.extend(isTomorrow)
 dayjs.extend(isYesterday)

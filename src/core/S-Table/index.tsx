@@ -1,11 +1,15 @@
-import { Fragment, VNode, HTMLAttributes, SlotsType, ComputedRef, MaybeRef, UnwrapRef, Ref, isVNode, nextTick, renderSlot, defineComponent, onMounted, computed, reactive, ref, inject, watch, toRaw, unref } from 'vue'
-import { defaultConfigProvider } from 'ant-design-vue/es/config-provider'
+import './index.style.less'
+
+import { Fragment, VNode, HTMLAttributes, UnwrapRef, Ref, isVNode, nextTick, renderSlot, defineComponent, onMounted, computed, reactive, ref, watch, toRaw, unref } from 'vue'
+import { useConfigContextInject } from 'ant-design-vue/es/config-provider/context'
 import { PlusOutlined, MinusOutlined } from '@ant-design/icons-vue'
+import { TinyColor } from '@ctrl/tinycolor'
+import ATheme from 'ant-design-vue/es/theme'
+import SEllipsis from '@/S-Ellipsis/index'
 import * as VueTypes from 'vue-types'
 import helper from '@/helper'
-import Res from './res'
+import Res from './preset'
 
-import SEllipsis from '@/S-Ellipsis/index'
 import STableSelection from './index.selection'
 import STablePaginater from './index.paginater'
 import STableScrollbar from './index.scrollbar'
@@ -15,318 +19,39 @@ import STableDragger from './index.dragger'
 import STableCursor from './index.cursor'
 import STableSorter from './index.sorter'
 import STableEmpty from './index.empty'
-import './index.style.less'
 
-export interface STableStickyType {
-  topHeader: boolean | number;
-  leftFooter: boolean;
-  rightFooter: boolean;
-  bottomFooter: boolean | number;
-  bottomScrollbar: boolean;
-}
-
-export interface STableScrollType {
-  x: number | string | false;
-  y: number | 'auto' | false;
-  overflow: string | null;
-  scrollToFirstOffsetX?: number;
-  scrollToFirstOffsetY?: number;
-  scrollToFirstTargetX?: number;
-  scrollToFirstTargetY?: number;
-  scrollToFirstXOnChange: boolean;
-  scrollToFirstYOnChange: boolean;
-  getScrollResizeContainer?: () => HTMLElement;
-}
-
-export interface STableSorterType {
-  field: string;
-  value: 'ascend'| 'descend';
-}
-
-export interface STableRecordType {
-  [field: string]: any;
-}
-
-export interface STablePaginateType {
-  hideOnSinglePage: boolean;
-  defaultPageSize: number;
-  pageSizeOptions: Array<string>;
-  showSizeChanger?: boolean;
-  showQuickJumper: boolean;
-  showLessItems: boolean;
-  loadTotalSize?: number;
-  loadTotalPage?: number;
-  loadPageSize?: number;
-  loadPageNo?: number;
-  totalSize: number;
-  totalPage: number;
-  pageSize: number;
-  pageNo: number;
-  disabled: boolean;
-  visible: boolean;
-  simple: boolean;
-  fixed?: boolean;
-  mode: 'local' | 'remote';
-  showTotal?:	((total: number, range: [number, number]) => void) | boolean;
-}
-
-export interface STableCellIndexType {
-  colIndex: number;
-  rowIndex: number;
-}
-
-export interface STableCellSizesType {
-  colOffset: number;
-  rowOffset: number;
-  colIndex: number;
-  rowIndex: number;
-  colSpan: number;
-  rowSpan: number;
-  minWidth: number;
-  maxWidth: number;
-  height: number;
-  width: number;
-}
-
-export interface STableCellCacheType {
-  index: number;
-  rowSpan: number;
-  colSpan: number;
-  colCount: number;
-  rowCount: number;
-  cellAttrs: any;
-  cellProps: any;
-  cellValue: any;
-  cellRender: boolean;
-}
-
-export interface STableCellMegreType {
-  index: number;
-  colIndex: number;
-  rowIndex: number;
-  cachers: Map<number, STableCellCacheType>;
-  spikers: Set<number>;
-  empters: Set<number>;
-}
-
-export interface STableCellFixedType {
-  colOffset: number;
-  colSpan: number;
-}
-
-export interface STableRowKey<RecordType = STableRecordType> {
-  (record: RecordType): string
-}
-
-export interface STableTreeKey<RecordType = STableRecordType> {
-  (record: RecordType): string
-}
-
-export interface STableLoadSource<RecordType = STableRecordType> {
-  (
-    options: {
-      sorter: Array<{ field: string; value: 'ascend'| 'descend'; }>;
-      paginate: { pageSize: number; pageNo: number; totalPage: number; totalSize: number; mode: 'local' | 'remote'; };
-    }
-  ): STablePromiser<RecordType[] | { data: Array<RecordType>; pageNo: number; totalSize: number; } | { result: { data: Array<RecordType>; pageNo: number; totalSize: number; } }>;
-}
-
-export interface STableSettingsType<RecordType = STableRecordType> {
-  key: string;
-  title: string;
-  disabled: boolean;
-  children?: STableSettingsType<RecordType>[] | null;
-  column: STableColumnType<RecordType>
-}
-
-export interface STableExpanderRender<RecordType = STableRecordType> {
-  (option: { record: RecordType; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: Record<number, number>; globalIndex: number; }): VNode;
-}
-
-export interface STableHeaderCellRender<RecordType = STableRecordType> {
-  (option: { title: string | number; column: STableColumnType<RecordType>; rowIndex: number; colIndex: number; }): VNode | STableRefWrapper<{
-    attrs?: HTMLAttributes;
-    props?: {
-      align?: 'left' | 'center' | 'right';
-      fixed?: 'left' | 'right' | false;
-      width?: number;
-      minWidth?: number;
-      maxWidth?: number;
-      tooltip?: boolean;
-      ellipsis?: boolean;
-      cellSpan?: boolean;
-      colSpan?: number;
-      rowSpan?: number;
-      sorter?: boolean;
-    };
-    children?: any;
-  }>;
-}
-
-export interface STableBodyerCellRender<RecordType = STableRecordType> {
-  (option: { value: any; record: RecordType; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: Record<number, number>; globalIndex: number; column: STableColumnType<RecordType>; colIndex: number; }): VNode | STableRefWrapper<{
-    attrs?: HTMLAttributes;
-    props?: {
-      align?: 'left' | 'center' | 'right';
-      tooltip?: boolean;
-      ellipsis?: boolean;
-      cellSpan?: boolean;
-      colSpan?: number;
-      rowSpan?: number;
-    };
-    children?: any;
-  }>;
-}
-
-export interface STableFooterCellRender<RecordType = STableRecordType> {
-  (option: { value: any; record: RecordType; rowIndex: number; column: STableColumnType<RecordType>; colIndex: number; sources: RecordType[]; paginate: STablePaginateType; }): VNode | STableRefWrapper<{
-    attrs?: HTMLAttributes;
-    props?: {
-      align?: 'left' | 'center' | 'right';
-      tooltip?: boolean;
-      ellipsis?: boolean;
-      cellSpan?: boolean;
-      colSpan?: number;
-      rowSpan?: number;
-    };
-    children?: any;
-  }>;
-}
-
-export interface STableCustomHeaderRowAttrs<RecordType = STableRecordType> {
-  (options: { columns: STableColumnType<RecordType>[]; rowIndex: number; }): STableRefWrapper<HTMLAttributes>;
-}
-
-export interface STableCustomBodyerRowAttrs<RecordType = STableRecordType> {
-  (options: { record: RecordType; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: Record<number, number>; globalIndex: number; }): STableRefWrapper<HTMLAttributes>;
-}
-
-export interface STableCustomBodyerRowStates<RecordType = STableRecordType> {
-  (options: { record: RecordType; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: Record<number, number>; globalIndex: number; }): STableRefWrapper<{
-    selectable?: STableRefWrapper<boolean>;
-    expandable?: STableRefWrapper<boolean>;
-  }>;
-}
-
-export interface STableCustomFooterRowAttrs<RecordType = STableRecordType> {
-  (options: { record: RecordType; rowIndex: number; sources: RecordType[]; paginate: STablePaginateType; }): STableRefWrapper<HTMLAttributes>;
-}
-
-export interface STableWrapRecordType<RecordType = STableRecordType> {
-  key: STableKey;
-  parentKey: STableKey | null;
-  childKeys: STableKey[];
-  parentKeys: STableKey[];
-  referRecord: RecordType;
-  treeChildren: STableWrapRecordType<RecordType>[];
-  rowGroupLevel: number;
-  rowGroupIndex: number;
-  rowGroupIndexs: Record<number, number>;
-  rowGlobalIndex: number;
-  rowTreeKeyField: string;
-  rowKeyField: string;
-  rowHeight: number;
-  rowIndex: number;
-}
-
-export interface STableWrapColumnType<RecordType = STableRecordType> {
-  key: string;
-  title: string;
-  parentKey: STableKey | null;
-  childKeys: string[];
-  parentKeys: string[];
-  referColumn: STableColumnType<RecordType>;
-  cacheColumn: STablePartColumnType<RecordType>;
-  parentColumn: STableWrapColumnType<RecordType> | null;
-  treeChildren: STableWrapColumnType<RecordType>[];
-  rowGroupLevel: number;
-  rowGroupIndex: number;
-  rowGroupIndexs: Record<number, number>;
-}
-
-export interface STablePartColumnType<RecordType = STableRecordType> {
-  key?: string;
-  title: string;
-  dataIndex: string | Array<string>;
-  children?: STablePartColumnType<RecordType>[];
-  align?: 'left' | 'center' | 'right';
-  fixed?: 'left' | 'right' | false;
-  width?: number;
-  minWidth?: number;
-  maxWidth?: number;
-  settings?: { checkbox?: boolean; disabled?: boolean; };
-  resizable?: boolean;
-  ellipsis?: boolean;
-  tooltip?: boolean;
-  colSpan?: number;
-  rowSpan?: number;
-  sorter?: boolean;
-  sorterField?: string;
-  expandIcon?: boolean;
-  sorterValueChange?: (option: { field: string; value: 'ascend'| 'descend' | ''; values: Array<STableSorterType>; }) => void;
-  customHeaderCellRender?: STableHeaderCellRender;
-  customBodyerCellRender?: STableBodyerCellRender;
-  customFooterCellRender?: STableFooterCellRender;
-}
-
-export interface STableColumnType<RecordType = STableRecordType> {
-  key: string;
-  title: string;
-  parentKey: string;
-  dataIndex: string | Array<string>;
-  children: STableColumnType<RecordType>[];
-  align: 'left' | 'center' | 'right';
-  fixed: 'left' | 'right' | false;
-  width?: number;
-  minWidth: number;
-  maxWidth: number;
-  settings: { checkbox: boolean; disabled: boolean; };
-  resizable: boolean;
-  ellipsis: boolean;
-  tooltip: boolean;
-  colIndex: number;
-  rowIndex: number;
-  colOffset: number;
-  rowOffset: number;
-  colMaxSpan: number;
-  rowMaxSpan: number;
-  colSpan: number;
-  rowSpan: number;
-  sorter: boolean;
-  sortered: boolean;
-  sorterField: string;
-  sorterValue: 'ascend'| 'descend' | '';
-  expandIcon?: boolean;
-  sorterValueChange?: (option: { field: string; value: 'ascend'| 'descend' | ''; values: Array<STableSorterType>; }) => void;
-  customHeaderCellRender?: STableHeaderCellRender;
-  customBodyerCellRender?: STableBodyerCellRender;
-  customFooterCellRender?: STableFooterCellRender;
-}
-
-type STableeDefineSlots<RecordType = STableRecordType> = SlotsType<{
-  expander: Parameters<STableExpanderRender<RecordType>>[0];
-  headerCell: Parameters<STableHeaderCellRender<RecordType>>[0];
-  bodyerCell: Parameters<STableBodyerCellRender<RecordType>>[0];
-  footerCell: Parameters<STableFooterCellRender<RecordType>>[0];
-}>
-
-type STableDefineMethods = {
-  reload: (delay?: Promise<void> | boolean | number, force?: boolean) => Promise<void>;
-  refresh: (delay?: Promise<void> | boolean | number, force?: boolean) => Promise<void>;
-  select: (keys: STableKey[]) => void;
-  expand: (keys: STableKey[]) => void;
-  update: (clean?: boolean) => void;
-  clear: (clean?: boolean) => void;
-}
-
-export type STableKey = string | number
-export type STableSize = 'default' | 'middle' | 'small'
-export type STablePartStickyType = Partial<STableStickyType>
-export type STablePartScrollType = Partial<STableScrollType>
-export type STablePartPaginate = Partial<STablePaginateType>
-export type STableRefWrapper<T> = ComputedRef<T> | Ref<T> | T
-export type STableValuer<T> = MaybeRef<T> | ComputedRef<T>
-export type STablePromiser<T> = Promise<T> | T
+import type { STableKey } from './type'
+import type { STableSize } from './type'
+import type { STableValuer } from './type'
+import type { STableRowKey } from './type'
+import type { STableTreeKey } from './type'
+import type { STableColumnType } from './type'
+import type { STableSorterType } from './type'
+import type { STableLoadSource } from './type'
+import type { STableRecordType } from './type'
+import type { STableRefWrapper } from './type'
+import type { STablePartPaginate } from './type'
+import type { STableSettingsType } from './type'
+import type { STablePaginateType } from './type'
+import type { STableCellIndexType } from './type'
+import type { STableCellSizesType } from './type'
+import type { STableCellCacheType } from './type'
+import type { STableCellMegreType } from './type'
+import type { STableCellFixedType } from './type'
+import type { STableWrapRecordType } from './type'
+import type { STableWrapColumnType } from './type'
+import type { STablePartColumnType } from './type'
+import type { STablePartStickyType } from './type'
+import type { STablePartScrollType } from './type'
+import type { STableCustomHeaderRowAttrs } from './type'
+import type { STableCustomBodyerRowAttrs } from './type'
+import type { STableCustomBodyerRowStates } from './type'
+import type { STableCustomFooterRowAttrs } from './type'
+import type { STableHeaderCellRender } from './type'
+import type { STableBodyerCellRender } from './type'
+import type { STableFooterCellRender } from './type'
+import type { STableDefineMethods } from './type'
+import type { STableeDefineSlots } from './type'
 
 export const STable = defineComponent({
   name: 'STable',
@@ -401,7 +126,7 @@ export const STable = defineComponent({
     const watchDeepOptions = { immediate: true, deep: true }
     const renderRowPresets = reactive({ minBuffer: 5, maxBuffer: 10, minHeight: 32 })
     const renderRowRanger = reactive({ renderOffset: [0, ~~(window.innerHeight / renderRowPresets.minHeight)], renderBuffer: [0, 10] })
-    const configProvider = inject('configProvider', defaultConfigProvider)
+    const configProvider = useConfigContextInject()
 
     const propColumns = ref([...props.columns])
     const propSources = ref([...props.sources])
@@ -439,6 +164,7 @@ export const STable = defineComponent({
     const expandedRowKeys: Ref<Array<STableKey>> = ref([...props.expandedRowKeys])
     const sourceRowKeys: Ref<Array<STableKey>> = ref([])
     const loading: Ref<boolean> = ref(props.loading)
+    const token = ATheme.useToken().token
 
     const Optionser = {
       // reference
@@ -484,7 +210,7 @@ export const STable = defineComponent({
       paginate: reactive({
         hideOnSinglePage: helper.isBoolean(props.paginate.hideOnSinglePage) ? props.paginate.hideOnSinglePage : false,
         defaultPageSize: helper.isFiniteNumber(props.paginate.defaultPageSize) && props.paginate.defaultPageSize > 0 ? ~~props.paginate.defaultPageSize : 20,
-        pageSizeOptions: helper.isNonEmptyArray(props.paginate.pageSizeOptions) ? props.paginate.pageSizeOptions : ['10', '20', '25', '50', '100', '200', '500'],
+        pageSizeOptions: helper.isNonEmptyArray(props.paginate.pageSizeOptions) ? props.paginate.pageSizeOptions : ['10', '15', '20', '25', '30', '50', '100', '200', '300', '500'],
         showSizeChanger: helper.isBoolean(props.paginate.showSizeChanger) ? props.paginate.showSizeChanger : undefined,
         showQuickJumper: helper.isBoolean(props.paginate.showQuickJumper) ? props.paginate.showQuickJumper : false,
         showLessItems: helper.isBoolean(props.paginate.showLessItems) ? props.paginate.showLessItems : false,
@@ -514,7 +240,7 @@ export const STable = defineComponent({
         Paginator.paginate.showTotal = !Methoder.isOwnProperty(paginate, ['showTotal']) ? Paginator.paginate.showTotal : helper.isFunction(paginate.showTotal) ? paginate.showTotal : paginate.showTotal === true ? (total: any, range: any) => `第 ${range[0]}-${range[1]} 条 (共 ${total} 条)` : undefined
         Paginator.paginate.showLessItems = !Methoder.isOwnProperty(paginate, ['showLessItems']) ? Paginator.paginate.showLessItems : paginate.showLessItems === true
         Paginator.paginate.defaultPageSize = !Methoder.isOwnProperty(paginate, ['defaultPageSize']) ? Paginator.paginate.defaultPageSize : helper.isFiniteNumber(paginate.defaultPageSize) && paginate.defaultPageSize > 0 ? paginate.defaultPageSize : 20
-        Paginator.paginate.pageSizeOptions = !Methoder.isOwnProperty(paginate, ['pageSizeOptions']) ? Paginator.paginate.pageSizeOptions : helper.isNonEmptyArray(paginate.pageSizeOptions) ? paginate.pageSizeOptions : ['10', '20', '25', '50', '100', '200', '500']
+        Paginator.paginate.pageSizeOptions = !Methoder.isOwnProperty(paginate, ['pageSizeOptions']) ? Paginator.paginate.pageSizeOptions : helper.isNonEmptyArray(paginate.pageSizeOptions) ? paginate.pageSizeOptions : ['10', '15', '20', '25', '30', '50', '100', '200', '300', '500']
         Paginator.paginate.showSizeChanger = !Methoder.isOwnProperty(paginate, ['showSizeChanger']) ? Paginator.paginate.showSizeChanger : helper.isBoolean(paginate.showSizeChanger) ? paginate.showSizeChanger : undefined
         Paginator.paginate.showQuickJumper = !Methoder.isOwnProperty(paginate, ['showQuickJumper']) ? Paginator.paginate.showQuickJumper : paginate.showQuickJumper === true
         Paginator.paginate.hideOnSinglePage = !Methoder.isOwnProperty(paginate, ['hideOnSinglePage']) ? Paginator.paginate.hideOnSinglePage : paginate.hideOnSinglePage === true
@@ -625,7 +351,7 @@ export const STable = defineComponent({
 
     const Normalizer = {
       size: computed(() => {
-        return props.size || (configProvider.componentSize === 'large' ? 'default' : configProvider.componentSize)
+        return props.size || (configProvider.componentSize?.value === 'large' ? 'default' : configProvider.componentSize?.value) || 'default'
       }),
 
       sticky: computed(() => ({
@@ -3378,7 +3104,7 @@ export const STable = defineComponent({
                           row-offset={column.rowOffset}
                         >
                           <SEllipsis
-                            visible={column.tooltip === true ? undefined : false}
+                            open={column.tooltip === true ? undefined : false}
                             tooltip={column.tooltip === true || column.ellipsis === true}
                             ellipsis={column.tooltip === true || column.ellipsis === true}
                           >
@@ -3925,7 +3651,7 @@ export const STable = defineComponent({
                         { RenderExpandIcon(column) }
 
                         <SEllipsis
-                          visible={(helper.isBoolean(cellProps?.tooltip) ? cellProps?.tooltip : column.tooltip === true) ? undefined : false}
+                          open={(helper.isBoolean(cellProps?.tooltip) ? cellProps?.tooltip : column.tooltip === true) ? undefined : false}
                           tooltip={(helper.isBoolean(cellProps?.tooltip) ? cellProps?.tooltip : column.tooltip === true) || (helper.isBoolean(cellProps?.ellipsis) ? cellProps?.ellipsis : column.ellipsis === true)}
                           ellipsis={(helper.isBoolean(cellProps?.tooltip) ? cellProps?.tooltip : column.tooltip === true) || (helper.isBoolean(cellProps?.ellipsis) ? cellProps?.ellipsis : column.ellipsis === true)}
                         >
@@ -4365,7 +4091,7 @@ export const STable = defineComponent({
                               row-index={rowIndex}
                             >
                               <SEllipsis
-                                visible={(helper.isBoolean(cellProps?.tooltip) ? cellProps?.tooltip : column.tooltip === true) ? undefined : false}
+                                open={(helper.isBoolean(cellProps?.tooltip) ? cellProps?.tooltip : column.tooltip === true) ? undefined : false}
                                 tooltip={(helper.isBoolean(cellProps?.tooltip) ? cellProps?.tooltip : column.tooltip === true) || (helper.isBoolean(cellProps?.ellipsis) ? cellProps?.ellipsis : column.ellipsis === true)}
                                 ellipsis={(helper.isBoolean(cellProps?.tooltip) ? cellProps?.tooltip : column.tooltip === true) || (helper.isBoolean(cellProps?.ellipsis) ? cellProps?.ellipsis : column.ellipsis === true)}
                               >
@@ -4562,7 +4288,7 @@ export const STable = defineComponent({
 
       const WrapperTableStyle = {
         tableLayout: !['fixed', 'auto'].includes(props.tableLayout)
-          ? dataColumns.value.length > 1 ? 'auto' : 'fixed'
+          ? listColumns.value.length > 1 ? 'auto' : 'fixed'
           : props.tableLayout
       }
 
@@ -4688,10 +4414,27 @@ export const STable = defineComponent({
         minWidth: ['fit-content', 'max-content'].includes(Computer.tableBodyWidth.value) && Computer.tableBodyOverflow.value === 'visible' ? '100%' : '0'
       }
 
+      const refTableVariablerStyle = {
+        '--table-padding-vertical': token.value.padding + 'px',
+        '--table-padding-horizontal': token.value.padding + 'px',
+        '--table-padding-vertical-middle': token.value.paddingSM + 'px',
+        '--table-padding-horizontal-middle': token.value.paddingXS + 'px',
+        '--table-padding-vertical-small': token.value.paddingXS + 'px',
+        '--table-padding-horizontal-small': token.value.paddingXS + 'px',
+
+        '--table-primary-color': token.value.colorPrimary,
+        '--table-background-color': token.value.colorBgContainer,
+        '--table-border-color': token.value.colorBorderSecondary,
+
+        '--table-thead-color': new TinyColor(token.value.colorFillAlter)
+          .onBackground(token.value.colorBgContainer)
+          .toHexString()
+      }
+
       return (
         <section
           ref={Optionser.refTableContainer}
-          style={refTableContainerStyle}
+          style={{ ...refTableContainerStyle, ...refTableVariablerStyle }}
           class={['s-table-container', `s-${Normalizer.size.value}-table-container`]}
         >
           <div class={['s-table-spining-container', { spining: loading }]}>
@@ -4731,5 +4474,6 @@ export const tablePaginateDefiner = (paginate: STablePartPaginate) => ref(pagina
 export const tableStickyDefiner = (sticky: STablePartStickyType) => ref(sticky)
 export const tableScrollDefiner = (scroll: STablePartScrollType) => ref(scroll)
 
+export type * from './type'
+export * from './preset'
 export default STable
-export * from './res'

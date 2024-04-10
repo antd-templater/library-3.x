@@ -1,0 +1,117 @@
+.s-pro-layout-sider {
+  position: relative;
+  border-right: 0;
+  z-index: 20;
+
+  ::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 5px rgba(37, 37, 37, 0.05);
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    cursor: pointer;
+  }
+
+  .s-pro-layout-sider-logo {
+    display: flex;
+    align-items: center;
+    transition: padding 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+    position: relative;
+    cursor: pointer;
+
+    h1 {
+      display: inline-block;
+      margin: 0;
+      padding: 0;
+      font-size: 18px;
+      font-weight: 600;
+      vertical-align: middle;
+      animation: pro-layout-title-hide 0.3s;
+    }
+  }
+
+  .s-pro-layout-sider-menu {
+    min-height: 100%;
+    position: relative;
+    border-right: none;
+    z-index: 10;
+  }
+
+  .s-pro-layout-sider-children {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  &.s-pro-layout-sider.s-pro-layout-sider-fixed {
+    height: 100vh;
+    overflow: auto;
+    overflow-x: hidden;
+    box-shadow: 2px 0 8px 0 rgba(29, 35, 41, 0.05);
+    position: fixed;
+    z-index: 100;
+    left: 0;
+    top: 0;
+  }
+
+  @keyframes pro-layout-title-hide {
+    0% {
+      display: none;
+      opacity: 0;
+    }
+    80% {
+      display: none;
+      opacity: 0;
+    }
+    100% {
+      display: unset;
+      opacity: 1;
+    }
+  }
+}
+
+.s-pro-sider-light {
+  background-color: #ffffff;
+  box-shadow: 2px 0 8px 0 rgba(29, 35, 41, 0.05);
+
+  ::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 5px rgba(0, 21, 41, 0.05);
+    background: rgba(0, 0, 0, 0.06);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 5px rgba(0, 21, 41, 0.05);
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    cursor: pointer;
+  }
+}
+
+.s-pro-menu-light {
+  &.s-pro-menu-inline {
+    background-color: #ffffff;
+
+    .s-pro-menu-sub.s-pro-menu-inline {
+      background-color: transparent;
+    }
+  }
+}

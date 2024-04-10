@@ -1,6 +1,7 @@
+import { defineComponent } from 'vue'
 import { CaretDownOutlined } from '@ant-design/icons-vue'
 import { CaretUpOutlined } from '@ant-design/icons-vue'
-import { defineComponent } from 'vue'
+import ATheme from 'ant-design-vue/es/theme'
 import * as VueTypes from 'vue-types'
 
 export const STableSorter = defineComponent({
@@ -33,8 +34,8 @@ export const STableSorter = defineComponent({
 
     return () => (
       <div class='s-table-sorter-container' onClick={changer}>
-        <CaretUpOutlined style={{ fontSize: '11px', color: props.value === 'ascend' ? 'var(--ant-primary-color)' : 'rgba(0, 0, 0, 0.45)' }}/>
-        <CaretDownOutlined style={{ fontSize: '11px', color: props.value === 'descend' ? 'var(--ant-primary-color)' : 'rgba(0, 0, 0, 0.45)', marginTop: '-0.3em' }}/>
+        <CaretUpOutlined style={{ fontSize: '11px', color: props.value === 'ascend' ? ATheme.useToken().token.value.colorPrimary : 'rgba(0, 0, 0, 0.45)' }}/>
+        <CaretDownOutlined style={{ fontSize: '11px', color: props.value === 'descend' ? ATheme.useToken().token.value.colorPrimary : 'rgba(0, 0, 0, 0.45)', marginTop: '-0.3em' }}/>
       </div>
     )
   }

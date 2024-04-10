@@ -1,16 +1,13 @@
 import './index.less'
-import 'ant-design-vue/es/grid/style/index.less'
-import 'ant-design-vue/es/spin/style/index.less'
-import 'ant-design-vue/es/form/style/index.less'
 
 import * as VueTypes from 'vue-types'
 import Normalize from './form.normalize'
 import SFormComponent from './index.component'
 import { SFormValidatorRule } from './form.declare'
 import { SFormGrid, SFormColItem, SFormColPartItem, SFormRowItem, SFormRowPartItem, SFormGroupItem, SFormGroupPartItem } from './form.declare'
-import { SlotsType, Ref, defineComponent, watchEffect, watch, shallowRef, toRaw, unref, ref, readonly, PropType, inject } from 'vue'
+import { SlotsType, Ref, defineComponent, watchEffect, watch, shallowRef, toRaw, unref, ref, readonly, PropType } from 'vue'
 import { Rule, NamePath, InternalNamePath, ValidateOptions } from 'ant-design-vue/es/form/interface'
-import { defaultConfigProvider } from 'ant-design-vue/es/config-provider'
+import { useConfigContextInject } from 'ant-design-vue/es/config-provider/context'
 import AForm, { FormItem as AFormItem } from 'ant-design-vue/es/form'
 import ASpin from 'ant-design-vue/es/spin'
 import ARow from 'ant-design-vue/es/row'
@@ -31,10 +28,6 @@ interface SFormGroupProps {
 
 interface SFormGroupsProps {
   groups: SFormGroupItem[];
-}
-
-interface SFormGroupsRules<T> {
-  [key: string]: T | T[] | SFormGroupsRules<T>
 }
 
 type SFormWatchHandler = () => void
@@ -314,7 +307,7 @@ export const SForm = defineComponent({
 
       if (group.label || group.slot) {
         return (
-          <div class='s-form-group-item-header' {...attrs}>
+          <div class='s-form-group-item-header' { ...attrs }>
             {
               slotRender
                 ? slotRender({ className: className, group, disabled, readonly })
@@ -412,15 +405,15 @@ export const SForm = defineComponent({
                       .filter(col => unref(col.render))
                       .map(col => {
                         const group = opt.group
-                        const disabled = opt.disabled
-                        const readonly = opt.readonly
-                        const provider = inject('configProvider', defaultConfigProvider)
+                        const disabled = [unref(opt.disabled), unref(group.disabled), unref(row.disabled), helper.isBoolean(unref(col.props.disabled)) ? unref(col.props.disabled) : unref(col.disabled)].includes(true)
+                        const readonly = [unref(opt.readonly), unref(group.readonly), unref(row.readonly), helper.isBoolean(unref(col.props.readonly)) ? unref(col.props.readonly) : unref(col.readonly)].includes(true)
                         const slotRender = ctx.slots[`s-component-${col.slot.replace(/^s-component-/, '')}`]
+                        const provider = useConfigContextInject()
 
                         const type = col.type
                         const slots = col.slots
                         const states = handleStateBind(col, row, group)
-                        const attrs = Object.fromEntries(Object.entries({ size: provider.componentSize, ...col.props, ...states }).map(([key, value]) => [key, unref(value)]))
+                        const attrs = Object.fromEntries(Object.entries({ size: provider.componentSize?.value, ...col.props, ...states }).map(([key, value]) => [key, unref(value)]))
                         const source = col.field.slice(0, -1).reduce((model, key) => model[key], opt.model)
                         const field = col.field[col.field.length - 1]
 
@@ -439,7 +432,7 @@ export const SForm = defineComponent({
                               {
                                 slotRender
                                   ? slotRender({ col, row, group, attrs, slots, disabled, readonly, source, field })
-                                  : <SFormComponent type={type} attrs={attrs} v-slots={slots} source={source} field={field}/>
+                                  : <SFormComponent type={type} attrs={attrs} v-slots={slots} disabled={disabled} readonly={readonly} source={source} field={field}/>
                               }
                             </AFormItem>
                           </ACol>

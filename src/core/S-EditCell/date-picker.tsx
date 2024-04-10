@@ -1,14 +1,11 @@
 import './date-picker.less'
-import 'ant-design-vue/es/empty/style/index.less'
-import 'ant-design-vue/es/button/style/index.less'
-import 'ant-design-vue/es/date-picker/style/index.less'
 
 import * as VueTypes from 'vue-types'
 import SEllipsis from '../S-Ellipsis/index'
 import { CheckOutlined, EditOutlined } from '@ant-design/icons-vue'
-import { SlotsType, defineComponent, reactive, toRaw, watch, watchEffect, inject } from 'vue'
+import { SlotsType, defineComponent, reactive, toRaw, watch, watchEffect } from 'vue'
+import { useConfigContextInject } from 'ant-design-vue/es/config-provider/context'
 import { PanelMode, PickerMode } from 'ant-design-vue/es/vc-picker/interface'
-import { defaultConfigProvider } from 'ant-design-vue/es/config-provider'
 import ADatePicker from 'ant-design-vue/es/date-picker'
 import AButton from 'ant-design-vue/es/button'
 import dayjs from 'dayjs'
@@ -106,7 +103,7 @@ export const SEditCellDatePicker = defineComponent({
             class='s-editable-cell-button-check'
             type='link'
             icon={<CheckOutlined/>}
-            style={{ color: 'var(--ant-primary-color, #1890ff)', ...props.cellStyle.check }}
+            style={{ ...props.cellStyle.check }}
             onClick={(event: Event) => doConfirm(event)}
           />
         )
@@ -137,9 +134,9 @@ export const SEditCellDatePicker = defineComponent({
           >
             <ADatePicker
               v-model={[proxy.date, 'value']}
+              size={provider.componentSize?.value}
               class='s-editable-cell-input'
               style={props.cellStyle.input}
-              size={provider.componentSize}
               mode={props.mode}
               picker={props.picker}
               format={props.format}
@@ -184,7 +181,7 @@ export const SEditCellDatePicker = defineComponent({
         : empty
     }
 
-    const provider = inject('configProvider', defaultConfigProvider)
+    const provider = useConfigContextInject()
 
     const proxy = reactive({
       date: doDayjs(props.text),

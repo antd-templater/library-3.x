@@ -1,4 +1,3 @@
-import 'ant-design-vue/es/tooltip/style/index.less'
 import { SlotsType, defineComponent, onMounted, ref } from 'vue'
 import ATooltip from 'ant-design-vue/es/tooltip'
 import * as VueTypes from 'vue-types'
@@ -11,8 +10,8 @@ type SEllipsisDefineSlots = SlotsType<{
 export const SEllipsis = defineComponent({
   name: 'SEllipsis',
   props: {
+    open: VueTypes.bool().def(undefined),
     title: VueTypes.string().def(undefined),
-    visible: VueTypes.bool().def(undefined),
     inspect: VueTypes.bool().def(true),
     tooltip: VueTypes.bool().def(true),
     ellipsis: VueTypes.bool().def(false),
@@ -34,12 +33,12 @@ export const SEllipsis = defineComponent({
     mouseLeaveDelay: VueTypes.number().def(0.1)
   },
   emits: {
-    'update:visible': (visible: boolean) => typeof visible === 'boolean'
+    'update:open': (open: boolean) => typeof open === 'boolean'
   },
   setup(props, { emit, slots }) {
-    const element: any = ref(null)
-    const visible: any = ref(false)
+    const open: any = ref(false)
     const outside: any = ref(false)
+    const element: any = ref(null)
 
     const bounding = (target: any) => {
       if (target instanceof HTMLElement) {
@@ -54,8 +53,8 @@ export const SEllipsis = defineComponent({
 
     const updateVisible = (state: boolean) => {
       return state === true && props.inspect === true
-        ? (visible.value = bounding(element.value))
-        : (visible.value = state)
+        ? (open.value = bounding(element.value))
+        : (open.value = state)
     }
 
     const observer = new ResizeObserver(entries => {
@@ -75,15 +74,15 @@ export const SEllipsis = defineComponent({
       if (props.tooltip === true) {
         const binds = {
           ...props,
-          'visible': props.visible !== undefined ? props.visible : visible.value,
-          'onUpdate:visible': undefined,
+          'open': props.open !== undefined ? props.open : open.value,
+          'onUpdate:open': undefined,
           'onVisibleChange': undefined
         }
 
         return (
           <ATooltip
             { ...binds }
-            { ...{ 'onUpdate:visible': (visible: boolean) => emit('update:visible', updateVisible(visible)) } }
+            { ...{ 'onUpdate:open': (open: boolean) => emit('update:open', updateVisible(open)) } }
             v-slots={{ title: slots.title || slots.default }}
           >
             <div

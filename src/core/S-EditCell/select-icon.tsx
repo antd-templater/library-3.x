@@ -1,16 +1,14 @@
 import './select-icon.less'
-import 'ant-design-vue/es/empty/style/index.less'
-import 'ant-design-vue/es/button/style/index.less'
-import 'ant-design-vue/es/select/style/index.less'
 
 import * as VueTypes from 'vue-types'
 import SEllipsis from '../S-Ellipsis/index'
 import SIconSelect from '@/S-IconSelect/index'
 import SIcon, { isIconType } from '../S-Icon/index'
 import { CheckOutlined, EditOutlined } from '@ant-design/icons-vue'
-import { defaultConfigProvider } from 'ant-design-vue/es/config-provider'
-import { SlotsType, defineComponent, reactive, toRaw, watch, watchEffect, inject } from 'vue'
-import { SelectValue, DefaultOptionType } from 'ant-design-vue/es/select'
+import { SlotsType, defineComponent, reactive, toRaw, watch, watchEffect } from 'vue'
+import { useConfigContextInject } from 'ant-design-vue/es/config-provider/context'
+import { DefaultOptionType } from 'ant-design-vue/es/select'
+import { SelectValue } from 'ant-design-vue/es/select'
 import AButton from 'ant-design-vue/es/button'
 import helper from '@/helper'
 
@@ -96,7 +94,7 @@ export const SEditCellSelectIcon = defineComponent({
             class='s-editable-cell-button-check'
             type='link'
             icon={<CheckOutlined/>}
-            style={{ color: 'var(--ant-primary-color, #1890ff)', ...props.cellStyle.check }}
+            style={{ ...props.cellStyle.check }}
             onClick={(event: Event) => doConfirm(event)}
           />
         )
@@ -127,9 +125,9 @@ export const SEditCellSelectIcon = defineComponent({
           >
             <SIconSelect
               v-model={[proxy.value, 'value']}
+              size={provider.componentSize?.value}
               class='s-editable-cell-input'
               style={props.cellStyle.input}
-              size={provider.componentSize}
               options={props.options}
               mode={'tags'}
               multiple={false}
@@ -153,7 +151,7 @@ export const SEditCellSelectIcon = defineComponent({
       const fieldValue = props.fieldNames.value || 'value'
       const fieldOptions = props.fieldNames.options || 'options'
       const isPrimitive = typeof text === 'string' || typeof text === 'number'
-      const title = isPrimitive ? helper.takeLabelByKey(props.options, text, fieldLabel, fieldValue, fieldOptions) || props.text : undefined
+      const title = isPrimitive ? helper.takeTextByKey(props.options, text, fieldLabel, fieldValue, fieldOptions) || props.text : undefined
 
       return (
         <SEllipsis
@@ -181,7 +179,7 @@ export const SEditCellSelectIcon = defineComponent({
       const isPrimitive = typeof text === 'string' || typeof text === 'number'
 
       const slotText = slots.editableCellText ? slots.editableCellText({ text: props.text, ...toRaw(proxy) }) : null
-      const cellText = (isPrimitive ? helper.takeLabelByKey(props.options, text, fieldLabel, fieldValue, fieldOptions) || props.text : props.text) as any
+      const cellText = (isPrimitive ? helper.takeTextByKey(props.options, text, fieldLabel, fieldValue, fieldOptions) || props.text : props.text) as any
       const cellIcon = slotText ?? (isIconType(cellText) ? <span><SIcon type={cellText} style='margin-right: 5px;' /> {cellText}</span> : cellText)
       const empty = props.empty
 
@@ -190,7 +188,7 @@ export const SEditCellSelectIcon = defineComponent({
         : empty
     }
 
-    const provider = inject('configProvider', defaultConfigProvider)
+    const provider = useConfigContextInject()
 
     const proxy = reactive({
       value: props.text,

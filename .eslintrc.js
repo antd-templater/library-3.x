@@ -145,6 +145,7 @@ module.exports = {
     'no-unreachable': 'error',
     'no-unsafe-finally': 'error',
     'no-unused-vars': ['error', {
+      ignoreRestSiblings: true,
       vars: 'all',
       args: 'none'
     }],
@@ -218,7 +219,8 @@ module.exports = {
         }],
         'vue/attribute-hyphenation': ['error', 'never', { ignore: ['vcoder-*'] }],
         'vue/v-on-event-hyphenation': ['error', 'never'],
-        'vue/no-setup-props-destructure': ['off']
+        'vue/no-setup-props-destructure': ['off'],
+        'vue/one-component-per-file': ['off']
       }
     },
     {

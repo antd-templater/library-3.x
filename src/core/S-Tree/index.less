@@ -1,12 +1,12 @@
 .s-tree-container {
-  --bg-color: 'transparent';
+  --tree-background-color: 'transparent';
 }
 
 .s-tree-container {
   width: 100%;
   height: 100%;
   position: relative;
-  background-color: var(--bg-color, 'transparent');
+  background-color: var(--tree-background-color, 'transparent');
 
   .ant-spin-container,
   .ant-spin-nested-loading {
@@ -19,7 +19,7 @@
   .ant-spin-container,
   .ant-spin-nested-loading,
   .ant-tree-node-content-wrapper {
-    background-color: var(--bg-color, 'transparent');
+    background-color: var(--tree-background-color, 'transparent');
   }
 
   .ant-tree-switcher {
@@ -55,14 +55,6 @@
       line-height: 24px;
       vertical-align: middle;
       flex: 1 1 auto;
-
-      .normal {
-        color: inherit;
-      }
-
-      .primary {
-        color: var(--ant-primary-color, #1890ff);
-      }
     }
 
     .s-tree-title-node .s-tree-title-button {

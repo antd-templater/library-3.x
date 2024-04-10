@@ -1,9 +1,7 @@
-import 'ant-design-vue/es/radio/style/index.less'
-import 'ant-design-vue/es/checkbox/style/index.less'
+import * as VueTypes from 'vue-types'
+import { computed, defineComponent } from 'vue'
 import Checkbox from 'ant-design-vue/es/checkbox'
 import Radio from 'ant-design-vue/es/radio'
-import { computed, defineComponent } from 'vue'
-import * as VueTypes from 'vue-types'
 
 export const STableSelection = defineComponent({
   name: 'STableSelection',
@@ -27,11 +25,9 @@ export const STableSelection = defineComponent({
     }
 
     const size = computed(() => {
-      return props.size === 'default'
-        ? 'large'
-        : props.size === 'middle'
-          ? 'default'
-          : 'small'
+      return props.size === 'default' ? 'large' : props.size === 'middle'
+        ? 'default'
+        : 'small'
     })
 
     return () => {

@@ -1,5 +1,6 @@
 import { defineComponent, onMounted, onUnmounted, nextTick, watch, ref } from 'vue'
 import { SettingOutlined } from '@ant-design/icons-vue'
+import ATheme from 'ant-design-vue/es/theme'
 import * as VueTypes from 'vue-types'
 import STree from '../S-Tree'
 
@@ -91,7 +92,7 @@ export const STableSettings = defineComponent({
           onClick={toggler}
         >
           <div class='s-table-settings-icon'>
-            <SettingOutlined style={{ color: 'var(--ant-primary-color)' }}/>
+            <SettingOutlined style={{ color: ATheme.useToken().token.value.colorPrimary }}/>
           </div>
 
           <div class='s-table-settings-title'>

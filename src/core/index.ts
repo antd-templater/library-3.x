@@ -54,6 +54,17 @@ import { treeEmitChangeDefiner } from './S-Tree/index'
 import { treeDropHandlerDefiner } from './S-Tree/index'
 import { treeReplaceFieldsDefiner } from './S-Tree/index'
 
+// S-ProLayout
+import { SProLayout } from './S-ProLayout/index'
+import { SProGlobalHeader } from './S-ProLayout/index'
+import { proFlatMenuItem } from './S-ProLayout/index'
+import { proClearMenuItem } from './S-ProLayout/index'
+import { proUseMediaQuery } from './S-ProLayout/index'
+import { proUseRouteContext } from './S-ProLayout/index'
+import { proFirstMenuChildren } from './S-ProLayout/index'
+import { proCreateRouteContext } from './S-ProLayout/index'
+import { proProvideRouteContext } from './S-ProLayout/index'
+
 export {
   SIcon,
   SEllipsis,
@@ -103,7 +114,17 @@ export {
   treeEmitExpandDefiner,
   treeEmitChangeDefiner,
   treeDropHandlerDefiner,
-  treeReplaceFieldsDefiner
+  treeReplaceFieldsDefiner,
+
+  SProLayout,
+  SProGlobalHeader,
+  proFlatMenuItem,
+  proClearMenuItem,
+  proUseMediaQuery,
+  proUseRouteContext,
+  proFirstMenuChildren,
+  proCreateRouteContext,
+  proProvideRouteContext
 }
 
 export default {

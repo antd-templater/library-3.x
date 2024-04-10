@@ -1,18 +1,16 @@
 import * as VueTypes from 'vue-types'
-import { defineComponent, ref, inject } from 'vue'
-import { defaultConfigProvider } from 'ant-design-vue/es/config-provider'
+import { defineComponent, ref } from 'vue'
+import { useConfigContextInject } from 'ant-design-vue/es/config-provider/context'
 import ASelect from 'ant-design-vue/es/select'
-
-import 'ant-design-vue/es/select/style/index.less'
 
 import SIcon, { isIconType } from '../S-Icon'
 import defaultOptions from './icons'
 import helper from '@/helper'
 
-export type SIconSelectOptions = {
+export type SIconSelectOption = {
   label?: string;
   value?: string | number;
-  options?: Omit<SIconSelectOptions, 'options'>[];
+  options?: Omit<SIconSelectOption, 'options'>[];
   disabled?: boolean;
   [name: string]: any;
 }
@@ -29,7 +27,7 @@ export const SIconSelect = defineComponent({
     showArrow: VueTypes.bool().def(true),
     multiple: VueTypes.bool().def(false),
     disabled: VueTypes.bool().def(false),
-    options: VueTypes.array<SIconSelectOptions>().def(() => defaultOptions),
+    options: VueTypes.array<SIconSelectOption>().def(() => defaultOptions),
     value: VueTypes.any<string | number | string[] | number[]>().def(),
     mode: VueTypes.string<'multiple' | 'tags'>().def(),
     size: VueTypes.string<'large' | 'middle' | 'small'>().def()
@@ -58,7 +56,7 @@ export const SIconSelect = defineComponent({
     const selector: any = ref(undefined)
     const isMultiple = props.multiple !== false
     const isMultipleMode = props.mode === 'tags' || props.mode === 'multiple'
-    const provider = inject('configProvider', defaultConfigProvider)
+    const provider = useConfigContextInject()
 
     const onChange = (value: any, option: any | any[]) => {
       const isArrayValue = Array.isArray(value)
@@ -84,7 +82,7 @@ export const SIconSelect = defineComponent({
         <ASelect
           ref={selector}
           open={open.value}
-          size={props.size || provider.componentSize}
+          size={props.size || provider.componentSize?.value}
           mode={props.mode}
           value={propValue}
           options={props.options}

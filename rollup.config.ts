@@ -19,6 +19,7 @@ export default defineConfig([
       'src/core/S-EditCell/tree-select.tsx',
       'src/core/S-EditCell/date-picker.tsx',
       'src/core/S-IconSelect/index.tsx',
+      'src/core/S-ProLayout/index.tsx',
       'src/core/S-Ellipsis/index.tsx',
       'src/core/S-Table/index.tsx',
       'src/core/S-Tree/index.tsx',
@@ -31,7 +32,7 @@ export default defineConfig([
       {
         dir: 'dist',
         format: 'es',
-        hoistTransitiveImports: false,
+        chunkFileNames: `chunk-[name].mjs`,
         entryFileNames: chunk => {
           const id = chunk.facadeModuleId
           const dir = id?.replace(/.+\/src\/core\/(([^./]+)\/)?[^./]+(\.vue|\.tsx|\.ts)/, '$2')
@@ -42,7 +43,7 @@ export default defineConfig([
         dir: 'dist',
         format: 'cjs',
         exports: 'named',
-        hoistTransitiveImports: false,
+        chunkFileNames: `chunk-[name].cjs`,
         entryFileNames: chunk => {
           const id = chunk.facadeModuleId
           const dir = id?.replace(/.+\/src\/core\/(([^./]+)\/)?[^./]+(\.vue|\.tsx|\.ts)/, '$2')
@@ -57,8 +58,8 @@ export default defineConfig([
           replacement: new URL('./src/core', import.meta.url).pathname
         }]
       }),
-      nodeResolve(),
       commonjs(),
+      nodeResolve(),
       typescript({
         check: false,
         include: ['src/core/**/*.ts?(x)'],
@@ -76,8 +77,10 @@ export default defineConfig([
       /^vue(\/.+|$)/,
       /^dayjs(\/.+|$)/,
       /^vue-types(\/.+|$)/,
+      /^vue-router(\/.+|$)/,
       /^ant-design-vue(\/.+|$)/,
-      /^@ant-design\/icons-vue(\/.+|$)/
+      /^@ant-design\/icons-vue(\/.+|$)/,
+      /^@ctrl\/tinycolor(\/.+|$)/
     ]
   }
 ])

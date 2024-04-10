@@ -1,22 +1,10 @@
-import * as VueTypes from 'vue-types'
-import { defineComponent, h } from 'vue'
-import { SFormType } from './form.declare'
-
 import './index.component.less'
-import 'ant-design-vue/es/rate/style/index.less'
-import 'ant-design-vue/es/radio/style/index.less'
-import 'ant-design-vue/es/input/style/index.less'
-import 'ant-design-vue/es/button/style/index.less'
-import 'ant-design-vue/es/switch/style/index.less'
-import 'ant-design-vue/es/select/style/index.less'
-import 'ant-design-vue/es/slider/style/index.less'
-import 'ant-design-vue/es/checkbox/style/index.less'
-import 'ant-design-vue/es/cascader/style/index.less'
-import 'ant-design-vue/es/date-picker/style/index.less'
-import 'ant-design-vue/es/time-picker/style/index.less'
-import 'ant-design-vue/es/tree-select/style/index.less'
-import 'ant-design-vue/es/input-number/style/index.less'
-import 'ant-design-vue/es/auto-complete/style/index.less'
+
+import * as VueTypes from 'vue-types'
+import { SFormType } from './form.declare'
+import { defineComponent } from 'vue'
+import { nextTick } from 'vue'
+import { ref, h } from 'vue'
 
 import ARate from 'ant-design-vue/es/rate'
 import ARadio from 'ant-design-vue/es/radio'
@@ -61,16 +49,21 @@ export const SFormComponent = defineComponent({
   inheritAttrs: false,
   props: {
     type: VueTypes.string<SFormType>().isRequired,
+    disabled: VueTypes.bool().isRequired,
+    readonly: VueTypes.bool().isRequired,
     source: VueTypes.object().isRequired,
-    attrs: VueTypes.object().isRequired,
-    field: VueTypes.string().isRequired
+    field: VueTypes.string().isRequired,
+    attrs: VueTypes.object().isRequired
   },
   setup(props, context) {
     return () => {
       const type = props.type
       const field = props.field
       const source = props.source
+      const disabled = props.disabled
+      const readonly = props.readonly
       const Component = AComponents[type]
+      const component = ref(null as HTMLElement | null)
 
       let attrs: any = {}
 
@@ -126,7 +119,35 @@ export const SFormComponent = defineComponent({
         attrs.format = 'YYYY-ww'
       }
 
-      return Component ? h(Component, attrs, context.slots) : null
+      if (readonly && !disabled) {
+        nextTick(() => {
+          const selector = '[disabled],[class*="-disabled"]'
+          const elements = component.value?.querySelectorAll(selector)
+
+          elements?.forEach(element => {
+            if (element instanceof HTMLElement) {
+              for (const name of Array.from(element.classList)) {
+                if (/-disabled(\b|$)/.test(name)) {
+                  element.classList.remove(name)
+                }
+              }
+
+              if (element.hasAttribute('disabled')) {
+                element.removeAttribute('disabled')
+              }
+            }
+          })
+        })
+      }
+
+      return (
+        <div
+          ref={component}
+          style='display: inherit; display: contents;'
+        >
+          { Component ? h(Component, attrs, context.slots) : null }
+        </div>
+      )
     }
   }
 })
