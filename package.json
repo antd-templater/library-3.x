@@ -4,7 +4,7 @@
   "homepage": "https://github.com/antd-templater/library-3.x",
   "author": "lin pengteng <china.linpengteng@gmail.com>",
   "license": "MIT",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "keywords": [
     "form",
     "tree",
@@ -46,8 +46,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "vite": "shx rm -rf dist && vue-tsc --noEmit && vite build",
-    "rollup": "shx rm -rf dist && rollup --config rollup.config.ts --configPlugin typescript",
+    "build": "shx rm -rf dist && rollup --config rollup.config.ts --configPlugin typescript",
     "eslint": "npx eslint --fix --quiet src --ext .vue,.js,ts,jsx,tsx",
     "release": "release-it",
     "prepare": "husky"
@@ -63,13 +62,11 @@
     "vue-types": "^5.1.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.24.5",
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
     "@ctrl/tinycolor": "^4.1.0",
     "@release-it/conventional-changelog": "^8.0.1",
     "@rollup/plugin-alias": "^5.1.0",
-    "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "15.2.3",
@@ -84,8 +81,6 @@
     "@typescript-eslint/typescript-estree": "^7.8.0",
     "@vitejs/plugin-vue": "^5.0.4",
     "@vitejs/plugin-vue-jsx": "^3.1.0",
-    "@vue/babel-helper-vue-jsx-merge-props": "^1.4.0",
-    "@vue/babel-plugin-jsx": "^1.2.2",
     "@vue/compiler-sfc": "^3.4.26",
     "cz-message-helper": "^1.3.1",
     "eslint": "^8.57.0",
@@ -103,8 +98,6 @@
     "shx": "^0.3.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
-    "vite": "^5.2.11",
-    "vitest": "^1.5.3",
     "volar-service-prettyhtml": "^0.0.42",
     "vue-template-compiler": "^2.7.16",
     "vue-tsc": "^2.0.16"
