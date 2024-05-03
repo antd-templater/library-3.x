@@ -1,11 +1,13 @@
 import { App } from 'vue'
 
-// S-*
+// S-Icon
+// S-Ellipsis
+// S-IconSelect
 import { SIcon } from './S-Icon/index'
-import { isIconType } from './S-Icon/index'
-import { forIconType } from './S-Icon/index'
 import { SEllipsis } from './S-Ellipsis/index'
 import { SIconSelect } from './S-IconSelect/index'
+
+// S-EditCell-*
 import { SEditCellInput } from './S-EditCell/input'
 import { SEditCellSelect } from './S-EditCell/select'
 import { SEditCellTextarea } from './S-EditCell/textarea'
@@ -65,12 +67,28 @@ import { proFirstMenuChildren } from './S-ProLayout/index'
 import { proCreateRouteContext } from './S-ProLayout/index'
 import { proProvideRouteContext } from './S-ProLayout/index'
 
+export default {
+  install(app: App) {
+    app.component('SEditCellInput', SEditCellInput)
+    app.component('SEditCellSelect', SEditCellSelect)
+    app.component('SEditCellTextarea', SEditCellTextarea)
+    app.component('SEditCellSelectIcon', SEditCellSelectIcon)
+    app.component('SEditCellTreeSelect', SEditCellTreeSelect)
+    app.component('SEditCellDatePicker', SEditCellDatePicker)
+    app.component('SIconSelect', SIconSelect)
+    app.component('SEllipsis', SEllipsis)
+    app.component('STable', STable)
+    app.component('STree', STree)
+    app.component('SForm', SForm)
+    app.component('SIcon', SIcon)
+  }
+}
+
 export {
   SIcon,
   SEllipsis,
-  isIconType,
-  forIconType,
   SIconSelect,
+
   SEditCellInput,
   SEditCellSelect,
   SEditCellTextarea,
@@ -125,21 +143,4 @@ export {
   proFirstMenuChildren,
   proCreateRouteContext,
   proProvideRouteContext
-}
-
-export default {
-  install(app: App) {
-    app.component('SEditCellInput', SEditCellInput)
-    app.component('SEditCellSelect', SEditCellSelect)
-    app.component('SEditCellTextarea', SEditCellTextarea)
-    app.component('SEditCellSelectIcon', SEditCellSelectIcon)
-    app.component('SEditCellTreeSelect', SEditCellTreeSelect)
-    app.component('SEditCellDatePicker', SEditCellDatePicker)
-    app.component('SIconSelect', SIconSelect)
-    app.component('SEllipsis', SEllipsis)
-    app.component('STable', STable)
-    app.component('STree', STree)
-    app.component('SForm', SForm)
-    app.component('SIcon', SIcon)
-  }
 }

@@ -4,7 +4,7 @@
   "homepage": "https://github.com/antd-templater/library-3.x",
   "author": "lin pengteng <china.linpengteng@gmail.com>",
   "license": "MIT",
-  "version": "4.0.7",
+  "version": "4.1.0",
   "keywords": [
     "form",
     "tree",
@@ -14,9 +14,7 @@
     "vue-components"
   ],
   "files": [
-    "dist",
-    "library-declare.d.ts",
-    "library-eslintrc.json"
+    "dist"
   ],
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
@@ -27,10 +25,13 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     },
-    "./dist/*": {
-      "types": "./dist/*/index.d.ts",
-      "import": "./dist/*/index.mjs",
-      "require": "./dist/*/index.cjs"
+    "./resolver": {
+      "types": "./dist/resolver.d.ts",
+      "import": "./dist/resolver.mjs",
+      "require": "./dist/resolver.cjs"
+    },
+    "./globals": {
+      "types": "./dist/globals.d.ts"
     }
   },
   "repository": {
@@ -44,6 +45,13 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
+  "scripts": {
+    "vite": "shx rm -rf dist && vue-tsc --noEmit && vite build",
+    "rollup": "shx rm -rf dist && rollup --config rollup.config.ts --configPlugin typescript",
+    "eslint": "npx eslint --fix --quiet src --ext .vue,.js,ts,jsx,tsx",
+    "release": "release-it",
+    "prepare": "husky"
+  },
   "dependencies": {
     "@ant-design/icons-vue": "^7.0.1",
     "ant-design-vue": "^4.2.1",
@@ -52,7 +60,7 @@
     "less": "^4.2.0",
     "vue": "^3.4.26",
     "vue-router": "^4.3.2",
-    "vue-types": "^5.1.1"
+    "vue-types": "^5.1.2"
   },
   "devDependencies": {
     "@babel/core": "^7.24.5",
@@ -70,7 +78,7 @@
     "@rollup/plugin-typescript": "^11.1.6",
     "@rollup/pluginutils": "^5.1.0",
     "@types/eslint": "^8.56.10",
-    "@types/node": "^20.12.7",
+    "@types/node": "^20.12.8",
     "@typescript-eslint/eslint-plugin": "^7.8.0",
     "@typescript-eslint/parser": "^7.8.0",
     "@typescript-eslint/typescript-estree": "^7.8.0",
@@ -87,7 +95,7 @@
     "postcss": "^8.4.38",
     "prettier": "^3.2.5",
     "release-it": "^17.2.1",
-    "rollup": "^4.17.1",
+    "rollup": "^4.17.2",
     "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-typescript2": "^0.36.0",
@@ -95,11 +103,11 @@
     "shx": "^0.3.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
-    "vite": "^5.2.10",
-    "vitest": "^1.5.2",
-    "volar-service-prettyhtml": "^0.0.34",
+    "vite": "^5.2.11",
+    "vitest": "^1.5.3",
+    "volar-service-prettyhtml": "^0.0.42",
     "vue-template-compiler": "^2.7.16",
-    "vue-tsc": "^2.0.15"
+    "vue-tsc": "^2.0.16"
   },
   "config": {
     "cz-message-helper": {
@@ -111,12 +119,5 @@
   },
   "engines": {
     "node": ">=16.0.0"
-  },
-  "scripts": {
-    "vite": "shx rm -rf dist && vue-tsc --noEmit && vite build",
-    "rollup": "shx rm -rf dist && rollup --config rollup.config.ts --configPlugin typescript",
-    "eslint": "npx eslint --fix --quiet src --ext .vue,.js,ts,jsx,tsx",
-    "release": "release-it",
-    "prepare": "husky"
   }
 }

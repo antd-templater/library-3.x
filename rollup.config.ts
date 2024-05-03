@@ -5,6 +5,7 @@ import commonjs from '@rollup/plugin-commonjs'
 import postcss from 'rollup-plugin-postcss'
 import VueJsx from '@vitejs/plugin-vue-jsx'
 import alias from '@rollup/plugin-alias'
+import copy from 'rollup-plugin-copy'
 import Vue from '@vitejs/plugin-vue'
 
 /**
@@ -18,6 +19,7 @@ export default defineConfig([
       'src/core/S-EditCell/textarea.tsx',
       'src/core/S-EditCell/tree-select.tsx',
       'src/core/S-EditCell/date-picker.tsx',
+      'src/core/S-EditCell/select-icon.tsx',
       'src/core/S-IconSelect/index.tsx',
       'src/core/S-ProLayout/index.tsx',
       'src/core/S-Ellipsis/index.tsx',
@@ -25,6 +27,7 @@ export default defineConfig([
       'src/core/S-Tree/index.tsx',
       'src/core/S-Form/index.tsx',
       'src/core/S-Icon/index.tsx',
+      'src/core/resolver.ts',
       'src/core/helper.ts',
       'src/core/index.ts'
     ],
@@ -32,6 +35,7 @@ export default defineConfig([
       {
         dir: 'dist',
         format: 'es',
+        hoistTransitiveImports: false,
         chunkFileNames: `chunk-[name].mjs`,
         entryFileNames: chunk => {
           const id = chunk.facadeModuleId
@@ -43,11 +47,15 @@ export default defineConfig([
         dir: 'dist',
         format: 'cjs',
         exports: 'named',
+        hoistTransitiveImports: false,
         chunkFileNames: `chunk-[name].cjs`,
         entryFileNames: chunk => {
           const id = chunk.facadeModuleId
           const dir = id?.replace(/.+\/src\/core\/(([^./]+)\/)?[^./]+(\.vue|\.tsx|\.ts)/, '$2')
           return dir ? `${dir}/[name].cjs` : `[name].cjs`
+        },
+        paths: id => {
+          return id.replace('ant-design-vue/es/', 'ant-design-vue/lib/')
         }
       }
     ],
@@ -68,6 +76,13 @@ export default defineConfig([
           'src/core/**/*.d.ts',
           'src/core/**/def.*.tsx'
         ]
+      }),
+      copy({
+        targets: [{
+          dest: ['dist'],
+          src: ['src/typing/*']
+        }],
+        expandDirectories: false
       }),
       Vue(),
       VueJsx(),

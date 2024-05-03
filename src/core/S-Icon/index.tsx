@@ -8,7 +8,7 @@ import helper from '@/helper'
 type AllIconType = keyof typeof AllIcons
 type NotIconType = 'setTwoToneColor' | 'getTwoToneColor' | 'createFromIconfontCN' | 'default'
 
-export function isIconType(type: any): type is Exclude<AllIconType, NotIconType> {
+export const isIconType = (type: any): type is Exclude<AllIconType, NotIconType> => {
   return (
     type !== 'default' &&
     type !== 'getTwoToneColor' &&
@@ -18,7 +18,7 @@ export function isIconType(type: any): type is Exclude<AllIconType, NotIconType>
   )
 }
 
-export function forIconType<T = any>(type: T): T extends string ? string : T {
+export const forIconType = <T = any>(type: T): T extends string ? string : T => {
   return (
     helper.isString(type)
       ? type.replace(/(^|-)(\w)/g, (_t1, _t2, t3) => t3 && t3.toUpperCase())

@@ -7,4 +7,3 @@ declare global {
     export interface IntrinsicAttributes extends ReservedProps {}
   }
 }
-

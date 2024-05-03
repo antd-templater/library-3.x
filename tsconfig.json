@@ -5,7 +5,7 @@
     "target": "ESNext",
     "module": "ESNext",
     "jsx": "preserve",
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
     "useDefineForClassFields": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
@@ -26,15 +26,10 @@
     }
   },
   "include": [
-    "src/core/index.ts",
+    "src/core/*.ts",
     "src/core/S-*/**/*.vue",
     "src/core/S-*/**/*.tsx",
     "src/core/S-*/**/*.ts",
     "src/typing/**/*.ts"
-  ],
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
-    }
   ]
 }
