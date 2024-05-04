@@ -10,10 +10,10 @@ export const STableSelection = defineComponent({
     type: VueTypes.string<'Checkbox' | 'Radio'>().isRequired,
     indeterminate: VueTypes.bool().def(false),
     disabled: VueTypes.bool().def(false),
-    checked: VueTypes.bool().def(false)
+    checked: VueTypes.bool().def(false),
   },
   emits: {
-    check: (_checked: boolean) => true
+    check: (_checked: boolean) => true,
   },
   setup(props, context) {
     const onChange = (event: MouseEvent) => {
@@ -25,16 +25,18 @@ export const STableSelection = defineComponent({
     }
 
     const size = computed(() => {
-      return props.size === 'default' ? 'large' : props.size === 'middle'
-        ? 'default'
-        : 'small'
+      return props.size === 'default'
+        ? 'large'
+        : props.size === 'middle'
+          ? 'default'
+          : 'small'
     })
 
     return () => {
       if (props.type === 'Checkbox') {
         return (
           <div
-            class='s-table-selection-container'
+            class="s-table-selection-container"
             onClick={onStop}
           >
             <Checkbox
@@ -51,7 +53,7 @@ export const STableSelection = defineComponent({
       if (props.type === 'Radio') {
         return (
           <div
-            class='s-table-selection-container'
+            class="s-table-selection-container"
             onClick={onStop}
           >
             <Radio
@@ -64,7 +66,7 @@ export const STableSelection = defineComponent({
         )
       }
     }
-  }
+  },
 })
 
 export default STableSelection

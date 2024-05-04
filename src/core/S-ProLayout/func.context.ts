@@ -11,14 +11,14 @@ export const createContext = <T>(key: InjectionKey<T> = Symbol(), name = 'Contex
     props: {
       value: {
         type: Object as PropType<any>,
-        required: true
-      }
+        required: true,
+      },
     },
 
     setup(props, { slots }) {
       provide(key, readonly(props.value))
       return () => slots.default?.()
-    }
+    },
   })
 
   return ContextProvider as any

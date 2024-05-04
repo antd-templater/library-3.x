@@ -16,17 +16,17 @@ export const SFormNormalize: SFormNormalizeType = {
     slots: {},
     default: {
       input: 0,
-      output: 0
+      output: 0,
     },
     transfer: {
       input: (value, { helper }) => value && helper.isFiniteNumber(+value) ? +value : 0,
-      output: (value, { helper }) => value && helper.isFiniteNumber(+value) ? +value : 0
+      output: (value, { helper }) => value && helper.isFiniteNumber(+value) ? +value : 0,
     },
 
     readonly: false,
     disabled: false,
     render: true,
-    show: true
+    show: true,
   },
 
   AInput: {
@@ -43,17 +43,17 @@ export const SFormNormalize: SFormNormalizeType = {
     slots: {},
     default: {
       input: '',
-      output: ''
+      output: '',
     },
     transfer: {
       input: (value, { helper }) => helper.isPrimitive(value) ? String(value) : '',
-      output: (value, { helper }) => helper.isPrimitive(value) ? String(value) : ''
+      output: (value, { helper }) => helper.isPrimitive(value) ? String(value) : '',
     },
 
     readonly: false,
     disabled: false,
     render: true,
-    show: true
+    show: true,
   },
 
   ASwitch: {
@@ -70,17 +70,17 @@ export const SFormNormalize: SFormNormalizeType = {
     slots: {},
     default: {
       input: ({ self }) => self.props.unCheckedValue !== undefined ? self.props.unCheckedValue : false,
-      output: ({ self }) => self.props.unCheckedValue !== undefined ? self.props.unCheckedValue : false
+      output: ({ self }) => self.props.unCheckedValue !== undefined ? self.props.unCheckedValue : false,
     },
     transfer: {
       input: (value, { self }) => value === self.props.checkedValue || value === self.props.unCheckedValue ? value : self.props.unCheckedValue !== undefined ? self.props.unCheckedValue : value === true,
-      output: (value, { self }) => value === self.props.checkedValue || value === self.props.unCheckedValue ? value : self.props.unCheckedValue !== undefined ? self.props.unCheckedValue : value === true
+      output: (value, { self }) => value === self.props.checkedValue || value === self.props.unCheckedValue ? value : self.props.unCheckedValue !== undefined ? self.props.unCheckedValue : value === true,
     },
 
     readonly: false,
     disabled: false,
     render: true,
-    show: true
+    show: true,
   },
 
   ASlider: {
@@ -97,7 +97,7 @@ export const SFormNormalize: SFormNormalizeType = {
     slots: {},
     default: {
       input: ({ self }) => self.props.range === true ? [] : 0,
-      output: ({ self }) => self.props.range === true ? [] : 0
+      output: ({ self }) => self.props.range === true ? [] : 0,
     },
     transfer: {
       input(value, { helper, self }) {
@@ -109,13 +109,13 @@ export const SFormNormalize: SFormNormalizeType = {
         return self.props.range === true
           ? helper.isArray(value) ? value.filter((_, index) => index < 2).map(v => helper.isFiniteNumber(v) ? v : 0) : []
           : helper.isFiniteNumber(value) ? value : 0
-      }
+      },
     },
 
     readonly: false,
     disabled: false,
     render: true,
-    show: true
+    show: true,
   },
 
   ASelect: {
@@ -132,7 +132,7 @@ export const SFormNormalize: SFormNormalizeType = {
     slots: {},
     default: {
       input: ({ self }) => ['multiple', 'tags'].includes(self.props.mode) ? [] : undefined,
-      output: ({ self }) => ['multiple', 'tags'].includes(self.props.mode) ? [] : undefined
+      output: ({ self }) => ['multiple', 'tags'].includes(self.props.mode) ? [] : undefined,
     },
     transfer: {
       input(value, { helper, self }) {
@@ -144,13 +144,13 @@ export const SFormNormalize: SFormNormalizeType = {
         return ['multiple', 'tags'].includes(self.props.mode)
           ? helper.isArray(value) ? value.filter(v => helper.isPrimitive(v)) : helper.isPrimitive(value) ? [value] : []
           : helper.isPrimitive(value) ? value : undefined
-      }
+      },
     },
 
     readonly: false,
     disabled: false,
     render: true,
-    show: true
+    show: true,
   },
 
   ACascader: {
@@ -167,17 +167,17 @@ export const SFormNormalize: SFormNormalizeType = {
     slots: {},
     default: {
       input: [],
-      output: []
+      output: [],
     },
     transfer: {
       input: (value, { helper }) => helper.isArray(value) ? value.map(v => helper.isPrimitive(v) ? v : '') : [],
-      output: (value, { helper }) => helper.isArray(value) ? value.map(v => helper.isPrimitive(v) ? v : '') : []
+      output: (value, { helper }) => helper.isArray(value) ? value.map(v => helper.isPrimitive(v) ? v : '') : [],
     },
 
     readonly: false,
     disabled: false,
     render: true,
-    show: true
+    show: true,
   },
 
   ATreeSelect: {
@@ -194,7 +194,7 @@ export const SFormNormalize: SFormNormalizeType = {
     slots: {},
     default: {
       input: ({ self }) => self.props.multiple === true ? [] : undefined,
-      output: ({ self }) => self.props.multiple === true ? [] : undefined
+      output: ({ self }) => self.props.multiple === true ? [] : undefined,
     },
     transfer: {
       input(value, { helper, self }) {
@@ -206,13 +206,13 @@ export const SFormNormalize: SFormNormalizeType = {
         return self.props.multiple === true
           ? helper.isArray(value) ? value.filter(v => helper.isPrimitive(v)) : helper.isPrimitive(value) ? [value] : []
           : helper.isPrimitive(value) ? value : undefined
-      }
+      },
     },
 
     readonly: false,
     disabled: false,
     render: true,
-    show: true
+    show: true,
   },
 
   ARadioGroup: {
@@ -229,17 +229,17 @@ export const SFormNormalize: SFormNormalizeType = {
     slots: {},
     default: {
       input: undefined,
-      output: undefined
+      output: undefined,
     },
     transfer: {
       input: (value, { helper }) => helper.isPrimitive(value) ? value : undefined,
-      output: (value, { helper }) => helper.isPrimitive(value) ? value : undefined
+      output: (value, { helper }) => helper.isPrimitive(value) ? value : undefined,
     },
 
     readonly: false,
     disabled: false,
     render: true,
-    show: true
+    show: true,
   },
 
   ACheckboxGroup: {
@@ -256,17 +256,17 @@ export const SFormNormalize: SFormNormalizeType = {
     slots: {},
     default: {
       input: [],
-      output: []
+      output: [],
     },
     transfer: {
       input: (value, { helper }) => helper.isArray(value) ? value.filter(v => helper.isPrimitive(v)) : [],
-      output: (value, { helper }) => helper.isArray(value) ? value.filter(v => helper.isPrimitive(v)) : []
+      output: (value, { helper }) => helper.isArray(value) ? value.filter(v => helper.isPrimitive(v)) : [],
     },
 
     readonly: false,
     disabled: false,
     render: true,
-    show: true
+    show: true,
   },
 
   AAutoComplete: {
@@ -283,17 +283,17 @@ export const SFormNormalize: SFormNormalizeType = {
     slots: {},
     default: {
       input: '',
-      output: ''
+      output: '',
     },
     transfer: {
       input: (value, { helper }) => helper.isPrimitive(value) ? String(value) : '',
-      output: (value, { helper }) => helper.isPrimitive(value) ? String(value) : ''
+      output: (value, { helper }) => helper.isPrimitive(value) ? String(value) : '',
     },
 
     readonly: false,
     disabled: false,
     render: true,
-    show: true
+    show: true,
   },
 
   AInputSearch: {
@@ -310,17 +310,17 @@ export const SFormNormalize: SFormNormalizeType = {
     slots: {},
     default: {
       input: '',
-      output: ''
+      output: '',
     },
     transfer: {
       input: (value, { helper }) => helper.isPrimitive(value) ? String(value) : '',
-      output: (value, { helper }) => helper.isPrimitive(value) ? String(value) : ''
+      output: (value, { helper }) => helper.isPrimitive(value) ? String(value) : '',
     },
 
     readonly: false,
     disabled: false,
     render: true,
-    show: true
+    show: true,
   },
 
   AInputPassword: {
@@ -337,17 +337,17 @@ export const SFormNormalize: SFormNormalizeType = {
     slots: {},
     default: {
       input: '',
-      output: ''
+      output: '',
     },
     transfer: {
       input: (value, { helper }) => helper.isPrimitive(value) ? String(value) : '',
-      output: (value, { helper }) => helper.isPrimitive(value) ? String(value) : ''
+      output: (value, { helper }) => helper.isPrimitive(value) ? String(value) : '',
     },
 
     readonly: false,
     disabled: false,
     render: true,
-    show: true
+    show: true,
   },
 
   AInputTextarea: {
@@ -364,17 +364,17 @@ export const SFormNormalize: SFormNormalizeType = {
     slots: {},
     default: {
       input: '',
-      output: ''
+      output: '',
     },
     transfer: {
       input: (value, { helper }) => helper.isPrimitive(value) ? String(value) : '',
-      output: (value, { helper }) => helper.isPrimitive(value) ? String(value) : ''
+      output: (value, { helper }) => helper.isPrimitive(value) ? String(value) : '',
     },
 
     readonly: false,
     disabled: false,
     render: true,
-    show: true
+    show: true,
   },
 
   AInputNumber: {
@@ -391,17 +391,17 @@ export const SFormNormalize: SFormNormalizeType = {
     slots: {},
     default: {
       input: 0,
-      output: 0
+      output: 0,
     },
     transfer: {
       input: (value, { helper }) => helper.isFiniteNumber(+value) ? +value : '',
-      output: (value, { helper }) => helper.isFiniteNumber(+value) ? +value : ''
+      output: (value, { helper }) => helper.isFiniteNumber(+value) ? +value : '',
     },
 
     readonly: false,
     disabled: false,
     render: true,
-    show: true
+    show: true,
   },
 
   ARangePicker: {
@@ -418,7 +418,7 @@ export const SFormNormalize: SFormNormalizeType = {
     slots: {},
     default: {
       input: [],
-      output: []
+      output: [],
     },
     transfer: {
       input: (value, { helper, self }) => {
@@ -430,13 +430,13 @@ export const SFormNormalize: SFormNormalizeType = {
         const values = helper.isArray(value) ? value : []
         const format = self.props.valueFormat || self.props.format || (self.props.showTime ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD')
         return values.map((v: any) => v !== undefined && dayjs(v, format).isValid() ? dayjs(v, format).format(format) : '')
-      }
+      },
     },
 
     readonly: false,
     disabled: false,
     render: true,
-    show: true
+    show: true,
   },
 
   ADatePicker: {
@@ -453,7 +453,7 @@ export const SFormNormalize: SFormNormalizeType = {
     slots: {},
     default: {
       input: undefined,
-      output: ''
+      output: '',
     },
     transfer: {
       input: (value, { self }) => {
@@ -463,13 +463,13 @@ export const SFormNormalize: SFormNormalizeType = {
       output: (value, { self }) => {
         const format = self.props.valueFormat || self.props.format || (self.props.showTime ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD')
         return value !== undefined && dayjs(value, format).isValid() ? dayjs(value, format).format(format) : ''
-      }
+      },
     },
 
     readonly: false,
     disabled: false,
     render: true,
-    show: true
+    show: true,
   },
 
   AYearPicker: {
@@ -486,7 +486,7 @@ export const SFormNormalize: SFormNormalizeType = {
     slots: {},
     default: {
       input: undefined,
-      output: ''
+      output: '',
     },
     transfer: {
       input: (value, { self }) => {
@@ -496,13 +496,13 @@ export const SFormNormalize: SFormNormalizeType = {
       output: (value, { self }) => {
         const format = 'YYYY'
         return value !== undefined && dayjs(value, format).isValid() ? dayjs(value, format).format(format) : ''
-      }
+      },
     },
 
     readonly: false,
     disabled: false,
     render: true,
-    show: true
+    show: true,
   },
 
   AMonthPicker: {
@@ -519,7 +519,7 @@ export const SFormNormalize: SFormNormalizeType = {
     slots: {},
     default: {
       input: undefined,
-      output: ''
+      output: '',
     },
     transfer: {
       input: (value, { self }) => {
@@ -529,13 +529,13 @@ export const SFormNormalize: SFormNormalizeType = {
       output: (value, { self }) => {
         const format = (self.props.valueFormat || self.props.format) === 'YYYY-M' ? 'YYYY-M' : 'YYYY-MM'
         return value !== undefined && dayjs(value, format).isValid() ? dayjs(value, format).format(format) : ''
-      }
+      },
     },
 
     readonly: false,
     disabled: false,
     render: true,
-    show: true
+    show: true,
   },
 
   AQuarterPicker: {
@@ -552,7 +552,7 @@ export const SFormNormalize: SFormNormalizeType = {
     slots: {},
     default: {
       input: undefined,
-      output: ''
+      output: '',
     },
     transfer: {
       input: (value, _) => {
@@ -566,13 +566,13 @@ export const SFormNormalize: SFormNormalizeType = {
           : typeof value === 'string'
             ? value
             : ''
-      }
+      },
     },
 
     readonly: false,
     disabled: false,
     render: true,
-    show: true
+    show: true,
   },
 
   AWeekPicker: {
@@ -589,7 +589,7 @@ export const SFormNormalize: SFormNormalizeType = {
     slots: {},
     default: {
       input: undefined,
-      output: ''
+      output: '',
     },
     transfer: {
       input: (value, _) => {
@@ -604,13 +604,13 @@ export const SFormNormalize: SFormNormalizeType = {
           : typeof value === 'string'
             ? value
             : ''
-      }
+      },
     },
 
     readonly: false,
     disabled: false,
     render: true,
-    show: true
+    show: true,
   },
 
   ATimePicker: {
@@ -627,7 +627,7 @@ export const SFormNormalize: SFormNormalizeType = {
     slots: {},
     default: {
       input: undefined,
-      output: ''
+      output: '',
     },
     transfer: {
       input: (value, { self }) => {
@@ -637,14 +637,14 @@ export const SFormNormalize: SFormNormalizeType = {
       output: (value, { self }) => {
         const format = self.props.valueFormat || self.props.format || (self.props.use12Hours ? 'h:mm:ss a' : 'HH:mm:ss')
         return value !== undefined && dayjs(value, format).isValid() ? dayjs(value, format).format(format) : ''
-      }
+      },
     },
 
     readonly: false,
     disabled: false,
     render: true,
-    show: true
-  }
+    show: true,
+  },
 }
 
 export default SFormNormalize

@@ -32,7 +32,7 @@ export function clearMenuItem(items: RouteRecord[] | RouteRecordRaw[]): RouteRec
       if (route.meta?.hideChildInMenu !== true && route.children.some((child: RouteRecord | RouteRecordRaw) => child && child.name && child.meta?.hideInMenu !== true)) {
         return {
           ...route,
-          children: clearMenuItem(route.children)
+          children: clearMenuItem(route.children),
         }
       }
     }

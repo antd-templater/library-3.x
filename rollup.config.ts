@@ -29,7 +29,7 @@ export default defineConfig([
       'src/core/S-Icon/index.tsx',
       'src/core/resolver.ts',
       'src/core/helper.ts',
-      'src/core/index.ts'
+      'src/core/index.ts',
     ],
     output: [
       {
@@ -41,7 +41,7 @@ export default defineConfig([
           const id = chunk.facadeModuleId
           const dir = id?.replace(/.+\/src\/core\/(([^./]+)\/)?[^./]+(\.vue|\.tsx|\.ts)/, '$2')
           return dir ? `${dir}/[name].mjs` : `[name].mjs`
-        }
+        },
       },
       {
         dir: 'dist',
@@ -56,15 +56,15 @@ export default defineConfig([
         },
         paths: id => {
           return id.replace('ant-design-vue/es/', 'ant-design-vue/lib/')
-        }
-      }
+        },
+      },
     ],
     plugins: [
       alias({
         entries: [{
           find: '@',
-          replacement: new URL('./src/core', import.meta.url).pathname
-        }]
+          replacement: new URL('./src/core', import.meta.url).pathname,
+        }],
       }),
       commonjs(),
       nodeResolve(),
@@ -74,19 +74,19 @@ export default defineConfig([
         exclude: [
           'src/core/**/_.tsx',
           'src/core/**/*.d.ts',
-          'src/core/**/def.*.tsx'
-        ]
+          'src/core/**/def.*.tsx',
+        ],
       }),
       copy({
         targets: [{
           dest: ['dist'],
-          src: ['src/typing/*']
+          src: ['src/typing/*'],
         }],
-        expandDirectories: false
+        expandDirectories: false,
       }),
       Vue(),
       VueJsx(),
-      postcss()
+      postcss(),
     ],
     external: [
       /^vue(\/.+|$)/,
@@ -95,7 +95,7 @@ export default defineConfig([
       /^vue-router(\/.+|$)/,
       /^ant-design-vue(\/.+|$)/,
       /^@ant-design\/icons-vue(\/.+|$)/,
-      /^@ctrl\/tinycolor(\/.+|$)/
-    ]
-  }
+      /^@ctrl\/tinycolor(\/.+|$)/,
+    ],
+  },
 ])

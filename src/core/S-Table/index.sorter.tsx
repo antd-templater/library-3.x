@@ -9,10 +9,10 @@ export const STableSorter = defineComponent({
   inheritAttrs: false,
   props: {
     field: VueTypes.string().isRequired,
-    value: VueTypes.string<'' | 'ascend' | 'descend'>().isRequired
+    value: VueTypes.string<'' | 'ascend' | 'descend'>().isRequired,
   },
   emits: {
-    change: (_: { field: string; value: '' | 'ascend'| 'descend'; }) => true
+    change: (_: { field: string; value: '' | 'ascend' | 'descend'; }) => true,
   },
   setup(props, context) {
     const changer = (event: Event) => {
@@ -33,12 +33,12 @@ export const STableSorter = defineComponent({
     }
 
     return () => (
-      <div class='s-table-sorter-container' onClick={changer}>
-        <CaretUpOutlined style={{ fontSize: '11px', color: props.value === 'ascend' ? ATheme.useToken().token.value.colorPrimary : 'rgba(0, 0, 0, 0.45)' }}/>
-        <CaretDownOutlined style={{ fontSize: '11px', color: props.value === 'descend' ? ATheme.useToken().token.value.colorPrimary : 'rgba(0, 0, 0, 0.45)', marginTop: '-0.3em' }}/>
+      <div class="s-table-sorter-container" onClick={changer}>
+        <CaretUpOutlined style={{ fontSize: '11px', color: props.value === 'ascend' ? ATheme.useToken().token.value.colorPrimary : 'rgba(0, 0, 0, 0.45)' }} />
+        <CaretDownOutlined style={{ fontSize: '11px', color: props.value === 'descend' ? ATheme.useToken().token.value.colorPrimary : 'rgba(0, 0, 0, 0.45)', marginTop: '-0.3em' }} />
       </div>
     )
-  }
+  },
 })
 
 export default STableSorter

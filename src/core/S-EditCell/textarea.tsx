@@ -27,21 +27,21 @@ export const SEditCellTextarea = defineComponent({
     synced: VueTypes.bool().def(false),
     opened: VueTypes.bool().def(false),
     status: VueTypes.bool().def(false),
-    tooltip: VueTypes.object<{ enable?: boolean, ellipsis?: boolean }>().def(() => ({ enable: true, ellipsis: false })),
+    tooltip: VueTypes.object<{ enable?: boolean; ellipsis?: boolean; }>().def(() => ({ enable: true, ellipsis: false })),
     disabled: VueTypes.bool().def(false),
     autoSize: VueTypes.oneOfType([VueTypes.bool(), VueTypes.object()]).def(true),
     allowClear: VueTypes.bool().def(false),
     placeholder: VueTypes.string().def(),
-    cellStyle: VueTypes.object().def(() => ({}))
+    cellStyle: VueTypes.object().def(() => ({})),
   },
   emits: {
-    'edit': (proxy: { editable: boolean, value: string }) => true,
-    'blur': (proxy: { editable: boolean, value: string }) => true,
-    'focus': (proxy: { editable: boolean, value: string }) => true,
-    'change': (proxy: { editable: boolean, value: string }) => true,
-    'confirm': (proxy: { editable: boolean, value: string }) => true,
+    'edit': (proxy: { editable: boolean; value: string; }) => true,
+    'blur': (proxy: { editable: boolean; value: string; }) => true,
+    'focus': (proxy: { editable: boolean; value: string; }) => true,
+    'change': (proxy: { editable: boolean; value: string; }) => true,
+    'confirm': (proxy: { editable: boolean; value: string; }) => true,
     'update:status': (status: boolean) => true,
-    'update:text': (text: string) => true
+    'update:text': (text: string) => true,
   },
   setup(props, { emit, slots }) {
     const doEdit = (event: Event) => {
@@ -80,9 +80,9 @@ export const SEditCellTextarea = defineComponent({
       if (!props.disabled && props.check) {
         return (
           <AButton
-            class='s-editable-cell-button-check'
-            type='link'
-            icon={<CheckOutlined/>}
+            class="s-editable-cell-button-check"
+            type="link"
+            icon={<CheckOutlined />}
             style={{ ...props.cellStyle.check }}
             onClick={(event: Event) => doConfirm(event)}
           />
@@ -95,9 +95,9 @@ export const SEditCellTextarea = defineComponent({
       if (!props.disabled && props.edit) {
         return (
           <AButton
-            class='s-editable-cell-button-edit'
-            type='link'
-            icon={<EditOutlined/>}
+            class="s-editable-cell-button-edit"
+            type="link"
+            icon={<EditOutlined />}
             style={props.cellStyle.edit}
           />
         )
@@ -115,7 +115,7 @@ export const SEditCellTextarea = defineComponent({
             <AInput.TextArea
               v-model={[proxy.value, 'value']}
               size={provider.componentSize?.value}
-              class='s-editable-cell-input'
+              class="s-editable-cell-input"
               style={props.cellStyle.input}
               autoSize={props.autoSize}
               allowClear={props.allowClear}
@@ -125,7 +125,7 @@ export const SEditCellTextarea = defineComponent({
               onFocus={(event: Event) => doFocus(event)}
               onBlur={(event: Event) => doBlur(event)}
             />
-            <RenderCheckButton/>
+            <RenderCheckButton />
           </div>
         )
       }
@@ -141,7 +141,7 @@ export const SEditCellTextarea = defineComponent({
             onClick={event => !props.disabled && props.edit && doEdit(event)}
           >
             { RenderEditableCellText() }
-            <RenderEditButton/>
+            <RenderEditButton />
           </div>
         </SEllipsis>
       )
@@ -161,7 +161,7 @@ export const SEditCellTextarea = defineComponent({
 
     const proxy = reactive({
       value: props.text,
-      editable: false
+      editable: false,
     })
 
     watchEffect(() => {
@@ -176,14 +176,14 @@ export const SEditCellTextarea = defineComponent({
       <div
         style={props.cellStyle.container}
         class={['s-editable-cell-container', { editabled: proxy.editable }]}
-        onDblclick={ (event: Event) => event.stopPropagation() }
-        onClick={ (event: Event) => event.stopPropagation() }
+        onDblclick={(event: Event) => event.stopPropagation()}
+        onClick={(event: Event) => event.stopPropagation()}
       >
-        <RenderEditableContainer/>
+        <RenderEditableContainer />
       </div>
     )
   },
-  slots: {} as SEditCellDefineSlots
+  slots: {} as SEditCellDefineSlots,
 })
 
 export default SEditCellTextarea

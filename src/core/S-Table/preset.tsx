@@ -13,7 +13,7 @@ export const tableResponserDefiner = {
           data,
           pageNo,
           totalPage,
-          totalSize
+          totalSize,
         }
       }
 
@@ -29,7 +29,7 @@ export const tableResponserDefiner = {
           pageNo,
           pageSize,
           totalPage,
-          totalSize
+          totalSize,
         }
       }
     }
@@ -46,7 +46,7 @@ export const tableResponserDefiner = {
         pageNo,
         pageSize,
         totalPage,
-        totalSize
+        totalSize,
       }
     }
 
@@ -55,9 +55,9 @@ export const tableResponserDefiner = {
       pageNo: 1,
       pageSize: 0,
       totalPage: 0,
-      totalSize: 0
+      totalSize: 0,
     }
-  }
+  },
 }
 
 export default tableResponserDefiner

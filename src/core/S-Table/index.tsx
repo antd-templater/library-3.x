@@ -106,7 +106,7 @@ export const STable = defineComponent({
     immediate: VueTypes.bool().def(true),
     loadinger: VueTypes.bool().def(true),
     loading: VueTypes.bool().def(false),
-    virtual: VueTypes.bool().def(true)
+    virtual: VueTypes.bool().def(true),
   },
   emits: {
     'update:loading': (loading: boolean) => true,
@@ -120,7 +120,7 @@ export const STable = defineComponent({
     'pageChange': (pageNo: number, pageSize: number) => true,
     'expand': (keys: Array<STableKey>, nodes: Array<STableRecordType | null>) => true,
     'select': (keys: Array<STableKey>, nodes: Array<STableRecordType | null>) => true,
-    'sorter': (values: Array<STableSorterType>) => true
+    'sorter': (values: Array<STableSorterType>) => true,
   },
   setup(props, context) {
     const watchOptions = { immediate: true }
@@ -203,8 +203,8 @@ export const STable = defineComponent({
       resizer: {
         point: 0,
         queues: [] as { column: STableColumnType; width: number; minWidth: number; maxWidth: number; }[],
-        activate: false
-      }
+        activate: false,
+      },
     }
 
     const Paginator = {
@@ -229,9 +229,9 @@ export const STable = defineComponent({
         simple: helper.isBoolean(props.paginate.simple) ? props.paginate.simple : false,
         fixed: helper.isBoolean(props.paginate.fixed) ? props.paginate.fixed : undefined,
         mode: (props.paginate.mode === 'local' ? 'local' : 'remote') as 'local' | 'remote',
-        size: (props.size || '') as string
+        size: (props.size || '') as string,
       }),
-      update: (paginate: STablePartPaginate & { size?: string}) => {
+      update: (paginate: STablePartPaginate & { size?: string; }) => {
         Paginator.paginate.size = !Methoder.isOwnProperty(paginate, ['size']) ? Paginator.paginate.size : ''
         Paginator.paginate.mode = !Methoder.isOwnProperty(paginate, ['mode']) ? Paginator.paginate.mode : paginate.mode === 'local' ? 'local' : 'remote'
         Paginator.paginate.fixed = helper.isBoolean(props.paginate.fixed) ? props.paginate.fixed : (helper.isFiniteNumber(Normalizer.sticky.value.bottomFooter) || Normalizer.sticky.value.bottomFooter === true)
@@ -259,7 +259,7 @@ export const STable = defineComponent({
         Paginator.paginate.loadTotalPage = !Methoder.isOwnProperty(paginate, ['loadTotalPage']) ? (~~(Paginator.paginate.loadTotalSize! / Paginator.paginate.loadPageSize!) + (Paginator.paginate.loadTotalSize! % Paginator.paginate.loadPageSize! ? 1 : 0)) : helper.isFiniteNumber(paginate.loadTotalPage) && paginate.loadTotalPage > 0 ? ~~paginate.loadTotalPage : 0
         Paginator.paginate.loadPageNo = Paginator.paginate.loadPageNo! <= Paginator.paginate.loadTotalPage! ? Paginator.paginate.loadPageNo! : Paginator.paginate.loadTotalPage!
         Paginator.paginate.loadPageNo = Paginator.paginate.loadPageNo! > 0 ? Paginator.paginate.loadPageNo! : 1
-      }
+      },
     }
 
     const Requester = {
@@ -284,8 +284,8 @@ export const STable = defineComponent({
             pageSize: page.pageSize,
             totalPage: page.totalPage,
             totalSize: page.totalSize,
-            mode: page.mode
-          }
+            mode: page.mode,
+          },
         }
 
         const failurer = (): void => {
@@ -347,7 +347,7 @@ export const STable = defineComponent({
         const update = () => { force && Methoder.forceUpdate() }
         const request = () => Requester.core({ ...Paginator.paginate, pageNo: 1 })
         return helper.toPromise(delay).then(() => request()).finally(() => update)
-      }
+      },
     }
 
     const Normalizer = {
@@ -360,7 +360,7 @@ export const STable = defineComponent({
         leftFooter: props.sticky.leftFooter ?? true,
         rightFooter: props.sticky.rightFooter ?? true,
         bottomFooter: props.sticky.bottomFooter ?? true,
-        bottomScrollbar: props.sticky.bottomScrollbar ?? true
+        bottomScrollbar: props.sticky.bottomScrollbar ?? true,
       })),
 
       scroll: computed(() => ({
@@ -373,7 +373,7 @@ export const STable = defineComponent({
         scrollToFirstOffsetX: props.scroll.scrollToFirstOffsetX,
         scrollToFirstOffsetY: props.scroll.scrollToFirstOffsetY,
         scrollToFirstTargetX: props.scroll.scrollToFirstTargetX,
-        scrollToFirstTargetY: props.scroll.scrollToFirstTargetY
+        scrollToFirstTargetY: props.scroll.scrollToFirstTargetY,
       })),
 
       virtual: computed(() => {
@@ -422,7 +422,7 @@ export const STable = defineComponent({
         }
 
         return props.persistSourceRanges === true
-      })
+      }),
     }
 
     const Computer = {
@@ -436,7 +436,7 @@ export const STable = defineComponent({
         return {
           overflow: overflow,
           optionser: Optionser,
-          direction: 'horizontal'
+          direction: 'horizontal',
         }
       }),
       hasBorder: computed(() => {
@@ -546,7 +546,7 @@ export const STable = defineComponent({
         type CellEmpters = Set<number>[]
         type CellSpikers = Set<number>[]
         type CellCachers = Map<number, STableCellCacheType>[]
-        type CellMergers = Array<ReturnType<typeof Methoder.takeCellMegre> & { cacher: { resizable?: boolean; } }>
+        type CellMergers = Array<ReturnType<typeof Methoder.takeCellMegre> & { cacher: { resizable?: boolean; }; }>
 
         const cellMergers: CellMergers = []
         const cellCachers: CellCachers = []
@@ -559,18 +559,18 @@ export const STable = defineComponent({
           const StoreSpikers = options.spikers
           const StoreEmpters = options.empters
 
-          const rowMaxSpaner = (columns: STableColumnType[]) : number => {
+          const rowMaxSpaner = (columns: STableColumnType[]): number => {
             const spans = columns.map(column => columnSettingsCheckKeys.value.includes(column.key) ? column.rowMaxSpan : 0)
             return Math.max(0, ...spans)
           }
 
-          const colMaxSpaner = (column: STableColumnType) : number => {
+          const colMaxSpaner = (column: STableColumnType): number => {
             return helper.isNonEmptyArray(column.children)
               ? column.children.reduce((span, column) => span + colMaxSpaner(column), 0)
               : columnSettingsCheckKeys.value.includes(column.key) ? column.colMaxSpan : 0
           }
 
-          const colSpaner = (column: STableColumnType) : number => {
+          const colSpaner = (column: STableColumnType): number => {
             if (helper.isNonEmptyArray(column.children)) {
               return column.children.reduce((span, column) => span + colSpaner(column), 0)
             }
@@ -600,7 +600,7 @@ export const STable = defineComponent({
                   cellAttrs: null,
                   cellProps: null,
                   cellValue: null,
-                  cellRender: true
+                  cellRender: true,
                 })
                 continue
               }
@@ -635,7 +635,7 @@ export const STable = defineComponent({
                 cellAttrs: cellAttrs,
                 cellProps: cellProps,
                 cellValue: cellValue,
-                cellRender: cellRender
+                cellRender: cellRender,
               })
             }
           }
@@ -663,7 +663,7 @@ export const STable = defineComponent({
                       cellAttrs: nextCacher.cellAttrs,
                       cellProps: nextCacher.cellProps,
                       cellValue: nextCacher.cellValue,
-                      cellRender: true
+                      cellRender: true,
                     })
                   }
                 }
@@ -703,7 +703,7 @@ export const STable = defineComponent({
                       cellAttrs: nextCacher.cellAttrs,
                       cellProps: nextCacher.cellProps,
                       cellValue: nextCacher.cellValue,
-                      cellRender: true
+                      cellRender: true,
                     })
                   }
                 }
@@ -723,7 +723,7 @@ export const STable = defineComponent({
                 rowIndex: rowIndex,
                 cachers: cellCachers,
                 spikers: cellSpikers,
-                empters: cellEmpters
+                empters: cellEmpters,
               })
 
               if (column) {
@@ -782,8 +782,8 @@ export const STable = defineComponent({
                 maxWidth: helper.isNonEmptyObject(refCellProps) && Object.hasOwn(refCellProps, 'maxWidth') ? refCellProps.maxWidth ?? wrap.referColumn.maxWidth : wrap.referColumn.maxWidth,
                 ellipsis: helper.isNonEmptyObject(refCellProps) && Object.hasOwn(refCellProps, 'ellipsis') ? refCellProps.ellipsis ?? wrap.referColumn.ellipsis : wrap.referColumn.ellipsis,
                 tooltip: helper.isNonEmptyObject(refCellProps) && Object.hasOwn(refCellProps, 'tooltip') ? refCellProps.tooltip ?? wrap.referColumn.tooltip : wrap.referColumn.tooltip,
-                sorter: helper.isNonEmptyObject(refCellProps) && Object.hasOwn(refCellProps, 'sorter') ? refCellProps.sorter ?? wrap.referColumn.sorter : wrap.referColumn.sorter
-              }
+                sorter: helper.isNonEmptyObject(refCellProps) && Object.hasOwn(refCellProps, 'sorter') ? refCellProps.sorter ?? wrap.referColumn.sorter : wrap.referColumn.sorter,
+              },
             }
 
             if (helper.isNonEmptyArray(wrap.treeChildren)) {
@@ -834,7 +834,7 @@ export const STable = defineComponent({
           mergers: cellMergers,
           cachers: cellCachers,
           spikers: cellSpikers,
-          empters: cellEmpters
+          empters: cellEmpters,
         })
 
         // filter column when column.key in checkKeys
@@ -882,7 +882,7 @@ export const STable = defineComponent({
         const writer = (record: STableWrapRecordType, index: number) => {
           return {
             ...record,
-            rowIndex: index + 1
+            rowIndex: index + 1,
           }
         }
 
@@ -948,7 +948,7 @@ export const STable = defineComponent({
       }),
       overflowScrollTop: computed(() => {
         return Optionser.wrapperScrollTop.value > 1 || Optionser.resizerScrollTop.value > 1
-      })
+      }),
     }
 
     const Methoder = {
@@ -1012,9 +1012,9 @@ export const STable = defineComponent({
 
           if (empty) {
             const empter = {
-              taskers: [] as { count: number, render: boolean }[],
+              taskers: [] as { count: number; render: boolean; }[],
               refers: [cellCacher] as typeof queues,
-              counts: 1
+              counts: 1,
             }
 
             for (const cacher of queues) {
@@ -1038,7 +1038,7 @@ export const STable = defineComponent({
               if (!tasker || tasker.render !== render) {
                 empter.taskers.push({
                   count: count2 > count1 ? count1 : count2,
-                  render: render
+                  render: render,
                 })
               }
 
@@ -1119,7 +1119,7 @@ export const STable = defineComponent({
 
           if (megre) {
             const empter = {
-              taskers: [] as { render: boolean, refers: typeof queues }[]
+              taskers: [] as { render: boolean; refers: typeof queues; }[],
             }
 
             for (const cacher of emptys) {
@@ -1133,7 +1133,7 @@ export const STable = defineComponent({
               if (!tasker || tasker.render !== render) {
                 empter.taskers.push({
                   render: cacher.cellRender,
-                  refers: [cacher]
+                  refers: [cacher],
                 })
               }
 
@@ -1170,7 +1170,7 @@ export const STable = defineComponent({
           rowIndex,
           cacher: cellCachers.get(index)!,
           spiker: cellSpikers.has(index),
-          empter: cellEmpters.has(index)
+          empter: cellEmpters.has(index),
         }
       },
 
@@ -1182,8 +1182,8 @@ export const STable = defineComponent({
             children: helper.isNonEmptyArray(part.treeChildren)
               ? Methoder.restoreColumns(part.treeChildren)
               : !helper.isArray(part.cacheColumn.children)
-                ? part.cacheColumn.children
-                : []
+                  ? part.cacheColumn.children
+                  : [],
           }
 
           if (column.children === undefined) {
@@ -1307,8 +1307,8 @@ export const STable = defineComponent({
               'sorterValueChange',
               'customHeaderCellRender',
               'customBodyerCellRender',
-              'customFooterCellRender'
-            ]
+              'customFooterCellRender',
+            ],
           })
 
           if (!changed) {
@@ -1438,14 +1438,14 @@ export const STable = defineComponent({
               sorterValueChange: column.sorterValueChange ?? parent?.referColumn.sorterValueChange,
               customHeaderCellRender: column.customHeaderCellRender ?? parent?.referColumn.customHeaderCellRender,
               customBodyerCellRender: column.customBodyerCellRender ?? parent?.referColumn.customBodyerCellRender,
-              customFooterCellRender: column.customFooterCellRender ?? parent?.referColumn.customFooterCellRender
+              customFooterCellRender: column.customFooterCellRender ?? parent?.referColumn.customFooterCellRender,
             },
             cacheColumn: column,
             parentColumn: parent || null,
             treeChildren: [],
             rowGroupLevel: parent ? parent.rowGroupLevel + 1 : 1,
             rowGroupIndex: parent ? parent.rowGroupIndex : index,
-            rowGroupIndexs: parent ? { ...parent.rowGroupIndexs, [parent.rowGroupLevel + 1]: index } : { 1: index }
+            rowGroupIndexs: parent ? { ...parent.rowGroupIndexs, [parent.rowGroupLevel + 1]: index } : { 1: index },
           }
 
           wraps.push(wrapColumn)
@@ -1469,7 +1469,7 @@ export const STable = defineComponent({
         return wraps
       },
 
-      normalizeTreeSources(sources: STableRecordType[], wraps: STableWrapRecordType[] = [], parent?: STableWrapRecordType, offset?: { line: number }) {
+      normalizeTreeSources(sources: STableRecordType[], wraps: STableWrapRecordType[] = [], parent?: STableWrapRecordType, offset?: { line: number; }) {
         for (const [index, source] of sources.entries()) {
           let rowKey = ''
           let treeKey = ''
@@ -1484,7 +1484,7 @@ export const STable = defineComponent({
 
           if (!offset) {
             offset = {
-              line: -1
+              line: -1,
             }
           }
 
@@ -1512,7 +1512,7 @@ export const STable = defineComponent({
             rowTreeKeyField: treeKey,
             rowKeyField: rowKey,
             rowHeight: oldRecord ? oldRecord.rowHeight : renderRowPresets.minHeight,
-            rowIndex: -1
+            rowIndex: -1,
           }
 
           wraps.push(wrapRecord)
@@ -1541,7 +1541,7 @@ export const STable = defineComponent({
             title: wrap.title,
             children: [],
             disabled: wrap.referColumn.settings.disabled,
-            column: wrap.referColumn
+            column: wrap.referColumn,
           }
 
           if (!columnSettingsAllKeys.value.includes(wrap.key)) {
@@ -1685,8 +1685,8 @@ export const STable = defineComponent({
                 title: column.title,
                 column,
                 rowIndex,
-                colIndex
-              })
+                colIndex,
+              }),
             )
 
             const cellAttrs = !isVNode(renderNode) && helper.isObject(renderNode) && helper.isObject(renderNode.attrs) && renderNode.attrs || undefined
@@ -1703,7 +1703,7 @@ export const STable = defineComponent({
               title: column.title,
               column,
               rowIndex,
-              colIndex
+              colIndex,
             })
 
             const cellAttrs = !isVNode(renderNode) && helper.isObject(renderNode) && helper.isObject(renderNode.attrs) && renderNode.attrs || undefined
@@ -1815,7 +1815,7 @@ export const STable = defineComponent({
                 groupIndexs,
                 globalIndex,
                 column,
-                colIndex
+                colIndex,
               })
 
               const cellAttrs = !isVNode(renderNode) && helper.isObject(renderNode) && helper.isObject(renderNode.attrs) && renderNode.attrs || undefined
@@ -1837,7 +1837,7 @@ export const STable = defineComponent({
                 groupIndexs,
                 globalIndex,
                 column,
-                colIndex
+                colIndex,
               })
 
               const cellAttrs = !isVNode(renderNode) && helper.isObject(renderNode) && helper.isObject(renderNode.attrs) && renderNode.attrs || undefined
@@ -1929,7 +1929,7 @@ export const STable = defineComponent({
                 column,
                 colIndex,
                 sources,
-                paginate
+                paginate,
               })
 
               const cellAttrs = !isVNode(renderNode) && helper.isObject(renderNode) && helper.isObject(renderNode.attrs) && renderNode.attrs || undefined
@@ -1949,7 +1949,7 @@ export const STable = defineComponent({
                 column,
                 colIndex,
                 sources,
-                paginate
+                paginate,
               })
 
               const cellAttrs = !isVNode(renderNode) && helper.isObject(renderNode) && helper.isObject(renderNode.attrs) && renderNode.attrs || undefined
@@ -2200,7 +2200,7 @@ export const STable = defineComponent({
         // Update Clean RowKeys
         Methoder.cleanSelectedRowKeys()
         Methoder.cleanExpandedRowKeys()
-      }
+      },
     }
 
     const Observer = {
@@ -2214,7 +2214,7 @@ export const STable = defineComponent({
 
       resizeObserver: new ResizeObserver(() => {
         Eventer.updateColumnRender()
-      })
+      }),
     }
 
     const Eventer = {
@@ -2226,7 +2226,7 @@ export const STable = defineComponent({
 
           const store = {
             queues: queues,
-            range: Math.abs(range)
+            range: Math.abs(range),
           }
 
           queues.sort((next, prev) => {
@@ -2496,7 +2496,7 @@ export const STable = defineComponent({
               minWidth,
               maxWidth,
               width: tableThead?.offsetWidth || 0,
-              height: tableThead?.offsetHeight || 0
+              height: tableThead?.offsetHeight || 0,
             }
           })
         }
@@ -2534,7 +2534,7 @@ export const STable = defineComponent({
                 Updater.updateColSettings(wrap.treeChildren)
               }
             }
-          }
+          },
         }
 
         Updater.updateColSettings(treeColumns.value)
@@ -2561,7 +2561,7 @@ export const STable = defineComponent({
         Eventer.updateResizerContainer()
         Eventer.updateWrapperContainer()
         Eventer.updateColGroupRender()
-      }
+      },
     }
 
     const Render = {
@@ -2573,7 +2573,7 @@ export const STable = defineComponent({
         const style = {
           width: 'auto',
           minWidth: `0px`,
-          maxWidth: 'none'
+          maxWidth: 'none',
         }
 
         if (/^\+?\d+\.?\d*(px)?$/.test(`${width}`)) {
@@ -2628,19 +2628,19 @@ export const STable = defineComponent({
 
         if (/^\+?\d+\.?\d*(px)?$/.test(`${column.minWidth}`)) {
           Object.assign(style, {
-            minWidth: parseInt(`${column.minWidth}`) + 'px'
+            minWidth: parseInt(`${column.minWidth}`) + 'px',
           })
         }
 
         if (/^\+?\d+\.?\d*(px)?$/.test(`${column.maxWidth}`)) {
           Object.assign(style, {
-            maxWidth: parseInt(`${column.maxWidth}`) + 'px'
+            maxWidth: parseInt(`${column.maxWidth}`) + 'px',
           })
         }
 
         if (typeof column.align === 'string') {
           Object.assign(style, {
-            'text-align': column.align || 'left'
+            'text-align': column.align || 'left',
           })
         }
 
@@ -2653,7 +2653,7 @@ export const STable = defineComponent({
             'z-index': 5,
             'position': 'sticky',
             'box-shadow': overflowScrollLeft && (isThead || fixeder.colOffset + fixeder.colSpan - 1 === Computer.fixedLeftIndex.value) ? boxShadow : 'none',
-            'left': (leftWidth + offsetWidth > 0 ? offsetWidth + leftWidth - 1 : offsetWidth) + 'px'
+            'left': (leftWidth + offsetWidth > 0 ? offsetWidth + leftWidth - 1 : offsetWidth) + 'px',
           })
         }
 
@@ -2666,7 +2666,7 @@ export const STable = defineComponent({
             'position': 'sticky',
             'box-shadow': overflowScrollRight && (isThead || fixeder.colOffset === Computer.fixedRightIndex.value) ? boxShadow : 'none',
             'z-index': reverseSizes.length + 5 - fixeder.colOffset,
-            'right': (rightWidth > 0 ? rightWidth - 1 : 0) + 'px'
+            'right': (rightWidth > 0 ? rightWidth - 1 : 0) + 'px',
           })
         }
 
@@ -2688,7 +2688,7 @@ export const STable = defineComponent({
 
           if (typeof marks.align === 'string') {
             Object.assign(attrs.style, {
-              'text-align': marks.align || 'left'
+              'text-align': marks.align || 'left',
             })
           }
 
@@ -2696,7 +2696,7 @@ export const STable = defineComponent({
         }
 
         return {}
-      }
+      },
     }
 
     const Emiter = {
@@ -2724,7 +2724,7 @@ export const STable = defineComponent({
       sorter: (values: Array<STableSorterType>) => {
         context.emit('sorter', values)
         Requester.refresh()
-      }
+      },
     }
 
     watch([() => props.columns, () => props.sources, () => props.summarys], ([newColumns, newSources, newSummarys], [oldColumns, oldSources, oldSummarys]) => {
@@ -2845,7 +2845,7 @@ export const STable = defineComponent({
       select: Methoder.updateSetupSelectedRowKeys,
       expand: Methoder.updateSetupExpandedRowKeys,
       update: Methoder.forceUpdate,
-      clear: Methoder.forceClear
+      clear: Methoder.forceClear,
     })
 
     const RenderTableScroller = (ctx: typeof context) => {
@@ -2894,7 +2894,7 @@ export const STable = defineComponent({
 
         allKeys.push(
           ...enableKeys,
-          ...disableKeys
+          ...disableKeys,
         )
       }
 
@@ -2904,8 +2904,8 @@ export const STable = defineComponent({
 
         return (
           <colgroup>
-            { render && <col col-index={-1} style={{ width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` }}/>}
-            { ref(Computer.filterDataColumns).value.map(column => <col col-index={column.colIndex} style={Render.computeTableGroupStyle(column)}/>) }
+            { render && <col col-index={-1} style={{ width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` }} />}
+            { ref(Computer.filterDataColumns).value.map(column => <col col-index={column.colIndex} style={Render.computeTableGroupStyle(column)} />) }
           </colgroup>
         )
       }
@@ -2923,12 +2923,12 @@ export const STable = defineComponent({
           Object.assign(style, {
             'position': 'sticky',
             'top': top + 'px',
-            'z-index': 50
+            'z-index': 50,
           })
 
           if (Computer.overflowScrollTop.value) {
             Object.assign(style, {
-              'box-shadow': '0 1px 1px 0 rgba(0, 0, 0, .15)'
+              'box-shadow': '0 1px 1px 0 rgba(0, 0, 0, .15)',
             })
           }
         }
@@ -2954,13 +2954,13 @@ export const STable = defineComponent({
                     small: '8px 5px',
                     middle: '12px 7px',
                     default: '16px 6px',
-                    large: '16px 6px'
+                    large: '16px 6px',
                   }
 
                   const style: any = {
                     padding: store[Normalizer.size.value] || '16px 6px',
                     textAlign: 'center',
-                    ...props.tHeaderThStyle
+                    ...props.tHeaderThStyle,
                   }
 
                   if (Computer.fixedLeftIndex.value > -1) {
@@ -2968,7 +2968,7 @@ export const STable = defineComponent({
                       'text-align': 'center',
                       'position': 'sticky',
                       'left': '0px',
-                      'z-index': 5
+                      'z-index': 5,
                     })
                   }
 
@@ -3096,7 +3096,7 @@ export const STable = defineComponent({
                         <th
                           colspan={column.colSpan}
                           rowspan={column.rowSpan}
-                          { ...Methoder.getValue(columnCellAttrs.value[rowIndex][colIndex]) }
+                          {...Methoder.getValue(columnCellAttrs.value[rowIndex][colIndex])}
                           style={{ ...Render.computeTableChildStyle(column, column, 'thead'), ...props.tHeaderThStyle }}
                           class={['s-table-thead-th', { 's-table-thead-leafed-th': column.rowIndex === column.rowMaxSpan - 1, 's-table-thead-draggable-th': props.columnPresetDraggable === true, 's-table-thead-sortable-th': sortable }]}
                           col-index={column.colIndex}
@@ -3112,9 +3112,9 @@ export const STable = defineComponent({
                             { computeTitle ?? renderTitle }
                           </SEllipsis>
 
-                          <div class='s-table-thead-th-functional'>
+                          <div class="s-table-thead-th-functional">
                             { sortable ? <STableSorter field={sorterField} value={sorterValue} onChange={sorterChanger} /> : null }
-                            { column.resizable ? <span class='s-table-thead-functional-resizable'/> : null }
+                            { column.resizable ? <span class="s-table-thead-functional-resizable" /> : null }
                           </div>
                         </th>
                       )
@@ -3124,9 +3124,9 @@ export const STable = defineComponent({
 
                 return (
                   <tr
-                    { ...Methoder.getValue(columnRowAttrs.value[rowIndex]) }
+                    {...Methoder.getValue(columnRowAttrs.value[rowIndex])}
                     style={{ 'position': 'relative', 'z-index': listColumns.value.length - rowIndex }}
-                    class='s-table-thead-tr'
+                    class="s-table-thead-tr"
                     row-index={rowIndex}
                   >
                     { RenderSelection() }
@@ -3146,13 +3146,13 @@ export const STable = defineComponent({
               class={['s-table-tbody', { 's-border-table': ([] as any).concat(props.border).includes('tbody') }]}
               style={{ 'position': 'relative', 'z-index': 10 }}
             >
-              <tr class='s-table-tbody-tr'>
+              <tr class="s-table-tbody-tr">
                 <td
-                  class='s-table-tbody-td'
+                  class="s-table-tbody-td"
                   style={{ ...props.tBodyerTdStyle }}
                   colspan={Computer.hasSelection.value ? Computer.filterDataColumns.value.length + 1 : Computer.filterDataColumns.value.length}
                 >
-                  <STableEmpty/>
+                  <STableEmpty />
                 </td>
               </tr>
             </tbody>
@@ -3221,7 +3221,7 @@ export const STable = defineComponent({
                     cellAttrs: null,
                     cellProps: null,
                     cellValue: null,
-                    cellRender: true
+                    cellRender: true,
                   })
                 }
               }
@@ -3245,7 +3245,7 @@ export const STable = defineComponent({
                     cellAttrs: null,
                     cellProps: null,
                     cellValue: null,
-                    cellRender: false
+                    cellRender: false,
                   })
 
                   count++
@@ -3274,7 +3274,7 @@ export const STable = defineComponent({
                       cellAttrs: null,
                       cellProps: null,
                       cellValue: null,
-                      cellRender: true
+                      cellRender: true,
                     })
                   }
                 }
@@ -3318,7 +3318,7 @@ export const STable = defineComponent({
               cellAttrs: cellAttrs,
               cellProps: cellProps,
               cellValue: cellValue,
-              cellRender: cellRender
+              cellRender: cellRender,
             })
           }
         }
@@ -3339,7 +3339,7 @@ export const STable = defineComponent({
             childrenNodes.push({
               count: record.treeChildren.length || 0,
               level: groupLevel,
-              parentKey: parentKey
+              parentKey: parentKey,
             })
 
             expandedNodes.push({
@@ -3350,11 +3350,11 @@ export const STable = defineComponent({
                   groupIndex,
                   groupLevel,
                   groupIndexs,
-                  globalIndex
-                })
+                  globalIndex,
+                }),
               ),
               level: groupLevel,
-              parentKey: parentKey
+              parentKey: parentKey,
             })
           }
 
@@ -3407,7 +3407,7 @@ export const STable = defineComponent({
               if (!expandedNode && treeChildren.length === 0) {
                 return (
                   <div
-                    class='s-table-tbody-expand-container'
+                    class="s-table-tbody-expand-container"
                     style={{ left: width + 'px' }}
                   />
                 )
@@ -3427,14 +3427,14 @@ export const STable = defineComponent({
 
                 return (
                   <div
-                    class='s-table-tbody-expand-container'
+                    class="s-table-tbody-expand-container"
                     style={{ left: width + 'px' }}
                   >
                     <div
                       class={['s-table-tbody-expand-button', { 's-table-tbody-expand-disabled': rowExpandable }]}
                       onClick={updateExpandedRowKeys}
                     >
-                      <MinusOutlined class='s-table-tbody-expand-icon'/>
+                      <MinusOutlined class="s-table-tbody-expand-icon" />
                     </div>
                   </div>
                 )
@@ -3451,14 +3451,14 @@ export const STable = defineComponent({
 
                 return (
                   <div
-                    class='s-table-tbody-expand-container'
+                    class="s-table-tbody-expand-container"
                     style={{ left: width + 'px' }}
                   >
                     <div
                       class={['s-table-tbody-expand-button', { 's-table-tbody-expand-disabled': rowExpandable }]}
                       onClick={toggleExpandedRowKeys}
                     >
-                      <PlusOutlined class='s-table-tbody-expand-icon'/>
+                      <PlusOutlined class="s-table-tbody-expand-icon" />
                     </div>
                   </div>
 
@@ -3469,6 +3469,10 @@ export const STable = defineComponent({
             const RenderValuerNode = (column: STableColumnType, value: any) => {
               if (!expandIcon) {
                 return value
+              }
+
+              if (expandIcon === true) {
+                expandIcon = false
               }
 
               if (!totalHasChildNode && !totalHasExpandNode) {
@@ -3486,10 +3490,10 @@ export const STable = defineComponent({
 
               return (
                 <div
-                  class='s-table-tbody-valuer-container'
+                  class="s-table-tbody-valuer-container"
                   style={{ marginLeft: width + 'px' }}
                 >
-                  { (expandIcon = false) || value }
+                  { value }
                 </div>
               )
             }
@@ -3504,13 +3508,13 @@ export const STable = defineComponent({
                   small: '8px 5px',
                   middle: '12px 7px',
                   default: '16px 6px',
-                  large: '16px 6px'
+                  large: '16px 6px',
                 }
 
                 const style: any = {
                   padding: store[Normalizer.size.value] || '16px 6px',
                   textAlign: 'center',
-                  ...props.tBodyerTdStyle
+                  ...props.tBodyerTdStyle,
                 }
 
                 if (Computer.fixedLeftIndex.value > -1) {
@@ -3518,7 +3522,7 @@ export const STable = defineComponent({
                     'text-align': 'center',
                     'position': 'sticky',
                     'left': '0px',
-                    'z-index': 5
+                    'z-index': 5,
                   })
                 }
 
@@ -3593,7 +3597,7 @@ export const STable = defineComponent({
                     rowIndex: record.rowIndex,
                     cachers: cellCachers,
                     spikers: cellSpikers,
-                    empters: cellEmpters
+                    empters: cellEmpters,
                   })
 
                   const cellRender = options.cacher.cellRender
@@ -3621,27 +3625,28 @@ export const STable = defineComponent({
                       groupIndexs,
                       globalIndex,
                       column,
-                      colIndex
+                      colIndex,
                     }
 
                     const fixeder = {
                       colOffset: colOffset - colSpan,
-                      colSpan: colSpan
+                      colSpan: colSpan,
                     }
 
-                    const computeValue = cellEmpters.has(colIndex) ? null
+                    const computeValue = cellEmpters.has(colIndex)
+                      ? null
                       : !Methoder.isVueNode(cellValue) && helper.isFunction(ctx.slots.bodyerCell)
-                        ? Methoder.getVNodes(renderSlot(ctx.slots, 'bodyerCell', options)) ?? cellValue
-                        : cellValue
+                          ? Methoder.getVNodes(renderSlot(ctx.slots, 'bodyerCell', options)) ?? cellValue
+                          : cellValue
 
                     return (
                       <td
                         rowspan={rowSpan}
                         colspan={colSpan}
                         style={{ ...Render.computeTableChildStyle(column, fixeder, 'tbody'), ...props.tBodyerTdStyle }}
-                        { ...Render.computeTableChildAttrs(cellAttrs, 'tbody') }
-                        { ...Render.computeTableChildProps(cellProps, 'tbody') }
-                        class={'s-table-tbody-td'}
+                        {...Render.computeTableChildAttrs(cellAttrs, 'tbody')}
+                        {...Render.computeTableChildProps(cellProps, 'tbody')}
+                        class="s-table-tbody-td"
                         col-index={column.colIndex}
                         col-offset={column.colOffset}
                         row-global-index={globalIndex}
@@ -3670,7 +3675,7 @@ export const STable = defineComponent({
               if (!rowExpandedByClick || !rowExpandedRender) {
                 return (
                   <tr
-                    { ...Methoder.getValue(sourceRowAttrs.value[globalIndex]) }
+                    {...Methoder.getValue(sourceRowAttrs.value[globalIndex])}
                     row-global-index={record.rowGlobalIndex}
                     row-group-index={record.rowGroupIndex}
                     row-group-level={record.rowGroupLevel}
@@ -3702,12 +3707,12 @@ export const STable = defineComponent({
                     }
 
                     event.stopPropagation()
-                  }
+                  },
                 }
 
                 return (
                   <tr
-                    { ...Methoder.getValue(sourceRowAttrs.value[globalIndex]) }
+                    {...Methoder.getValue(sourceRowAttrs.value[globalIndex])}
                     class={['s-table-tbody-tr', 's-table-tbody-click-tr']}
                     row-global-index={record.rowGlobalIndex}
                     row-group-index={record.rowGroupIndex}
@@ -3744,7 +3749,7 @@ export const STable = defineComponent({
                 const tdStyle: any = {
                   'position': 'relative',
                   'z-index': 8,
-                  ...props.expandTdStyle
+                  ...props.expandTdStyle,
                 }
 
                 const divStyle: any = {
@@ -3754,7 +3759,7 @@ export const STable = defineComponent({
                   'align-items': 'flex-start',
                   'width': '100%',
                   'height': '100%',
-                  'padding-left': (props.expandIndentSize > 0 ? props.expandIndentSize : totalWidth) + 'px'
+                  'padding-left': (props.expandIndentSize > 0 ? props.expandIndentSize : totalWidth) + 'px',
                 }
 
                 return (
@@ -3812,13 +3817,13 @@ export const STable = defineComponent({
                 small: '8px 5px',
                 middle: '12px 7px',
                 default: '16px 6px',
-                large: '16px 6px'
+                large: '16px 6px',
               }
 
               const style: any = {
                 padding: store[Normalizer.size.value] || '16px 6px',
                 textAlign: 'center',
-                ...props.tBodyerTdStyle
+                ...props.tBodyerTdStyle,
               }
 
               if (Computer.fixedLeftIndex.value > -1) {
@@ -3826,7 +3831,7 @@ export const STable = defineComponent({
                   'text-align': 'center',
                   'position': 'sticky',
                   'left': '0px',
-                  'z-index': 5
+                  'z-index': 5,
                 })
               }
 
@@ -3847,7 +3852,7 @@ export const STable = defineComponent({
                 if (column) {
                   const fixeder = {
                     colOffset: colOffset++,
-                    colSpan: 1
+                    colSpan: 1,
                   }
 
                   return (
@@ -3891,7 +3896,7 @@ export const STable = defineComponent({
           Object.assign(style, {
             'position': 'sticky',
             'bottom': /^\+?\d+\.?\d*$/.test(`${bottomFooter}`) ? `${(bottomFooter as number) + (visible ? height : 0)}px` : `${visible ? height : 0}px`,
-            'z-index': 80
+            'z-index': 80,
           })
         }
 
@@ -3950,7 +3955,7 @@ export const STable = defineComponent({
                     cellAttrs: null,
                     cellProps: null,
                     cellValue: null,
-                    cellRender: true
+                    cellRender: true,
                   })
                 }
               }
@@ -3967,7 +3972,7 @@ export const STable = defineComponent({
                     cellAttrs: null,
                     cellProps: null,
                     cellValue: null,
-                    cellRender: false
+                    cellRender: false,
                   })
                 }
               }
@@ -3988,7 +3993,7 @@ export const STable = defineComponent({
                       cellAttrs: null,
                       cellProps: null,
                       cellValue: null,
-                      cellRender: true
+                      cellRender: true,
                     })
                   }
                 }
@@ -4006,7 +4011,7 @@ export const STable = defineComponent({
               cellAttrs: cellAttrs,
               cellProps: cellProps,
               cellValue: cellValue,
-              cellRender: cellRender
+              cellRender: cellRender,
             })
           }
         }
@@ -4027,8 +4032,8 @@ export const STable = defineComponent({
 
                 return (
                   <tr
-                    { ...Methoder.getValue(summaryRowAttrs.value[rowIndex]) }
-                    class={'s-table-tfoot-tr'}
+                    {...Methoder.getValue(summaryRowAttrs.value[rowIndex])}
+                    class="s-table-tfoot-tr"
                     row-index={rowIndex}
                   >
                     {
@@ -4039,7 +4044,7 @@ export const STable = defineComponent({
                           rowIndex: rowIndex,
                           cachers: cellCachers,
                           spikers: cellSpikers,
-                          empters: cellEmpters
+                          empters: cellEmpters,
                         })
 
                         const cellRender = options.cacher.cellRender
@@ -4066,27 +4071,28 @@ export const STable = defineComponent({
                             rowIndex: rowIndex,
                             colIndex: colIndex,
                             paginate: paginate,
-                            sources: sources
+                            sources: sources,
                           }
 
                           const fixeder = {
                             colOffset: colOffset - colSpan,
-                            colSpan: colSpan
+                            colSpan: colSpan,
                           }
 
-                          const computeValue = cellEmpters.has(colIndex) ? null
+                          const computeValue = cellEmpters.has(colIndex)
+                            ? null
                             : !Methoder.isVueNode(cellValue) && helper.isFunction(ctx.slots.footerCell)
-                              ? Methoder.getVNodes(renderSlot(ctx.slots, 'footerCell', options)) ?? cellValue
-                              : cellValue
+                                ? Methoder.getVNodes(renderSlot(ctx.slots, 'footerCell', options)) ?? cellValue
+                                : cellValue
 
                           return (
                             <td
                               rowspan={rowSpan}
                               colspan={colSpan + (colPrefix > 0 ? colPrefix-- : 0)}
                               style={{ ...Render.computeTableChildStyle(column, fixeder, 'tfoot'), ...props.tFooterTdStyle }}
-                              { ...Render.computeTableChildAttrs(cellAttrs, 'tfoot') }
-                              { ...Render.computeTableChildProps(cellProps, 'tfoot') }
-                              class={'s-table-tfoot-td'}
+                              {...Render.computeTableChildAttrs(cellAttrs, 'tfoot')}
+                              {...Render.computeTableChildProps(cellProps, 'tfoot')}
+                              class="s-table-tfoot-td"
                               col-index={column.colIndex}
                               col-offset={column.colOffset}
                               row-index={rowIndex}
@@ -4119,7 +4125,7 @@ export const STable = defineComponent({
         const style: any = {
           position: 'relative',
           zIndex: 1000,
-          ...props.paginateStyle
+          ...props.paginateStyle,
         }
 
         const bottomFooter = Normalizer.sticky.value.bottomFooter
@@ -4129,14 +4135,14 @@ export const STable = defineComponent({
           Object.assign(style, {
             position: 'sticky',
             bottom: /^\+?\d+\.?\d*$/.test(`${paginateFixed}`) ? `${paginateFixed}px` : 0,
-            left: 0
+            left: 0,
           })
         }
 
         return (
           <STablePaginater
-            { ...Paginator.paginate }
-            size={ Normalizer.size.value === 'default' ? 'default' : 'small' }
+            {...Paginator.paginate}
+            size={Normalizer.size.value === 'default' ? 'default' : 'small'}
             onPageSizeChange={Emiter.pageSizeChange}
             onPageChange={Emiter.pageChange}
             style={style}
@@ -4148,7 +4154,7 @@ export const STable = defineComponent({
         if (Normalizer.sticky.value.bottomScrollbar !== true) {
           return
         }
-        return <STableScrollbar { ...Computer.scrollbar.value }/>
+        return <STableScrollbar {...Computer.scrollbar.value} />
       }
 
       const RenderTableCursor = () => {
@@ -4222,7 +4228,7 @@ export const STable = defineComponent({
                       width: $recter.width,
                       minWidth: helper.isFiniteNumber(column.minWidth) && column.minWidth > 0 ? column.minWidth : 0,
                       maxWidth: helper.isFiniteNumber(column.maxWidth) && column.maxWidth > 0 ? column.maxWidth : Number.MAX_SAFE_INTEGER,
-                      column: column
+                      column: column,
                     })
                   }
 
@@ -4284,26 +4290,26 @@ export const STable = defineComponent({
         's-border-table': Computer.hasBorder.value,
         's-header-table': Computer.hasHeader.value,
         's-bodyer-table': Computer.hasBodyer.value,
-        's-footer-table': Computer.hasFooter.value
+        's-footer-table': Computer.hasFooter.value,
       }
 
       const WrapperTableStyle = {
         tableLayout: !['fixed', 'auto'].includes(props.tableLayout)
           ? listColumns.value.length > 1 ? 'auto' : 'fixed'
-          : props.tableLayout
+          : props.tableLayout,
       }
 
       const WrapperScollerStyle = {
         width: Computer.tableBodyWidth.value,
         maxHeight: Computer.tableBodyHeight.value,
         minWidth: Computer.tableBodyWidth.value !== 'auto' && !(['fit-content', 'max-content'].includes(Computer.tableBodyWidth.value)) ? '0px' : '100%',
-        overflow: Computer.tableBodyOverflow.value ?? (Computer.tableBodyWidth.value !== '100%' || Computer.tableBodyHeight.value !== 'auto' ? 'auto' : 'visible')
+        overflow: Computer.tableBodyOverflow.value ?? (Computer.tableBodyWidth.value !== '100%' || Computer.tableBodyHeight.value !== 'auto' ? 'auto' : 'visible'),
       }
 
       return (
         <div
           ref={Optionser.refTableWrapper}
-          class={'s-nested-table-wrapper'}
+          class="s-nested-table-wrapper"
           style={WrapperScollerStyle} // @ts-ignore
           onScrollPassive={Eventer.updateWrapperContainer}
           onMousedown={WrapperMousedown}
@@ -4348,7 +4354,7 @@ export const STable = defineComponent({
           if (isFixedTop || topHeader === true || helper.isFiniteNumber(topHeader)) {
             Object.assign(style, {
               position: 'sticky',
-              top: /^\+?\d+\.?\d*$/.test(`${topHeader}`) ? `${topHeader}px` : 0
+              top: /^\+?\d+\.?\d*$/.test(`${topHeader}`) ? `${topHeader}px` : 0,
             })
           }
         }
@@ -4380,7 +4386,7 @@ export const STable = defineComponent({
             refChildNodes[index] = temChildNodes.find(col => {
               return (
                 col.referColumn.rowIndex === node.column.rowIndex &&
-                  col.referColumn.colIndex === node.column.colIndex
+                col.referColumn.colIndex === node.column.colIndex
               )
             })!
           }
@@ -4412,7 +4418,7 @@ export const STable = defineComponent({
 
       const refTableContainerStyle = {
         width: ['fit-content', 'max-content'].includes(Computer.tableBodyWidth.value) && Computer.tableBodyOverflow.value === 'visible' ? 'fit-content' : '100%',
-        minWidth: ['fit-content', 'max-content'].includes(Computer.tableBodyWidth.value) && Computer.tableBodyOverflow.value === 'visible' ? '100%' : '0'
+        minWidth: ['fit-content', 'max-content'].includes(Computer.tableBodyWidth.value) && Computer.tableBodyOverflow.value === 'visible' ? '100%' : '0',
       }
 
       const refTableVariablerStyle = {
@@ -4429,7 +4435,7 @@ export const STable = defineComponent({
 
         '--table-thead-color': new TinyColor(token.value.colorFillAlter)
           .onBackground(token.value.colorBgContainer)
-          .toHexString()
+          .toHexString(),
       }
 
       return (
@@ -4450,7 +4456,7 @@ export const STable = defineComponent({
     return () => RenderTableContianer(context)
   },
   slots: {} as STableeDefineSlots<STableRecordType>,
-  methods: {} as STableDefineMethods
+  methods: {} as STableDefineMethods,
 })
 
 export const tableCustomHeaderRowAttrsDefiner = (customHeaderRowAttrs: STableCustomHeaderRowAttrs) => customHeaderRowAttrs

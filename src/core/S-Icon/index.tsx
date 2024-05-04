@@ -1,4 +1,3 @@
-/* eslint-disable vue/no-setup-props-destructure */
 import * as VueTypes from 'vue-types'
 import * as AllIcons from '@ant-design/icons-vue'
 import { createFromIconfontCN } from '@ant-design/icons-vue'
@@ -34,10 +33,10 @@ export const SIcon = defineComponent({
     rotate: VueTypes.number().def(undefined),
     iconPrefix: VueTypes.string().def(undefined),
     iconfontUrl: VueTypes.string().def(undefined),
-    twoToneColor: VueTypes.any<string | [string, string]>().def()
+    twoToneColor: VueTypes.any<string | [string, string]>().def(),
   },
   emits: {
-    click: (_: MouseEvent) => true
+    click: (_: MouseEvent) => true,
   },
   setup(props, context) {
     return () => {
@@ -49,7 +48,7 @@ export const SIcon = defineComponent({
       const IconComponent = isIconType(icon) ? AllIcons[icon] : null
 
       if (IconComponent) {
-        return <IconComponent { ...bind } onClick={event => context.emit('click', event)}/>
+        return <IconComponent {...bind} onClick={event => context.emit('click', event)} />
       }
 
       if (iconPrefix && iconfontUrl && type.startsWith(iconPrefix)) {
@@ -59,12 +58,12 @@ export const SIcon = defineComponent({
         delete binds.iconfontUrl
         delete binds.iconPrefix
 
-        return <IconFont { ...binds } />
+        return <IconFont {...binds} />
       }
 
       return null
     }
-  }
+  },
 })
 
 export default SIcon

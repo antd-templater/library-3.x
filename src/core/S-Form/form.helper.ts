@@ -74,12 +74,12 @@ export const formValidator: SFormValidatorManager = {
     }
 
     return rule
-  }
+  },
 }
 
 export default {
   formGroupsDefiner,
   formRulesDefiner,
   formGridDefiner,
-  formValidator
+  formValidator,
 }

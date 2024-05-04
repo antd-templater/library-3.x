@@ -84,7 +84,7 @@ export default {
   lowerCase,
   assign,
   clone,
-  equal
+  equal,
 }
 
 export {
@@ -118,5 +118,5 @@ export {
   lowerCase,
   assign,
   clone,
-  equal
+  equal,
 }

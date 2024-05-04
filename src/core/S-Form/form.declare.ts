@@ -51,7 +51,7 @@ export type SFormGrid = {
 
   xs?: number | { flex?: number | string; offset?: number; order?: number; pull?: number; push?: number; span?: number; };
   sm?: number | { flex?: number | string; offset?: number; order?: number; pull?: number; push?: number; span?: number; };
-  md?:number | { flex?: number | string; offset?: number; order?: number; pull?: number; push?: number; span?: number; };
+  md?: number | { flex?: number | string; offset?: number; order?: number; pull?: number; push?: number; span?: number; };
   lg?: number | { flex?: number | string; offset?: number; order?: number; pull?: number; push?: number; span?: number; };
   xl?: number | { flex?: number | string; offset?: number; order?: number; pull?: number; push?: number; span?: number; };
   xxl?: number | { flex?: number | string; offset?: number; order?: number; pull?: number; push?: number; span?: number; };
@@ -69,16 +69,16 @@ export type SFormColItem = {
   layer: Record<string, any>;
 
   props: Record<string, any>;
-  slots: Record<string, VNode | Function>;
+  slots: Record<string, VNode | ((...rest: any[]) => any)>;
 
   default: {
-    input: string | number | boolean | undefined | null | Record<string, any> | Array<any> | ((options: { helper: typeof helper, self: DeepReadonly<SFormColItem> }) => any);
-    output: string | number | boolean | undefined | null | Record<string, any> | Array<any> | ((options: { helper: typeof helper, self: DeepReadonly<SFormColItem> }) => any);
+    input: string | number | boolean | undefined | null | Record<string, any> | Array<any> | ((options: { helper: typeof helper; self: DeepReadonly<SFormColItem>; }) => any);
+    output: string | number | boolean | undefined | null | Record<string, any> | Array<any> | ((options: { helper: typeof helper; self: DeepReadonly<SFormColItem>; }) => any);
   };
 
   transfer: {
-    input: (value: any, options: { helper: typeof helper, self: DeepReadonly<SFormColItem> }) => any;
-    output: (value: any, options: { helper: typeof helper, self: DeepReadonly<SFormColItem> }) => any;
+    input: (value: any, options: { helper: typeof helper; self: DeepReadonly<SFormColItem>; }) => any;
+    output: (value: any, options: { helper: typeof helper; self: DeepReadonly<SFormColItem>; }) => any;
   };
 
   readonly: Ref<boolean> | boolean;
@@ -98,16 +98,16 @@ export type SFormColPartItem = {
   rules?: Rule | Array<Rule>;
 
   props?: Record<string, any>;
-  slots?: Record<string, VNode | Function>;
+  slots?: Record<string, VNode | ((...rest: any[]) => any)>;
 
   default?: {
-    input?: string | number | boolean | undefined | null | Record<string, any> | Array<any> | ((options: { helper: typeof helper, self: DeepReadonly<SFormColItem> }) => any);
-    output?: string | number | boolean | undefined | null | Record<string, any> | Array<any> | ((options: { helper: typeof helper, self: DeepReadonly<SFormColItem> }) => any);
+    input?: string | number | boolean | undefined | null | Record<string, any> | Array<any> | ((options: { helper: typeof helper; self: DeepReadonly<SFormColItem>; }) => any);
+    output?: string | number | boolean | undefined | null | Record<string, any> | Array<any> | ((options: { helper: typeof helper; self: DeepReadonly<SFormColItem>; }) => any);
   };
 
   transfer?: {
-    input?: (value: any, options: { helper: typeof helper, self: DeepReadonly<SFormColItem> }) => any;
-    output?: (value: any, options: { helper: typeof helper, self: DeepReadonly<SFormColItem> }) => any;
+    input?: (value: any, options: { helper: typeof helper; self: DeepReadonly<SFormColItem>; }) => any;
+    output?: (value: any, options: { helper: typeof helper; self: DeepReadonly<SFormColItem>; }) => any;
   };
 
   readonly?: Ref<boolean> | boolean;
@@ -158,6 +158,6 @@ export type SFormGroupPartItem = {
 }
 
 export type SFormNormalizeType = Record<SFormType, SFormColItem>
-export type SFormValidatorRule = Omit<Rule, 'message' | 'validator'> & { message: string, validator: Rule['validator'] | string }
+export type SFormValidatorRule = Omit<Rule, 'message' | 'validator'> & { message: string; validator: Rule['validator'] | string; }
 export type SFormGroupsDefiner = (config: Array<SFormGroupPartItem | SFormRowPartItem | SFormColPartItem>) => Array<SFormGroupPartItem | SFormRowPartItem | SFormColPartItem>
 export type SFormValidatorManager = Record<string, (options: SFormValidatorRule) => SFormValidatorRule>

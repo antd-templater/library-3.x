@@ -5,10 +5,10 @@ export const AntdLibraryResolver = () => {
       if (AntdLibraries.includes(name)) {
         return {
           name: name,
-          from: `@antd-templater/library-3.x`
+          from: `@antd-templater/library-3.x`,
         }
       }
-    }
+    },
   } as const
 }
 
@@ -49,5 +49,5 @@ export const AntdLibraries = [
   'treeEmitExpandDefiner',
   'treeEmitChangeDefiner',
   'treeDropHandlerDefiner',
-  'treeReplaceFieldsDefiner'
+  'treeReplaceFieldsDefiner',
 ]

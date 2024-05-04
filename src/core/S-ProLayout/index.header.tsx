@@ -16,7 +16,7 @@ export const GlobalHeader = defineComponent({
   props: {
     ...defaultSettingProps,
     ...defaultBaseMenuProps,
-    ...defaultGlobalHeaderProps
+    ...defaultGlobalHeaderProps,
   },
   setup(props, context) {
     const routeContext = useRouteContext()
@@ -30,7 +30,7 @@ export const GlobalHeader = defineComponent({
 
       const menus = props.menuData.map(item => ({
         ...item,
-        children: undefined
+        children: undefined,
       }))
 
       return clearMenuItem(menus as any[])
@@ -43,13 +43,13 @@ export const GlobalHeader = defineComponent({
     const baseClassName = computed(() => {
       return {
         [basePrefixCls]: true,
-        [`${basePrefixCls}-layout-${props.layout}`]: props.layout && props.headerTheme === 'dark'
+        [`${basePrefixCls}-layout-${props.layout}`]: props.layout && props.headerTheme === 'dark',
       }
     })
 
     const RenderDefaultContent = () => {
       return (
-        <div style='flex: 1 1 auto'>
+        <div style="flex: 1 1 auto">
           { context?.slots.default?.() }
         </div>
       )
@@ -65,8 +65,8 @@ export const GlobalHeader = defineComponent({
       if (!props.isMobile && props.splitMenus && props.layout === 'mix') {
         return (
           <TopNavHeader
-            { ...props }
-            mode='horizontal'
+            {...props}
+            mode="horizontal"
             theme={headerTheme.value}
             menuData={menuData.value}
           />
@@ -80,7 +80,7 @@ export const GlobalHeader = defineComponent({
         </div>
       )
     }
-  }
+  },
 })
 
 export default GlobalHeader

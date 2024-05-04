@@ -66,14 +66,14 @@ export type SProLayoutRouteRequiredProps = Required<SProLayoutRouteContextProps>
 export type SProLayoutWithFalse<T> = T | false
 export type SProLayoutWithTrue<T> = T | true
 
-export type SProLayoutHeaderRender = SProLayoutWithFalse<(props: SProLayoutProps, vnode: any) => SProLayoutRenderNode>;
-export type SProLayoutRightContentRender = SProLayoutWithFalse<(props: SProLayoutProps) => SProLayoutRenderNode>;
-export type SProLayoutSubMenuItemRender = SProLayoutWithFalse<(props: { item: SProLayoutMenuItem; children?: SProLayoutRenderNode[] }) => SProLayoutRenderNode>;
-export type SProLayoutMenuHeaderRender = SProLayoutWithFalse<(props: SProLayoutProps) => SProLayoutRenderNode>;
-export type SProLayoutMenuItemRender = SProLayoutWithFalse<(props: { item: SProLayoutMenuItem; title?: SProLayoutRenderNode; icon?: SProLayoutRenderNode }) => SProLayoutRenderNode>;
-export type SProLayoutMenuContentRender = SProLayoutWithFalse<(props: SProLayoutProps, defaultRender: SProLayoutRenderNode) => SProLayoutRenderNode>;
-export type SProLayoutMenuFooterRender = SProLayoutWithFalse<(props: SProLayoutProps) => SProLayoutRenderNode>;
-export type SProLayoutMenuExtraRender = SProLayoutWithFalse<(props: SProLayoutProps) => SProLayoutRenderNode>;
+export type SProLayoutHeaderRender = SProLayoutWithFalse<(props: SProLayoutProps, vnode: any) => SProLayoutRenderNode>
+export type SProLayoutRightContentRender = SProLayoutWithFalse<(props: SProLayoutProps) => SProLayoutRenderNode>
+export type SProLayoutSubMenuItemRender = SProLayoutWithFalse<(props: { item: SProLayoutMenuItem; children?: SProLayoutRenderNode[]; }) => SProLayoutRenderNode>
+export type SProLayoutMenuHeaderRender = SProLayoutWithFalse<(props: SProLayoutProps) => SProLayoutRenderNode>
+export type SProLayoutMenuItemRender = SProLayoutWithFalse<(props: { item: SProLayoutMenuItem; title?: SProLayoutRenderNode; icon?: SProLayoutRenderNode; }) => SProLayoutRenderNode>
+export type SProLayoutMenuContentRender = SProLayoutWithFalse<(props: SProLayoutProps, defaultRender: SProLayoutRenderNode) => SProLayoutRenderNode>
+export type SProLayoutMenuFooterRender = SProLayoutWithFalse<(props: SProLayoutProps) => SProLayoutRenderNode>
+export type SProLayoutMenuExtraRender = SProLayoutWithFalse<(props: SProLayoutProps) => SProLayoutRenderNode>
 
 export type SProLayoutRenderNode =
 | ((...props: any[]) => VNode)

@@ -81,7 +81,7 @@ export default {
     app.component('STree', STree)
     app.component('SForm', SForm)
     app.component('SIcon', SIcon)
-  }
+  },
 }
 
 export {
@@ -142,5 +142,5 @@ export {
   proUseRouteContext,
   proFirstMenuChildren,
   proCreateRouteContext,
-  proProvideRouteContext
+  proProvideRouteContext,
 }

@@ -2,18 +2,18 @@
 
 declare module 'vue' {
   export interface GlobalComponents {
-    SEditCellDatePicker: typeof import('./S-EditCell/date-picker')['default']
-    SEditCellTreeSelect: typeof import('./S-EditCell/tree-select')['default']
-    SEditCellSelectIcon: typeof import('./S-EditCell/select-icon')['default']
-    SEditCellTextarea: typeof import('./S-EditCell/textarea')['default']
-    SEditCellSelect: typeof import('./S-EditCell/select')['default']
-    SEditCellInput: typeof import('./S-EditCell/input')['default']
-    SIconSelect: typeof import('./S-IconSelect')['default']
-    SEllipsis: typeof import('./S-Ellipsis')['default']
-    STable: typeof import('./S-Table')['default']
-    STree: typeof import('./S-Tree')['default']
-    SForm: typeof import('./S-Form')['default']
-    SIcon: typeof import('./S-Icon')['default']
+    SEditCellDatePicker: typeof import('./S-EditCell/date-picker')['default'];
+    SEditCellTreeSelect: typeof import('./S-EditCell/tree-select')['default'];
+    SEditCellSelectIcon: typeof import('./S-EditCell/select-icon')['default'];
+    SEditCellTextarea: typeof import('./S-EditCell/textarea')['default'];
+    SEditCellSelect: typeof import('./S-EditCell/select')['default'];
+    SEditCellInput: typeof import('./S-EditCell/input')['default'];
+    SIconSelect: typeof import('./S-IconSelect')['default'];
+    SEllipsis: typeof import('./S-Ellipsis')['default'];
+    STable: typeof import('./S-Table')['default'];
+    STree: typeof import('./S-Tree')['default'];
+    SForm: typeof import('./S-Form')['default'];
+    SIcon: typeof import('./S-Icon')['default'];
   }
 }
 
@@ -48,7 +48,7 @@ declare global {
     SFormRowItem,
     SFormType,
     SFormValidatorManager,
-    SFormValidatorRule
+    SFormValidatorRule,
   } from './S-Form'
 
   export type {
@@ -85,7 +85,7 @@ declare global {
     STableTreeKey,
     STableValuer,
     STableWrapColumnType,
-    STableWrapRecordType
+    STableWrapRecordType,
   } from './S-Table'
 
   export type {
@@ -113,7 +113,7 @@ declare global {
     STreeTargeter,
     STreeTargetNode,
     STreeTargetNodes,
-    STreeTransformer
+    STreeTransformer,
   } from './S-Tree'
 }
 

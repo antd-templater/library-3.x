@@ -16,7 +16,7 @@ export type SEditCellPickerMode = PickerMode
 type SEditCellDefineSlots = SlotsType<{
   editableCellText: {
     editable: boolean;
-    date: dayjs.Dayjs | null,
+    date: dayjs.Dayjs | null;
     value: string;
     text: string;
   };
@@ -39,20 +39,20 @@ export const SEditCellDatePicker = defineComponent({
     synced: VueTypes.bool().def(false),
     opened: VueTypes.bool().def(false),
     status: VueTypes.bool().def(false),
-    tooltip: VueTypes.object<{ enable?: boolean, ellipsis?: boolean }>().def(() => ({ enable: true, ellipsis: false })),
+    tooltip: VueTypes.object<{ enable?: boolean; ellipsis?: boolean; }>().def(() => ({ enable: true, ellipsis: false })),
     disabled: VueTypes.bool().def(false),
     allowClear: VueTypes.bool().def(false),
     placeholder: VueTypes.string().def(),
-    cellStyle: VueTypes.object().def(() => ({}))
+    cellStyle: VueTypes.object().def(() => ({})),
   },
   emits: {
-    'edit': (proxy: { editable: boolean, value: string }) => true,
-    'blur': (proxy: { editable: boolean, value: string }) => true,
-    'focus': (proxy: { editable: boolean, value: string }) => true,
-    'change': (proxy: { editable: boolean, value: string }) => true,
-    'confirm': (proxy: { editable: boolean, value: string }) => true,
+    'edit': (proxy: { editable: boolean; value: string; }) => true,
+    'blur': (proxy: { editable: boolean; value: string; }) => true,
+    'focus': (proxy: { editable: boolean; value: string; }) => true,
+    'change': (proxy: { editable: boolean; value: string; }) => true,
+    'confirm': (proxy: { editable: boolean; value: string; }) => true,
     'update:status': (status: boolean) => true,
-    'update:text': (text: string) => true
+    'update:text': (text: string) => true,
   },
   setup(props, { emit, slots }) {
     const doDayjs = (date: any) => {
@@ -100,9 +100,9 @@ export const SEditCellDatePicker = defineComponent({
       if (!props.disabled && props.check) {
         return (
           <AButton
-            class='s-editable-cell-button-check'
-            type='link'
-            icon={<CheckOutlined/>}
+            class="s-editable-cell-button-check"
+            type="link"
+            icon={<CheckOutlined />}
             style={{ ...props.cellStyle.check }}
             onClick={(event: Event) => doConfirm(event)}
           />
@@ -115,9 +115,9 @@ export const SEditCellDatePicker = defineComponent({
       if (!props.disabled && props.edit) {
         return (
           <AButton
-            class='s-editable-cell-button-edit'
-            type='link'
-            icon={<EditOutlined/>}
+            class="s-editable-cell-button-edit"
+            type="link"
+            icon={<EditOutlined />}
             style={props.cellStyle.edit}
           />
         )
@@ -135,7 +135,7 @@ export const SEditCellDatePicker = defineComponent({
             <ADatePicker
               v-model={[proxy.date, 'value']}
               size={provider.componentSize?.value}
-              class='s-editable-cell-input'
+              class="s-editable-cell-input"
               style={props.cellStyle.input}
               mode={props.mode}
               picker={props.picker}
@@ -148,7 +148,7 @@ export const SEditCellDatePicker = defineComponent({
               onFocus={(event: Event) => doFocus(event)}
               onBlur={(event: Event) => doBlur(event)}
             />
-            <RenderCheckButton/>
+            <RenderCheckButton />
           </div>
         )
       }
@@ -165,7 +165,7 @@ export const SEditCellDatePicker = defineComponent({
             onClick={event => !props.disabled && props.edit && doEdit(event)}
           >
             { RenderEditableCellText() }
-            <RenderEditButton/>
+            <RenderEditButton />
           </div>
         </SEllipsis>
       )
@@ -186,7 +186,7 @@ export const SEditCellDatePicker = defineComponent({
     const proxy = reactive({
       date: doDayjs(props.text),
       value: props.text,
-      editable: false
+      editable: false,
     })
 
     watchEffect(() => {
@@ -202,14 +202,14 @@ export const SEditCellDatePicker = defineComponent({
       <div
         style={props.cellStyle.container}
         class={['s-editable-cell-container', { editabled: proxy.editable }]}
-        onDblclick={ (event: Event) => event.stopPropagation() }
-        onClick={ (event: Event) => event.stopPropagation() }
+        onDblclick={(event: Event) => event.stopPropagation()}
+        onClick={(event: Event) => event.stopPropagation()}
       >
-        <RenderEditableContainer/>
+        <RenderEditableContainer />
       </div>
     )
   },
-  slots: {} as SEditCellDefineSlots
+  slots: {} as SEditCellDefineSlots,
 })
 
 export default SEditCellDatePicker

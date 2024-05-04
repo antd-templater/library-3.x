@@ -25,14 +25,14 @@ export const LazyMenuIcon: FunctionalComponent<TypeLazyMenuIcon> = props => {
 
   if (helper.isNonEmptyString(icon) && (/^https?:\/\/[\s\S]+/i).test(icon)) {
     return (
-      <span role='img' class='anticon'>
-        <img src={icon} alt='icon' class={`${prefixCls}-lazy-menu-icon`} />
+      <span role="img" class="anticon">
+        <img src={icon} alt="icon" class={`${prefixCls}-lazy-menu-icon`} />
       </span>
     )
   }
 
   if (helper.isNonEmptyString(icon) && isIconType(icon)) {
-    return <SIcon { ...props } type={icon} />
+    return <SIcon {...props} type={icon} />
   }
 
   if (isVNode(icon)) {

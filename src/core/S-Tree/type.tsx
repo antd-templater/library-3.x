@@ -146,9 +146,9 @@ export interface STreeMethoder {
   doTreeSelected: (keys: STreeKeys) => void;
 
   doEventDragstart: (info: STreeEventDragstart) => void;
-  doEventExpand: (keys: STreeKeys | { expanded: STreeKeys }) => void;
-  doEventSelect: (keys: STreeKeys | { selected: STreeKeys }) => void;
-  doEventCheck: (keys: STreeKeys | { checked: STreeKeys }) => void;
+  doEventExpand: (keys: STreeKeys | { expanded: STreeKeys; }) => void;
+  doEventSelect: (keys: STreeKeys | { selected: STreeKeys; }) => void;
+  doEventCheck: (keys: STreeKeys | { checked: STreeKeys; }) => void;
   doEventDrop: (info: STreeEventDrop) => void;
 
   doTreeLoad: (keys: STreeKeys) => Promise<void[]>;
@@ -215,14 +215,14 @@ export interface STreeEmiterExpand {
 export interface STreeEmiterChange {
   type: 'reload' | 'append' | 'remove' | 'change';
   reloadNodes: Array<{ parentNode?: STreePartSourceNode | null; rootChildNodes: STreeSourceNodes; oldChildNodes: STreeSourceNodes; newChildNodes: STreeSourceNodes; }>;
-  appendNodes: Array<{ parentNode?: STreePartSourceNode | null; rootChildNodes: STreeSourceNodes; appendChildNodes: STreeSourceNodes }>;
-  removeNodes: Array<{ parentNode?: STreePartSourceNode | null; rootChildNodes: STreeSourceNodes; removeChildNodes: STreeSourceNodes }>;
+  appendNodes: Array<{ parentNode?: STreePartSourceNode | null; rootChildNodes: STreeSourceNodes; appendChildNodes: STreeSourceNodes; }>;
+  removeNodes: Array<{ parentNode?: STreePartSourceNode | null; rootChildNodes: STreeSourceNodes; removeChildNodes: STreeSourceNodes; }>;
   loadedKeys: STreeKeys;
   loadKeys: STreeKeys;
 }
 
 export interface STreeLoadData<T = STreeSourceNode> {
-  (treeNode: T, options?: { loadKeys: STreeKeys, loadedKeys: STreeKeys, checkedKeys: STreeKeys; outCheckedKeys: STreeKeys; selectedKeys: STreeKeys; expandedKeys: STreeKeys; }): Promise<STreeSourceNodes>;
+  (treeNode: T, options?: { loadKeys: STreeKeys; loadedKeys: STreeKeys; checkedKeys: STreeKeys; outCheckedKeys: STreeKeys; selectedKeys: STreeKeys; expandedKeys: STreeKeys; }): Promise<STreeSourceNodes>;
 }
 
 export type STreeKey = Key

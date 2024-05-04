@@ -7,7 +7,7 @@ export const STableScrollbar = defineComponent({
   props: {
     overflow: VueTypes.string().isRequired,
     optionser: VueTypes.object().isRequired,
-    direction: VueTypes.string().isRequired
+    direction: VueTypes.string().isRequired,
   },
   setup(props) {
     const store = reactive({
@@ -16,7 +16,7 @@ export const STableScrollbar = defineComponent({
       mousedownX: 0,
       mousedownY: 0,
       scrollbarX: 0,
-      scrollbarY: 0
+      scrollbarY: 0,
     })
 
     const size = ref(8)
@@ -37,7 +37,7 @@ export const STableScrollbar = defineComponent({
           windowHeight: props.optionser.windowInnerHeight.value,
           windowWidth: props.optionser.windowInnerWidth.value,
           container: props.optionser.refTableContainer.value,
-          table: props.optionser.refTableNoder.value
+          table: props.optionser.refTableNoder.value,
         }
       }
 
@@ -52,7 +52,7 @@ export const STableScrollbar = defineComponent({
         windowHeight: props.optionser.windowInnerHeight.value,
         windowWidth: props.optionser.windowInnerWidth.value,
         container: props.optionser.refTableContainer.value,
-        table: props.optionser.refTableNoder.value
+        table: props.optionser.refTableNoder.value,
       }
     })
 
@@ -199,7 +199,7 @@ export const STableScrollbar = defineComponent({
           cursor: `pointer`,
           zIndex: 99999,
           bottom: 0,
-          left: 0
+          left: 0,
         })
 
         Object.assign(scrollbarStyle, {
@@ -207,7 +207,7 @@ export const STableScrollbar = defineComponent({
           width: `${(Optionser.value.clientWidth / Optionser.value.scrollWidth * Optionser.value.clientWidth).toFixed(3)}px`,
           transform: `translate(${(Optionser.value.scrollLeft / Optionser.value.scrollWidth * Optionser.value.clientWidth).toFixed(3)}px, 0)`,
           backgroundColor: `rgba(0, 0, 0, 0.5)`,
-          borderRadius: `${size.value / 2}px`
+          borderRadius: `${size.value / 2}px`,
         })
       }
 
@@ -223,7 +223,7 @@ export const STableScrollbar = defineComponent({
           cursor: `pointer`,
           zIndex: 99999,
           bottom: 0,
-          left: 0
+          left: 0,
         })
 
         Object.assign(scrollbarStyle, {
@@ -231,7 +231,7 @@ export const STableScrollbar = defineComponent({
           height: `${(Optionser.value.clientHeight / Optionser.value.scrollHeight * Optionser.value.clientHeight).toFixed(3)}px`,
           transform: `translate(0, ${(Optionser.value.scrollTop / Optionser.value.scrollHeight * Optionser.value.clientHeight).toFixed(3)}px)`,
           backgroundColor: `rgba(0, 0, 0, 0.5)`,
-          borderRadius: `${size.value / 2}px`
+          borderRadius: `${size.value / 2}px`,
         })
       }
 
@@ -254,20 +254,20 @@ export const STableScrollbar = defineComponent({
           onMousedown={containerMouseDown}
           onMouseenter={() => { size.value = 12 }}
           onMouseleave={() => { size.value = 8 }}
-          class='s-table-scrollbar-container'
+          class="s-table-scrollbar-container"
           style={containerStyle}
           ref={container}
         >
           <div
             onMousedown={scrollbarMouseDown}
-            class='s-table-scrollbar'
+            class="s-table-scrollbar"
             style={scrollbarStyle}
             ref={scrollbar}
           />
         </div>
       )
     }
-  }
+  },
 })
 
 export default STableScrollbar

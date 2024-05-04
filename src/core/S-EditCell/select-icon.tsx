@@ -34,7 +34,7 @@ export const SEditCellSelectIcon = defineComponent({
     synced: VueTypes.bool().def(false),
     opened: VueTypes.bool().def(false),
     status: VueTypes.bool().def(false),
-    tooltip: VueTypes.object<{ enable?: boolean, ellipsis?: boolean }>().def(() => ({ enable: true, ellipsis: false })),
+    tooltip: VueTypes.object<{ enable?: boolean; ellipsis?: boolean; }>().def(() => ({ enable: true, ellipsis: false })),
     disabled: VueTypes.bool().def(false),
     options: VueTypes.array<SEditCellSelectOptionType>().def(undefined),
     showArrow: VueTypes.bool().def(true),
@@ -44,16 +44,16 @@ export const SEditCellSelectIcon = defineComponent({
     placeholder: VueTypes.string().def(),
     optionLabelProp: VueTypes.string().def(),
     optionFilterProp: VueTypes.string().def(),
-    cellStyle: VueTypes.object().def(() => ({}))
+    cellStyle: VueTypes.object().def(() => ({})),
   },
   emits: {
-    'edit': (proxy: { editable: boolean, value: SEditCellSelectValueType }) => true,
-    'blur': (proxy: { editable: boolean, value: SEditCellSelectValueType }) => true,
-    'focus': (proxy: { editable: boolean, value: SEditCellSelectValueType }) => true,
-    'change': (proxy: { editable: boolean, value: SEditCellSelectValueType }) => true,
-    'confirm': (proxy: { editable: boolean, value: SEditCellSelectValueType }) => true,
+    'edit': (proxy: { editable: boolean; value: SEditCellSelectValueType; }) => true,
+    'blur': (proxy: { editable: boolean; value: SEditCellSelectValueType; }) => true,
+    'focus': (proxy: { editable: boolean; value: SEditCellSelectValueType; }) => true,
+    'change': (proxy: { editable: boolean; value: SEditCellSelectValueType; }) => true,
+    'confirm': (proxy: { editable: boolean; value: SEditCellSelectValueType; }) => true,
     'update:text': (text: SEditCellSelectValueType) => true,
-    'update:status': (status: boolean) => true
+    'update:status': (status: boolean) => true,
   },
   setup(props, { emit, slots }) {
     const doEdit = (event: Event) => {
@@ -91,9 +91,9 @@ export const SEditCellSelectIcon = defineComponent({
       if (!props.disabled && props.check) {
         return (
           <AButton
-            class='s-editable-cell-button-check'
-            type='link'
-            icon={<CheckOutlined/>}
+            class="s-editable-cell-button-check"
+            type="link"
+            icon={<CheckOutlined />}
             style={{ ...props.cellStyle.check }}
             onClick={(event: Event) => doConfirm(event)}
           />
@@ -106,9 +106,9 @@ export const SEditCellSelectIcon = defineComponent({
       if (!props.disabled && props.edit) {
         return (
           <AButton
-            class='s-editable-cell-button-edit'
-            type='link'
-            icon={<EditOutlined/>}
+            class="s-editable-cell-button-edit"
+            type="link"
+            icon={<EditOutlined />}
             style={props.cellStyle.edit}
           />
         )
@@ -126,10 +126,10 @@ export const SEditCellSelectIcon = defineComponent({
             <SIconSelect
               v-model={[proxy.value, 'value']}
               size={provider.componentSize?.value}
-              class='s-editable-cell-input'
+              class="s-editable-cell-input"
               style={props.cellStyle.input}
               options={props.options}
-              mode={'tags'}
+              mode="tags"
               multiple={false}
               showArrow={props.showArrow}
               allowClear={props.allowClear}
@@ -141,7 +141,7 @@ export const SEditCellSelectIcon = defineComponent({
               onFocus={(event: Event) => doFocus(event)}
               onBlur={(event: Event) => doBlur(event)}
             />
-            <RenderCheckButton/>
+            <RenderCheckButton />
           </div>
         )
       }
@@ -165,7 +165,7 @@ export const SEditCellSelectIcon = defineComponent({
             onClick={event => !props.disabled && props.edit && doEdit(event)}
           >
             { RenderEditableCellText() }
-            <RenderEditButton/>
+            <RenderEditButton />
           </div>
         </SEllipsis>
       )
@@ -180,7 +180,15 @@ export const SEditCellSelectIcon = defineComponent({
 
       const slotText = slots.editableCellText ? slots.editableCellText({ text: props.text, ...toRaw(proxy) }) : null
       const cellText = (isPrimitive ? helper.takeTextByKey(props.options, text, fieldLabel, fieldValue, fieldOptions) || props.text : props.text) as any
-      const cellIcon = slotText ?? (isIconType(cellText) ? <span><SIcon type={cellText} style='margin-right: 5px;' /> {cellText}</span> : cellText)
+      const cellIcon = slotText ?? (isIconType(cellText)
+        ? (
+          <span>
+            <SIcon type={cellText} style="margin-right: 5px;" />
+            {' '}
+            {cellText}
+          </span>
+          )
+        : cellText)
       const empty = props.empty
 
       return cellIcon || cellIcon === 0
@@ -192,7 +200,7 @@ export const SEditCellSelectIcon = defineComponent({
 
     const proxy = reactive({
       value: props.text,
-      editable: false
+      editable: false,
     })
 
     watchEffect(() => {
@@ -207,14 +215,14 @@ export const SEditCellSelectIcon = defineComponent({
       <div
         style={props.cellStyle.container}
         class={['s-editable-cell-container', { editabled: proxy.editable }]}
-        onDblclick={ (event: Event) => event.stopPropagation() }
-        onClick={ (event: Event) => event.stopPropagation() }
+        onDblclick={(event: Event) => event.stopPropagation()}
+        onClick={(event: Event) => event.stopPropagation()}
       >
-        <RenderEditableContainer/>
+        <RenderEditableContainer />
       </div>
     )
   },
-  slots: {} as SEditCellDefineSlots
+  slots: {} as SEditCellDefineSlots,
 })
 
 export default SEditCellSelectIcon

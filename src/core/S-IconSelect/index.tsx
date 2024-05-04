@@ -30,26 +30,40 @@ export const SIconSelect = defineComponent({
     options: VueTypes.array<SIconSelectOption>().def(() => defaultOptions),
     value: VueTypes.any<string | number | string[] | number[]>().def(),
     mode: VueTypes.string<'multiple' | 'tags'>().def(),
-    size: VueTypes.string<'large' | 'middle' | 'small'>().def()
+    size: VueTypes.string<'large' | 'middle' | 'small'>().def(),
   },
   emits: {
     'update:value': (_: string | number | string[] | number[]) => true,
     'change': (value: any, option: any | any[]) => true,
     'search': (_: string) => true,
     'click': (_: Event) => true,
-    'blur': (_: Event) => true
+    'blur': (_: Event) => true,
   },
   setup(props, { emit }) {
     const OptionRender = (props: any) => {
-      return isIconType(props.value)
-        ? <span><SIcon type={props.value} style='margin: 0px 3px 0 -3px; font-size: 18px; vertical-align: middle;'/>{props.label}</span>
-        : <span>{props.label}</span>
+      if (isIconType(props.value)) {
+        return (
+          <span>
+            <SIcon type={props.value} style="margin: 0px 3px 0 -3px; font-size: 18px; vertical-align: middle;" />
+            {props.label}
+          </span>
+        )
+      }
+
+      return <span>{props.label}</span>
     }
 
     const TagRender = (props: any) => {
-      return isIconType(props.value)
-        ? <span><SIcon type={props.value} style='margin: 0px 3px 2px 2px; font-size: 20px; vertical-align: middle;'/>{props.label}</span>
-        : <span>{props.label}</span>
+      if (isIconType(props.value)) {
+        return (
+          <span>
+            <SIcon type={props.value} style="margin: 0px 3px 2px 2px; font-size: 20px; vertical-align: middle;" />
+            {props.label}
+          </span>
+        )
+      }
+
+      return <span>{props.label}</span>
     }
 
     const open: any = ref(undefined)
@@ -101,7 +115,7 @@ export const SIconSelect = defineComponent({
         />
       )
     }
-  }
+  },
 })
 
 export default SIconSelect

@@ -49,8 +49,8 @@ export const STree = defineComponent({
     filterField: VueTypes.string<'key' | 'title'>().def('title'),
     filterValue: VueTypes.any<string | number>().def(''),
     replaceFields: VueTypes.object<STreeFieldNames>().def(() => ({})),
-    allowCheckedLevel: VueTypes.any<number | Function>().def(1),
-    allowSelectedLevel: VueTypes.any<number | Function>().def(1),
+    allowCheckedLevel: VueTypes.any<number | ((...rest: any[]) => boolean)>().def(1),
+    allowSelectedLevel: VueTypes.any<number | ((...rest: any[]) => boolean)>().def(1),
     forceCleanWhenNotInTreeNodes: VueTypes.bool().def(false),
     forceCleanWhenRemoveTreeNode: VueTypes.bool().def(true),
     forceApplyDisableCheckbox: VueTypes.bool().def(false),
@@ -75,7 +75,7 @@ export const STree = defineComponent({
     loading: VueTypes.bool().def(false),
     virtual: VueTypes.bool().def(true),
     tooltip: VueTypes.bool().def(true),
-    sticky: VueTypes.bool().def(false)
+    sticky: VueTypes.bool().def(false),
   },
   emits: {
     'check': (emiter: STreeEmiterCheck) => true,
@@ -87,7 +87,7 @@ export const STree = defineComponent({
     'update:filterValue': (value: string | number) => true,
     'update:expandedKeys': (keys: STreeKeys) => true,
     'update:selectedKeys': (keys: STreeKeys) => true,
-    'update:checkedKeys': (keys: STreeKeys) => true
+    'update:checkedKeys': (keys: STreeKeys) => true,
   },
   setup(props, context) {
     const Cacher: STreeCacher = {
@@ -95,7 +95,7 @@ export const STree = defineComponent({
       checkedKeys: shallowReactive([]),
       selectedKeys: shallowReactive([]),
       expandedKeys: shallowReactive([]),
-      treeContainer: shallowRef(null)
+      treeContainer: shallowRef(null),
     }
 
     const Stater: STreeStater = {
@@ -115,7 +115,7 @@ export const STree = defineComponent({
       propTreeNodes: shallowReactive([]),
 
       filterField: shallowRef('title'),
-      filterValue: shallowRef('')
+      filterValue: shallowRef(''),
     }
 
     const Sourcer: STreeSourcer = {
@@ -129,7 +129,7 @@ export const STree = defineComponent({
       selectedLinkNodes: shallowReactive([]),
       checkedLinkNodes: shallowReactive([]),
       checkedHalfNodes: shallowReactive([]),
-      checkedNodes: shallowReactive([])
+      checkedNodes: shallowReactive([]),
     }
 
     const Targeter: STreeTargeter = {
@@ -143,7 +143,7 @@ export const STree = defineComponent({
       selectedLinkNodes: shallowReactive([]),
       checkedLinkNodes: shallowReactive([]),
       checkedHalfNodes: shallowReactive([]),
-      checkedNodes: shallowReactive([])
+      checkedNodes: shallowReactive([]),
     }
 
     const Methoder: STreeMethoder = {
@@ -542,7 +542,7 @@ export const STree = defineComponent({
 
         Methoder.filterTreeNodes({
           filterField: filterField.value,
-          filterValue: filterValue.value
+          filterValue: filterValue.value,
         })
       },
 
@@ -645,7 +645,7 @@ export const STree = defineComponent({
 
           parentTreeNode.scopedSlots = {
             icon: parentTreeNode.level === 1 ? 'iconRoot' : helper.isNonEmptyArray(parentTreeNode.children) ? 'iconParent' : 'iconLeaf',
-            title: parentTreeNode.level === 1 ? 'titleRoot' : helper.isNonEmptyArray(parentTreeNode.children) ? 'titleParent' : 'titleLeaf'
+            title: parentTreeNode.level === 1 ? 'titleRoot' : helper.isNonEmptyArray(parentTreeNode.children) ? 'titleParent' : 'titleLeaf',
           }
 
           if (!helper.isNonEmptyArray(parentTreeNode.referenceSourceNode[replaceFieldChildren])) {
@@ -701,7 +701,7 @@ export const STree = defineComponent({
 
           Methoder.filterTreeNodes({
             filterField: filterField.value,
-            filterValue: filterValue.value
+            filterValue: filterValue.value,
           })
 
           context.emit('update:treeData', [...toRaw(unref(Cacher.treeData))])
@@ -714,10 +714,10 @@ export const STree = defineComponent({
               parentNode: parentTreeNode?.referenceSourceNode || null,
               oldChildNodes: findChildrenNodes.map(child => child.referenceSourceNode),
               newChildNodes: (parentTreeNode ? parentTreeNode.children : linkTreeNodes).map(child => child.referenceSourceNode),
-              rootChildNodes: linkTreeNodes.map(child => child.referenceSourceNode)
+              rootChildNodes: linkTreeNodes.map(child => child.referenceSourceNode),
             }],
             appendNodes: [],
-            removeNodes: []
+            removeNodes: [],
           })
         }
       },
@@ -769,7 +769,7 @@ export const STree = defineComponent({
 
           parentTreeNode.scopedSlots = {
             icon: parentTreeNode.level === 1 ? 'iconRoot' : helper.isNonEmptyArray(parentTreeNode.children) ? 'iconParent' : 'iconLeaf',
-            title: parentTreeNode.level === 1 ? 'titleRoot' : helper.isNonEmptyArray(parentTreeNode.children) ? 'titleParent' : 'titleLeaf'
+            title: parentTreeNode.level === 1 ? 'titleRoot' : helper.isNonEmptyArray(parentTreeNode.children) ? 'titleParent' : 'titleLeaf',
           }
 
           loadKeys.splice(0, loadKeys.length, ...loadKeys.filter(key => key !== parentTreeNode.key))
@@ -816,7 +816,7 @@ export const STree = defineComponent({
 
           Methoder.filterTreeNodes({
             filterField: filterField.value,
-            filterValue: filterValue.value
+            filterValue: filterValue.value,
           })
 
           context.emit('update:treeData', [...toRaw(unref(Cacher.treeData))])
@@ -827,7 +827,7 @@ export const STree = defineComponent({
             loadedKeys: [...loadedKeys],
             appendNodes: [{ parentNode: parentTreeNode?.referenceSourceNode || null, rootChildNodes: linkTreeNodes.map(child => child.referenceSourceNode), appendChildNodes: [...nodes] }],
             removeNodes: [],
-            reloadNodes: []
+            reloadNodes: [],
           })
         }
       },
@@ -900,7 +900,7 @@ export const STree = defineComponent({
 
           parentTreeNode.scopedSlots = {
             icon: parentTreeNode.level === 1 ? 'iconRoot' : helper.isNonEmptyArray(parentTreeNode.children) ? 'iconParent' : 'iconLeaf',
-            title: parentTreeNode.level === 1 ? 'titleRoot' : helper.isNonEmptyArray(parentTreeNode.children) ? 'titleParent' : 'titleLeaf'
+            title: parentTreeNode.level === 1 ? 'titleRoot' : helper.isNonEmptyArray(parentTreeNode.children) ? 'titleParent' : 'titleLeaf',
           }
         }
 
@@ -947,7 +947,7 @@ export const STree = defineComponent({
             loadedKeys: [...loadedKeys],
             removeNodes: [{ parentNode: parentTreeNode?.referenceSourceNode || null, rootChildNodes: linkTreeNodes.map(child => child.referenceSourceNode), removeChildNodes: [...nodes] }],
             appendNodes: [],
-            reloadNodes: []
+            reloadNodes: [],
           })
         }
       },
@@ -981,8 +981,8 @@ export const STree = defineComponent({
 
         const loadKeys = Stater.loadKeys
         const loadedKeys = Stater.loadedKeys
-        const appendNodes: Array<{ parentNode: STreePartSourceNode, appendChildNodes: STreeSourceNodes }> = []
-        const removeNodes: Array<{ parentNode: STreePartSourceNode, removeChildNodes: STreeSourceNodes }> = []
+        const appendNodes: Array<{ parentNode: STreePartSourceNode; appendChildNodes: STreeSourceNodes; }> = []
+        const removeNodes: Array<{ parentNode: STreePartSourceNode; removeChildNodes: STreeSourceNodes; }> = []
         const filterAppendNodes = Array.from(new Set([...nodes.filter(node => !!node[replaceFieldKey] || node[replaceFieldKey] === 0)]))
         const filterRemoveNodes = Array.from(new Set([...nodes.filter(node => flatTreeNodes.some(every => every.referenceSourceNode === node)), ...findChildrenNodes.map(node => node.referenceSourceNode)]))
         const filterChildrenNodes = Array.from(new Set(nodes.filter(node => findChildrenNodes.some(every => every.referenceSourceNode === node)).map(node => flatTreeNodes.find(every => every.referenceSourceNode === node)!)))
@@ -1020,7 +1020,7 @@ export const STree = defineComponent({
 
               findTargetParentNode.scopedSlots = {
                 icon: findTargetParentNode.level === 1 ? 'iconRoot' : helper.isNonEmptyArray(findTargetParentNode.children) ? 'iconParent' : 'iconLeaf',
-                title: findTargetParentNode.level === 1 ? 'titleRoot' : helper.isNonEmptyArray(findTargetParentNode.children) ? 'titleParent' : 'titleLeaf'
+                title: findTargetParentNode.level === 1 ? 'titleRoot' : helper.isNonEmptyArray(findTargetParentNode.children) ? 'titleParent' : 'titleLeaf',
               }
             }
 
@@ -1070,7 +1070,7 @@ export const STree = defineComponent({
 
             parentTreeNode.scopedSlots = {
               icon: parentTreeNode.level === 1 ? 'iconRoot' : helper.isNonEmptyArray(parentTreeNode.children) ? 'iconParent' : 'iconLeaf',
-              title: parentTreeNode.level === 1 ? 'titleRoot' : helper.isNonEmptyArray(parentTreeNode.children) ? 'titleParent' : 'titleLeaf'
+              title: parentTreeNode.level === 1 ? 'titleRoot' : helper.isNonEmptyArray(parentTreeNode.children) ? 'titleParent' : 'titleLeaf',
             }
           }
 
@@ -1132,8 +1132,8 @@ export const STree = defineComponent({
               parentNode: parentTreeNode?.referenceSourceNode || null,
               oldChildNodes: findChildrenNodes.map(child => child.referenceSourceNode),
               newChildNodes: (parentTreeNode ? parentTreeNode.children : linkTreeNodes).map(child => child.referenceSourceNode),
-              rootChildNodes: linkTreeNodes.map(child => child.referenceSourceNode)
-            }]
+              rootChildNodes: linkTreeNodes.map(child => child.referenceSourceNode),
+            }],
           })
         }
       },
@@ -1162,10 +1162,10 @@ export const STree = defineComponent({
           const newNode: STreeTargetNode = {
             scopedSlots: {
               icon: level === 1 ? 'iconRoot' : !isLeaf ? 'iconParent' : 'iconLeaf',
-              title: level === 1 ? 'titleRoot' : !isLeaf ? 'titleParent' : 'titleLeaf'
+              title: level === 1 ? 'titleRoot' : !isLeaf ? 'titleParent' : 'titleLeaf',
             },
             key: key,
-            icon: helper.isString(icon) && isIconType(icon) ? <SIcon type={icon}/> : null,
+            icon: helper.isString(icon) && isIconType(icon) ? <SIcon type={icon} /> : null,
             level: level,
             title: title,
             titles: [],
@@ -1180,7 +1180,7 @@ export const STree = defineComponent({
             disabled: disabled || forceApplyDisabled || (props.forceApplyDisabled || parentTreeNode?.forceApplyDisabled ? parentTreeNode?.disabled === true : false),
             referenceSourceNode: node,
             selectable: true, // use isSelectable, because call doEventSelect when selectable is false
-            children: []
+            children: [],
           }
 
           if (helper.isNonEmptyArray(children)) {
@@ -1227,7 +1227,7 @@ export const STree = defineComponent({
             : level = 0
 
           treeNodes.push(
-            ...parentSourceNodes.filter(node => node.level >= level!).map(node => node.referenceSourceNode)
+            ...parentSourceNodes.filter(node => node.level >= level!).map(node => node.referenceSourceNode),
           )
         }
 
@@ -1247,7 +1247,7 @@ export const STree = defineComponent({
             : level = Infinity
 
           treeNodes.push(
-            ...childSourceNodes.filter(node => node.level <= level!).map(node => node.referenceSourceNode)
+            ...childSourceNodes.filter(node => node.level <= level!).map(node => node.referenceSourceNode),
           )
         }
 
@@ -1306,7 +1306,7 @@ export const STree = defineComponent({
                 !loadKeys.includes(key) &&
                 !helper.isNonEmptyArray(flatTreeNodes.find(every => every.key === key)?.children) &&
                 flatTreeNodes.find(every => every.key === key)?.isLeaf === false
-              )
+              ),
             )
 
             for (const temp of [...keys]) {
@@ -2251,13 +2251,13 @@ export const STree = defineComponent({
               selectedKeys: props.selectedMode === 'link' ? Targeter.selectedLinkNodes.map(node => node.key) : Targeter.selectedNodes.map(node => node.key),
               checkedKeys: props.checkedMode === 'link' ? Targeter.checkedLinkNodes.map(node => node.key) : Targeter.checkedNodes.map(node => node.key),
               loadedKeys: Stater.loadedKeys,
-              loadKeys: Stater.loadKeys
+              loadKeys: Stater.loadKeys,
             }
 
             promises.push(
               Promise.resolve(loadTreeNodes(loadNode.referenceSourceNode, options))
                 .then(nodes => doSuccess(nodes))
-                .catch(error => doError(error))
+                .catch(error => doError(error)),
             )
           }
         }
@@ -2277,7 +2277,7 @@ export const STree = defineComponent({
         }
 
         Methoder.resetTreeNodes([...Stater.propTreeNodes], clear)
-      }
+      },
     }
 
     const Transformer: STreeTransformer = {
@@ -2301,7 +2301,7 @@ export const STree = defineComponent({
             checkedKeys: allCheckedKeys,
             delCheckedKeys: propCheckedKeys.filter(key => !allCheckedKeys.includes(key)),
             addCheckedKeys: allCheckedKeys.filter(key => !propCheckedKeys.includes(key)),
-            checkedNode: Stater.flatTreeNodes.find(every => every.key === allCheckedKeys[0])?.referenceSourceNode || null
+            checkedNode: Stater.flatTreeNodes.find(every => every.key === allCheckedKeys[0])?.referenceSourceNode || null,
           })
         }
       },
@@ -2320,7 +2320,7 @@ export const STree = defineComponent({
             selectedKeys: newSelectedKeys,
             delSelectedKeys: propSelectedKeys.filter(key => !newSelectedKeys.includes(key)),
             addSelectedKeys: newSelectedKeys.filter(key => !propSelectedKeys.includes(key)),
-            selectedNode: Stater.flatTreeNodes.find(every => every.key === newSelectedKeys[0])?.referenceSourceNode || null
+            selectedNode: Stater.flatTreeNodes.find(every => every.key === newSelectedKeys[0])?.referenceSourceNode || null,
           })
         }
       },
@@ -2337,7 +2337,7 @@ export const STree = defineComponent({
             expandedKeys: newExpandedKeys,
             delExpandedKeys: propExpandedKeys.filter(key => !newExpandedKeys.includes(key)),
             addExpandedKeys: newExpandedKeys.filter(key => !propExpandedKeys.includes(key)),
-            expandedNode: Stater.flatTreeNodes.find(every => every.key === newExpandedKeys[0])?.referenceSourceNode || null
+            expandedNode: Stater.flatTreeNodes.find(every => every.key === newExpandedKeys[0])?.referenceSourceNode || null,
           })
         }
       },
@@ -2346,7 +2346,7 @@ export const STree = defineComponent({
         if (props.filterField !== Stater.filterField.value || props.filterValue !== Stater.filterValue.value) {
           Methoder.filterTreeNodes({
             filterField: props.filterField,
-            filterValue: props.filterValue
+            filterValue: props.filterValue,
           })
         }
       },
@@ -2443,17 +2443,17 @@ export const STree = defineComponent({
           Cacher.treeData.splice(0, Cacher.treeData.length, ...rawPropTreeData)
           Methoder.resetTreeNodes(Stater.propTreeNodes, force)
         }
-      }
+      },
     }
 
     const RenderTreeContainer = (_: any, ctx: typeof context) => {
       return (
         <section
           ref={Cacher.treeContainer}
-          class='s-tree-container'
+          class="s-tree-container"
         >
           <ASpin spinning={props.loading}>
-            <RenderTreeComponent v-slots={ctx.slots}/>
+            <RenderTreeComponent v-slots={ctx.slots} />
           </ASpin>
         </section>
       )
@@ -2464,7 +2464,7 @@ export const STree = defineComponent({
         ...ctx.slots,
         switcherIcon: helper.isFunction(ctx.slots.switcherIcon) ? (node: STreeTargetNode) => ctx.slots.switcherIcon!({ ...node.referenceSourceNode, switcherCls: node.switcherCls }) : (node: STreeTargetNode) => RenderTreeSwitcherIcon(node, ctx),
         title: helper.isFunction(ctx.slots.title) ? (node: STreeTargetNode) => ctx.slots.title!({ ...node.referenceSourceNode }) : (node: STreeTargetNode) => RenderTreeNodeTitle(node, ctx),
-        icon: helper.isFunction(ctx.slots.icon) ? (node: STreeTargetNode) => ctx.slots.icon!({ ...node.referenceSourceNode }) : (node: STreeTargetNode) => RenderTreeNodeIcon(node, ctx)
+        icon: helper.isFunction(ctx.slots.icon) ? (node: STreeTargetNode) => ctx.slots.icon!({ ...node.referenceSourceNode }) : (node: STreeTargetNode) => RenderTreeNodeIcon(node, ctx),
       }
 
       return (
@@ -2501,19 +2501,19 @@ export const STree = defineComponent({
         }
         event.stopPropagation()
       }
-      return isIconType(icon) ? <SIcon type={icon} style='cursor: pointer;' class={{ [node.switcherCls]: icon === 'CaretDownOutlined' }} onClick={onClick}/> : null
+      return isIconType(icon) ? <SIcon type={icon} style="cursor: pointer;" class={{ [node.switcherCls]: icon === 'CaretDownOutlined' }} onClick={onClick} /> : null
     }
 
     const RenderTreeNodeIcon = (node: STreeTargetNode, ctx: typeof context) => {
       if (node.scopedSlots.icon === 'iconRoot') {
-        return helper.isFunction(ctx.slots.iconRoot) ? ctx.slots.iconRoot({ ...node.referenceSourceNode }) : <SIcon type={isIconType(node.icon) ? node.icon : 'AppstoreOutlined'}/>
+        return helper.isFunction(ctx.slots.iconRoot) ? ctx.slots.iconRoot({ ...node.referenceSourceNode }) : <SIcon type={isIconType(node.icon) ? node.icon : 'AppstoreOutlined'} />
       }
 
       if (node.scopedSlots.icon === 'iconParent') {
-        return helper.isFunction(ctx.slots.iconParent) ? ctx.slots.iconParent({ ...node.referenceSourceNode }) : <SIcon type={isIconType(node.icon) ? node.icon : 'ApartmentOutlined'}/>
+        return helper.isFunction(ctx.slots.iconParent) ? ctx.slots.iconParent({ ...node.referenceSourceNode }) : <SIcon type={isIconType(node.icon) ? node.icon : 'ApartmentOutlined'} />
       }
       if (node.scopedSlots.icon === 'iconLeaf') {
-        return helper.isFunction(ctx.slots.iconLeaf) ? ctx.slots.iconLeaf({ ...node.referenceSourceNode }) : <SIcon type={isIconType(node.icon) ? node.icon : 'ApartmentOutlined'}/>
+        return helper.isFunction(ctx.slots.iconLeaf) ? ctx.slots.iconLeaf({ ...node.referenceSourceNode }) : <SIcon type={isIconType(node.icon) ? node.icon : 'ApartmentOutlined'} />
       }
     }
 
@@ -2521,7 +2521,7 @@ export const STree = defineComponent({
       const RenderTreeNodeTitleRootLabel = (node: STreeTargetNode, ctx: typeof context) => {
         if (helper.isFunction(ctx.slots.titleRootLabel)) {
           return (
-            <span class='s-tree-title-label'>
+            <span class="s-tree-title-label">
               <SEllipsis
                 tooltip={props.tooltip}
                 ellipsis={true}
@@ -2538,7 +2538,7 @@ export const STree = defineComponent({
           const inherit = 'inherit'
 
           return (
-            <span class='s-tree-title-label'>
+            <span class="s-tree-title-label">
               <SEllipsis
                 tooltip={props.tooltip}
                 ellipsis={true}
@@ -2552,7 +2552,7 @@ export const STree = defineComponent({
         }
 
         return (
-          <span class='s-tree-title-label'>
+          <span class="s-tree-title-label">
             <SEllipsis
               tooltip={props.tooltip}
               ellipsis={true}
@@ -2572,13 +2572,13 @@ export const STree = defineComponent({
           )
         }
 
-        return <span class='s-tree-title-button'></span>
+        return <span class="s-tree-title-button"></span>
       }
 
       const RenderTreeNodeTitleParentLabel = (node: STreeTargetNode, ctx: typeof context) => {
         if (helper.isFunction(ctx.slots.titleParentLabel)) {
           return (
-            <span class='s-tree-title-label'>
+            <span class="s-tree-title-label">
               <SEllipsis
                 tooltip={props.tooltip}
                 ellipsis={true}
@@ -2591,21 +2591,21 @@ export const STree = defineComponent({
 
         if (helper.isNonEmptyArray(node.titles)) {
           return (
-            <span class='s-tree-title-label'>
+            <span class="s-tree-title-label">
               <SEllipsis
                 tooltip={props.tooltip}
                 ellipsis={true}
               >
-                <span class='normal'>{ node.titles[0] }</span>
-                <span class='primary'>{ node.titles[1] }</span>
-                <span class='normal'>{ node.titles[2] }</span>
+                <span class="normal">{ node.titles[0] }</span>
+                <span class="primary">{ node.titles[1] }</span>
+                <span class="normal">{ node.titles[2] }</span>
               </SEllipsis>
             </span>
           )
         }
 
         return (
-          <span class='s-tree-title-label'>
+          <span class="s-tree-title-label">
             <SEllipsis
               tooltip={props.tooltip}
               ellipsis={true}
@@ -2625,13 +2625,13 @@ export const STree = defineComponent({
           )
         }
 
-        return <span class='s-tree-title-button'></span>
+        return <span class="s-tree-title-button"></span>
       }
 
       const RenderTreeNodeTitleLeafLabel = (node: STreeTargetNode, ctx: typeof context) => {
         if (helper.isFunction(ctx.slots.titleLeafLabel)) {
           return (
-            <span class='s-tree-title-label'>
+            <span class="s-tree-title-label">
               <SEllipsis
                 tooltip={props.tooltip}
                 ellipsis={true}
@@ -2644,21 +2644,21 @@ export const STree = defineComponent({
 
         if (helper.isNonEmptyArray(node.titles)) {
           return (
-            <span class='s-tree-title-label'>
+            <span class="s-tree-title-label">
               <SEllipsis
                 tooltip={props.tooltip}
                 ellipsis={true}
               >
-                <span class='normal'>{ node.titles[0] }</span>
-                <span class='primary'>{ node.titles[1] }</span>
-                <span class='normal'>{ node.titles[2] }</span>
+                <span class="normal">{ node.titles[0] }</span>
+                <span class="primary">{ node.titles[1] }</span>
+                <span class="normal">{ node.titles[2] }</span>
               </SEllipsis>
             </span>
           )
         }
 
         return (
-          <span class='s-tree-title-label'>
+          <span class="s-tree-title-label">
             <SEllipsis
               tooltip={props.tooltip}
               ellipsis={true}
@@ -2678,19 +2678,23 @@ export const STree = defineComponent({
           )
         }
 
-        return <span class='s-tree-title-button'></span>
+        return <span class="s-tree-title-button"></span>
       }
 
       if (node.scopedSlots.title === 'titleRoot') {
         const ctxNode = {
           ...node,
-          key: undefined as any
+          key: undefined as any,
         }
 
-        return helper.isFunction(ctx.slots.titleRoot) ? ctx.slots.titleRoot({ ...node.referenceSourceNode }) : (
+        if (helper.isFunction(ctx.slots.titleRoot)) {
+          return ctx.slots.titleRoot({ ...node.referenceSourceNode })
+        }
+
+        return (
           <span class={['s-tree-title-node', 's-tree-title-root-node', { 's-tree-title-sticky-node': props.sticky === true }]}>
-            <RenderTreeNodeTitleRootLabel { ...ctxNode } v-slots={ctx.slots}/>
-            <RenderTreeNodeTitleRootButton { ...ctxNode } v-slots={ctx.slots}/>
+            <RenderTreeNodeTitleRootLabel {...ctxNode} v-slots={ctx.slots} />
+            <RenderTreeNodeTitleRootButton {...ctxNode} v-slots={ctx.slots} />
           </span>
         )
       }
@@ -2698,13 +2702,17 @@ export const STree = defineComponent({
       if (node.scopedSlots.title === 'titleParent') {
         const ctxNode = {
           ...node,
-          key: undefined as any
+          key: undefined as any,
         }
 
-        return helper.isFunction(ctx.slots.titleParent) ? ctx.slots.titleParent({ ...node.referenceSourceNode }) : (
-          <span class='s-tree-title-node s-tree-title-parent-node'>
-            <RenderTreeNodeTitleParentLabel { ...ctxNode } v-slots={ctx.slots}/>
-            <RenderTreeNodeTitleParentButton { ...ctxNode } v-slots={ctx.slots}/>
+        if (helper.isFunction(ctx.slots.titleParent)) {
+          return ctx.slots.titleParent({ ...node.referenceSourceNode })
+        }
+
+        return (
+          <span class="s-tree-title-node s-tree-title-parent-node">
+            <RenderTreeNodeTitleParentLabel {...ctxNode} v-slots={ctx.slots} />
+            <RenderTreeNodeTitleParentButton {...ctxNode} v-slots={ctx.slots} />
           </span>
         )
       }
@@ -2712,13 +2720,17 @@ export const STree = defineComponent({
       if (node.scopedSlots.title === 'titleLeaf') {
         const ctxNode = {
           ...node,
-          key: undefined as any
+          key: undefined as any,
         }
 
-        return helper.isFunction(ctx.slots.titleLeaf) ? ctx.slots.titleLeaf({ ...node.referenceSourceNode }) : (
-          <span class='s-tree-title-node s-tree-title-leaf-node'>
-            <RenderTreeNodeTitleLeafLabel { ...ctxNode } v-slots={ctx.slots}/>
-            <RenderTreeNodeTitleLeafButton { ...ctxNode } v-slots={ctx.slots}/>
+        if (helper.isFunction(ctx.slots.titleLeaf)) {
+          return ctx.slots.titleLeaf({ ...node.referenceSourceNode })
+        }
+
+        return (
+          <span class="s-tree-title-node s-tree-title-leaf-node">
+            <RenderTreeNodeTitleLeafLabel {...ctxNode} v-slots={ctx.slots} />
+            <RenderTreeNodeTitleLeafButton {...ctxNode} v-slots={ctx.slots} />
           </span>
         )
       }
@@ -2733,10 +2745,10 @@ export const STree = defineComponent({
       () => [...props.treeData],
       () => [...props.checkedKeys],
       () => [...props.selectedKeys],
-      () => [...props.expandedKeys]
+      () => [...props.expandedKeys],
     ], (
       [newCheckable, newFilterField, newFilterValue, newCheckedMode, newSelectedMode, newTreeNodes, newCheckedKeys, newSelectedKeys, newExpandedKeys]: [boolean, 'key' | 'title', string | number, 'link' | 'default', 'link' | 'default', STreeSourceNodes, STreeKeys, STreeKeys, STreeKeys],
-      [oldCheckable, oldFilterField, oldFilterValue, oldCheckedMode, oldSelectedMode, oldTreeNodes, oldCheckedKeys, oldSelectedKeys, oldExpandedKeys]: [boolean, 'key' | 'title', string | number, 'link' | 'default', 'link' | 'default', STreeSourceNodes, STreeKeys, STreeKeys, STreeKeys]
+      [oldCheckable, oldFilterField, oldFilterValue, oldCheckedMode, oldSelectedMode, oldTreeNodes, oldCheckedKeys, oldSelectedKeys, oldExpandedKeys]: [boolean, 'key' | 'title', string | number, 'link' | 'default', 'link' | 'default', STreeSourceNodes, STreeKeys, STreeKeys, STreeKeys],
     ) => {
       let isFilterTreeNodes = false
       let isReloadTreeNodes = false
@@ -2872,7 +2884,7 @@ export const STree = defineComponent({
 
       doTreeSelected: Methoder.doTreeSelected,
 
-      forceUpdate: Methoder.forceUpdate
+      forceUpdate: Methoder.forceUpdate,
     })
 
     Transformer.resetStaterLinkTreeNodes()
@@ -2889,10 +2901,10 @@ export const STree = defineComponent({
       !isRightNumber && !isRightString && Methoder.doTreeAllExpanded()
     }
 
-    return () => <RenderTreeContainer v-slots={context.slots}/>
+    return () => <RenderTreeContainer v-slots={context.slots} />
   },
   slots: {} as STreeDefineSlots,
-  methods: {} as STreeDefineMethods
+  methods: {} as STreeDefineMethods,
 })
 
 export const treeDataDefiner = <T extends Record<string, any> = Record<string, any>>(treeData: T[]) => ref(treeData)

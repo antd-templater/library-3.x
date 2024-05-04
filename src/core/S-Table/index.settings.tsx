@@ -8,7 +8,7 @@ interface STableSettingsType {
   key: string;
   title: string;
   children?: STableSettingsType[] | null;
-  column: { rowIndex: number; colIndex: number; }
+  column: { rowIndex: number; colIndex: number; };
 }
 
 interface STableDropOptionsType {
@@ -29,10 +29,10 @@ export const STableSettings = defineComponent({
     expandedKeys: VueTypes.array<string>().def(() => []),
     checkedKeys: VueTypes.array<string>().def(() => []),
     allTreeKeys: VueTypes.array<string>().def(() => []),
-    draggable: VueTypes.bool().def(false)
+    draggable: VueTypes.bool().def(false),
   },
   emits: {
-    'update:checkedKeys': (values: string[]) => true
+    'update:checkedKeys': (values: string[]) => true,
   },
   setup(props, context) {
     const visible = ref(false)
@@ -66,7 +66,7 @@ export const STableSettings = defineComponent({
         return (
           <div
             ref={overlay}
-            class='s-table-settings-overlay'
+            class="s-table-settings-overlay"
             onMouseleave={closer}
             onClick={stoper}
           >
@@ -77,7 +77,7 @@ export const STableSettings = defineComponent({
               draggable={props.draggable}
               treeData={props.treeData}
               allowSelectToCheck={true}
-              checkedMode={'link'}
+              checkedMode="link"
               selectable={false}
               checkable={true}
             />
@@ -87,15 +87,15 @@ export const STableSettings = defineComponent({
 
       return (
         <div
-          class='s-table-settings-container'
+          class="s-table-settings-container"
           style={props.style}
           onClick={toggler}
         >
-          <div class='s-table-settings-icon'>
-            <SettingOutlined style={{ color: ATheme.useToken().token.value.colorPrimary }}/>
+          <div class="s-table-settings-icon">
+            <SettingOutlined style={{ color: ATheme.useToken().token.value.colorPrimary }} />
           </div>
 
-          <div class='s-table-settings-title'>
+          <div class="s-table-settings-title">
             { props.title }
           </div>
 
@@ -103,7 +103,7 @@ export const STableSettings = defineComponent({
         </div>
       )
     }
-  }
+  },
 })
 
 export default STableSettings

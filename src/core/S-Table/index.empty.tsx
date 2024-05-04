@@ -6,11 +6,11 @@ export const STableEmpty = defineComponent({
   inheritAttrs: false,
   setup() {
     return () => (
-      <div class='s-table-empty-container'>
+      <div class="s-table-empty-container">
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
       </div>
     )
-  }
+  },
 })
 
 export default STableEmpty

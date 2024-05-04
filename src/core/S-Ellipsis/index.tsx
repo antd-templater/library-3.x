@@ -30,10 +30,10 @@ export const SEllipsis = defineComponent({
       | 'rightBottom'
     >().def('top'),
     mouseEnterDelay: VueTypes.number().def(0.3),
-    mouseLeaveDelay: VueTypes.number().def(0.1)
+    mouseLeaveDelay: VueTypes.number().def(0.1),
   },
   emits: {
-    'update:open': (open: boolean) => typeof open === 'boolean'
+    'update:open': (open: boolean) => typeof open === 'boolean',
   },
   setup(props, { emit, slots }) {
     const open: any = ref(false)
@@ -76,13 +76,13 @@ export const SEllipsis = defineComponent({
           ...props,
           'open': props.open !== undefined ? props.open : open.value,
           'onUpdate:open': undefined,
-          'onVisibleChange': undefined
+          'onVisibleChange': undefined,
         }
 
         return (
           <ATooltip
-            { ...binds }
-            { ...{ 'onUpdate:open': (open: boolean) => emit('update:open', updateVisible(open)) } }
+            {...binds}
+            {...{ 'onUpdate:open': (open: boolean) => emit('update:open', updateVisible(open)) }}
             v-slots={{ title: slots.title || slots.default }}
           >
             <div
@@ -93,7 +93,7 @@ export const SEllipsis = defineComponent({
                 display: 'block',
                 whiteSpace: props.ellipsis === true ? 'nowrap' : 'inherit',
                 textOverflow: outside.value && props.ellipsis === true ? 'ellipsis' : 'initial',
-                overflow: outside.value && props.ellipsis === true ? 'hidden' : 'visible'
+                overflow: outside.value && props.ellipsis === true ? 'hidden' : 'visible',
               }}
             >
               { slots.default?.() }
@@ -105,7 +105,7 @@ export const SEllipsis = defineComponent({
       return slots.default?.()
     }
   },
-  slots: {} as SEllipsisDefineSlots
+  slots: {} as SEllipsisDefineSlots,
 })
 
 export default SEllipsis

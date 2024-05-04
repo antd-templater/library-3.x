@@ -41,7 +41,7 @@ const AComponents: Record<string, any> = {
   AQuarterPicker: ADatePicker.QuarterPicker,
   AWeekPicker: ADatePicker.WeekPicker,
   ADatePicker: ADatePicker,
-  ATimePicker: ATimePicker
+  ATimePicker: ATimePicker,
 }
 
 export const SFormComponent = defineComponent({
@@ -53,7 +53,7 @@ export const SFormComponent = defineComponent({
     readonly: VueTypes.bool().isRequired,
     source: VueTypes.object().isRequired,
     field: VueTypes.string().isRequired,
-    attrs: VueTypes.object().isRequired
+    attrs: VueTypes.object().isRequired,
   },
   setup(props, context) {
     return () => {
@@ -71,7 +71,7 @@ export const SFormComponent = defineComponent({
         attrs = {
           'checked': source[field],
           'onUpdate:checked': (checked: any) => { source[field] = checked },
-          ...props.attrs
+          ...props.attrs,
         }
 
         attrs.size = attrs.size !== 'small'
@@ -83,7 +83,7 @@ export const SFormComponent = defineComponent({
         attrs = {
           'value': source[field],
           'onUpdate:value': (checked: any) => { source[field] = checked },
-          ...props.attrs
+          ...props.attrs,
         }
 
         attrs.size = attrs.size !== 'middle'
@@ -95,7 +95,7 @@ export const SFormComponent = defineComponent({
         attrs = {
           'value': source[field],
           'onUpdate:value': (value: any) => { source[field] = value },
-          ...props.attrs
+          ...props.attrs,
         }
       }
 
@@ -143,13 +143,13 @@ export const SFormComponent = defineComponent({
       return (
         <div
           ref={component}
-          style='display: inherit; display: contents;'
+          style="display: inherit; display: contents;"
         >
           { Component ? h(Component, attrs, context.slots) : null }
         </div>
       )
     }
-  }
+  },
 })
 
 export default SFormComponent

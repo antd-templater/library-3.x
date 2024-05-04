@@ -19,14 +19,14 @@ for (const key of OutKeys) {
     Options.push(finder = {
       label: `字母${key[0]}`,
       value: key[0],
-      options: []
+      options: [],
     })
   }
 
   if (finder) {
     finder.options!.push({
       label: key,
-      value: key
+      value: key,
     })
   }
 }

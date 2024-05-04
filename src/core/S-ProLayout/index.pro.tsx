@@ -39,7 +39,7 @@ export const ProLayoutHeader = defineComponent({
     ...defaultSettingProps,
     ...defaultBaseMenuProps,
     ...defaultGlobalHeaderProps,
-    ...defaultProLayoutHeaderProps
+    ...defaultProLayoutHeaderProps,
   },
   setup(props, { emit }) {
     const routeContext = useRouteContext()
@@ -50,7 +50,7 @@ export const ProLayoutHeader = defineComponent({
     const baseClassName = computed(() => {
       return {
         [`${basePrefixCls.value.slice(0, -7)}-fixed-header`]: needFixedHeader.value,
-        [`${basePrefixCls.value}-top-menu`]: props.layout === 'top'
+        [`${basePrefixCls.value}-top-menu`]: props.layout === 'top',
       }
     })
 
@@ -79,7 +79,7 @@ export const ProLayoutHeader = defineComponent({
             style={{
               height: `${props.headerHeight}px`,
               lineHeight: `${props.headerHeight}px`,
-              background: 'transparent'
+              background: 'transparent',
             }}
           />
         )
@@ -92,8 +92,8 @@ export const ProLayoutHeader = defineComponent({
       if (!props.isMobile && props.layout === 'top') {
         defaultDom = (
           <TopNavHeader
-            { ...props }
-            mode='horizontal'
+            {...props}
+            mode="horizontal"
             theme={headerTheme.value}
             menuData={clearMenuData.value}
           />
@@ -120,7 +120,7 @@ export const ProLayoutHeader = defineComponent({
             lineHeight: `${props.headerHeight}px`,
             backgroundColor: '#001529 !important',
             zIndex: props.layout === 'mix' ? 100 : 19,
-            right: needFixedHeader.value ? 0 : undefined
+            right: needFixedHeader.value ? 0 : undefined,
           }}
         >
           { RenderHeaderContent() }
@@ -136,7 +136,7 @@ export const ProLayoutHeader = defineComponent({
         </>
       )
     }
-  }
+  },
 })
 
 export const ProBasicLayout = defineComponent({
@@ -148,14 +148,14 @@ export const ProBasicLayout = defineComponent({
     ...defaultSiderMenuProps,
     ...defaultGlobalHeaderProps,
     ...defaultProLayoutHeaderProps,
-    ...defaultProBasicLayoutProps
+    ...defaultProBasicLayoutProps,
   },
   emits: {
     'update:selectedKeys': (keys: Key[]) => true,
     'update:openKeys': (keys: Key[]) => true,
     'menuClick': (...args: any[]) => true,
     'openKeys': (keys: Key[]) => true,
-    'select': (keys: Key[]) => true
+    'select': (keys: Key[]) => true,
   },
   setup(props, { attrs, slots, emit }) {
     const colSize = useMediaQuery()
@@ -189,7 +189,7 @@ export const ProBasicLayout = defineComponent({
       siderWidth: siderWidth.value,
       flatMenuData: flatMenuData.value,
       flatMenu: hasFlatMenu.value,
-      hasHeader: true
+      hasHeader: true,
     }))
 
     provideRouteContext(routeContext)
@@ -224,14 +224,14 @@ export const ProBasicLayout = defineComponent({
           [`${basicClassName.value}-top-menu`]: props.layout === 'top',
           [`${basicClassName.value}-fix-siderbar`]: props.fixSiderbar,
           [`${basicClassName.value}-${props.layout}`]: props.layout,
-          [`${basicClassName.value}`]: true
+          [`${basicClassName.value}`]: true,
         }
       })
 
       const contentClassName = computed(() => {
         return {
           [`${basicClassName.value}-content`]: true,
-          [`${basicClassName.value}-has-header`]: true
+          [`${basicClassName.value}-has-header`]: true,
         }
       })
 
@@ -248,10 +248,10 @@ export const ProBasicLayout = defineComponent({
           menuItemRender: menuItemRender,
           headerRender: headerRender,
           onOpenKeys: onOpenKeys,
-          onSelect: onSelect
+          onSelect: onSelect,
         }
 
-        return <ProLayoutHeader { ...binds } />
+        return <ProLayoutHeader {...binds} />
       }
 
       const RenderSiderMenuWrapper = () => {
@@ -267,10 +267,10 @@ export const ProBasicLayout = defineComponent({
             menuItemRender: menuItemRender,
             onMenuClick: onMenuClick,
             onOpenKeys: onOpenKeys,
-            onSelect: onSelect
+            onSelect: onSelect,
           }
 
-          return <SiderMenuWrapper { ...binds } />
+          return <SiderMenuWrapper {...binds} />
         }
       }
 
@@ -289,7 +289,7 @@ export const ProBasicLayout = defineComponent({
 
       const RenderProLayoutWrapper = () => {
         return (
-          <div style='display: flex; flex: 1 1 auto; flex-direction: column; min-width: 0; position: relative;'>
+          <div style="display: flex; flex: 1 1 auto; flex-direction: column; min-width: 0; position: relative;">
             { RenderProLayoutHeader() }
             { RenderProLayoutContent() }
           </div>
@@ -308,7 +308,7 @@ export const ProBasicLayout = defineComponent({
         </div>
       )
     }
-  }
+  },
 })
 
 export default ProBasicLayout

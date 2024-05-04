@@ -28,7 +28,7 @@ export interface STableScrollType {
 
 export interface STableSorterType {
   field: string;
-  value: 'ascend'| 'descend';
+  value: 'ascend' | 'descend';
 }
 
 export interface STableRecordType {
@@ -55,7 +55,7 @@ export interface STablePaginateType {
   simple: boolean;
   fixed?: boolean;
   mode: 'local' | 'remote';
-  showTotal?:	((total: number, range: [number, number]) => void) | boolean;
+  showTotal?: ((total: number, range: [number, number]) => void) | boolean;
 }
 
 export interface STableCellIndexType {
@@ -103,20 +103,20 @@ export interface STableCellFixedType {
 }
 
 export interface STableRowKey<RecordType = STableRecordType> {
-  (record: RecordType): string
+  (record: RecordType): string;
 }
 
 export interface STableTreeKey<RecordType = STableRecordType> {
-  (record: RecordType): string
+  (record: RecordType): string;
 }
 
 export interface STableLoadSource<RecordType = STableRecordType> {
   (
     options: {
-      sorter: Array<{ field: string; value: 'ascend'| 'descend'; }>;
+      sorter: Array<{ field: string; value: 'ascend' | 'descend'; }>;
       paginate: { pageSize: number; pageNo: number; totalPage: number; totalSize: number; mode: 'local' | 'remote'; };
     }
-  ): STablePromiser<RecordType[] | { data: Array<RecordType>; pageNo: number; totalSize: number; } | { result: { data: Array<RecordType>; pageNo: number; totalSize: number; } }>;
+  ): STablePromiser<RecordType[] | { data: Array<RecordType>; pageNo: number; totalSize: number; } | { result: { data: Array<RecordType>; pageNo: number; totalSize: number; }; }>;
 }
 
 export interface STableSettingsType<RecordType = STableRecordType> {
@@ -124,7 +124,7 @@ export interface STableSettingsType<RecordType = STableRecordType> {
   title: string;
   disabled: boolean;
   children?: STableSettingsType<RecordType>[] | null;
-  column: STableColumnType<RecordType>
+  column: STableColumnType<RecordType>;
 }
 
 export interface STableExpanderRender<RecordType = STableRecordType> {
@@ -251,7 +251,7 @@ export interface STablePartColumnType<RecordType = STableRecordType> {
   sorter?: boolean;
   sorterField?: string;
   expandIcon?: boolean;
-  sorterValueChange?: (option: { field: string; value: 'ascend'| 'descend' | ''; values: Array<STableSorterType>; }) => void;
+  sorterValueChange?: (option: { field: string; value: 'ascend' | 'descend' | ''; values: Array<STableSorterType>; }) => void;
   customHeaderCellRender?: STableHeaderCellRender;
   customBodyerCellRender?: STableBodyerCellRender;
   customFooterCellRender?: STableFooterCellRender;
@@ -283,9 +283,9 @@ export interface STableColumnType<RecordType = STableRecordType> {
   sorter: boolean;
   sortered: boolean;
   sorterField: string;
-  sorterValue: 'ascend'| 'descend' | '';
+  sorterValue: 'ascend' | 'descend' | '';
   expandIcon?: boolean;
-  sorterValueChange?: (option: { field: string; value: 'ascend'| 'descend' | ''; values: Array<STableSorterType>; }) => void;
+  sorterValueChange?: (option: { field: string; value: 'ascend' | 'descend' | ''; values: Array<STableSorterType>; }) => void;
   customHeaderCellRender?: STableHeaderCellRender;
   customBodyerCellRender?: STableBodyerCellRender;
   customFooterCellRender?: STableFooterCellRender;

@@ -5,7 +5,7 @@ export const STableLoading = defineComponent({
   name: 'STableLoading',
   inheritAttrs: false,
   props: {
-    optionser: VueTypes.object().isRequired
+    optionser: VueTypes.object().isRequired,
   },
   setup(props) {
     let top = '50%' as any
@@ -20,7 +20,7 @@ export const STableLoading = defineComponent({
         windowWidth: props.optionser.windowInnerWidth.value,
         windowHeight: props.optionser.windowInnerHeight.value,
         scrollLeft: props.optionser.resizerScrollLeft.value,
-        scrollTop: props.optionser.resizerScrollTop.value
+        scrollTop: props.optionser.resizerScrollTop.value,
       }
     })
 
@@ -42,19 +42,19 @@ export const STableLoading = defineComponent({
       }
 
       return (
-        <div class='s-table-loading-container'>
+        <div class="s-table-loading-container">
           <span
-            class='s-table-loading-dot-group'
+            class="s-table-loading-dot-group"
             style={{ top: top + 'px', left: left + 'px' }}
           >
-            <i class='s-table-loading-dot' />
-            <i class='s-table-loading-dot' />
-            <i class='s-table-loading-dot' />
-            <i class='s-table-loading-dot' />
+            <i class="s-table-loading-dot" />
+            <i class="s-table-loading-dot" />
+            <i class="s-table-loading-dot" />
+            <i class="s-table-loading-dot" />
           </span>
 
           <div
-            class='s-table-loading-text'
+            class="s-table-loading-text"
             style={{ top: top + 'px', left: left + 'px' }}
           >
             <span>正在加载中...</span>
@@ -63,7 +63,7 @@ export const STableLoading = defineComponent({
 
       )
     }
-  }
+  },
 })
 
 export default STableLoading

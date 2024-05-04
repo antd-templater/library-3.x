@@ -18,7 +18,7 @@ export const TopNavHeaderRightContent = defineComponent({
     ...defaultSettingProps,
     ...defaultBaseMenuProps,
     ...defaultSiderMenuProps,
-    ...defaultGlobalHeaderProps
+    ...defaultGlobalHeaderProps,
   },
   setup(props) {
     const routeContext = useRouteContext()
@@ -38,7 +38,7 @@ export const TopNavHeaderRightContent = defineComponent({
         { RenderRightContent() }
       </div>
     )
-  }
+  },
 })
 
 export const TopNavHeader = defineComponent({
@@ -48,11 +48,11 @@ export const TopNavHeader = defineComponent({
     ...defaultSettingProps,
     ...defaultBaseMenuProps,
     ...defaultSiderMenuProps,
-    ...defaultGlobalHeaderProps
+    ...defaultGlobalHeaderProps,
   },
   emits: {
     openKeys: (keys: Key[]) => true,
-    select: (keys: Key[]) => true
+    select: (keys: Key[]) => true,
   },
   setup(props, { emit }) {
     const routeContext = useRouteContext()
@@ -62,14 +62,14 @@ export const TopNavHeader = defineComponent({
     const baseClassName = computed(() => {
       return {
         [basePrefixCls]: true,
-        light: props.theme === 'light'
+        light: props.theme === 'light',
       }
     })
 
     const baseMainClassName = computed(() => {
       return {
         [`${basePrefixCls}-main`]: true,
-        wide: props.contentWidth === 'Fixed'
+        wide: props.contentWidth === 'Fixed',
       }
     })
 
@@ -80,7 +80,7 @@ export const TopNavHeader = defineComponent({
         if (vnode) {
           return (
             <div class={`${basePrefixCls}-main-left`}>
-              <div class={`${basePrefixCls}-logo`} >
+              <div class={`${basePrefixCls}-logo`}>
                 { vnode }
               </div>
             </div>
@@ -107,7 +107,7 @@ export const TopNavHeader = defineComponent({
       })
 
       return (
-        <div style='flex: 1 1 auto; overflow: hidden auto;'>
+        <div style="flex: 1 1 auto; overflow: hidden auto;">
           <BaseMenu
             mode={props.mode}
             theme={TopNavHeaderTheme.value}
@@ -127,7 +127,7 @@ export const TopNavHeader = defineComponent({
             {
               ...{
                 'onUpdate:selectedKeys': onUpdateSelectedKeys,
-                'onUpdate:openKeys': onUpdateOpenKeys
+                'onUpdate:openKeys': onUpdateOpenKeys,
               }
             }
           />
@@ -137,7 +137,7 @@ export const TopNavHeader = defineComponent({
 
     const RenderTopNavHeaderRightContent = () => {
       if (props.rightContentRender) {
-        return <TopNavHeaderRightContent { ...props } />
+        return <TopNavHeaderRightContent {...props} />
       }
     }
 
@@ -150,7 +150,7 @@ export const TopNavHeader = defineComponent({
         </div>
       </div>
     )
-  }
+  },
 })
 
 export default TopNavHeader

@@ -28,7 +28,7 @@ export const defaultSettingProps = {
   iconPrefix: VueTypes.any<SProLayoutPureSettings['iconPrefix']>().def('icon-'),
   fixedHeader: VueTypes.any<SProLayoutPureSettings['fixedHeader']>().def(true),
   fixSiderbar: VueTypes.any<SProLayoutPureSettings['fixSiderbar']>().def(true),
-  splitMenus: VueTypes.any<SProLayoutPureSettings['splitMenus']>().def(false)
+  splitMenus: VueTypes.any<SProLayoutPureSettings['splitMenus']>().def(false),
 }
 
 export const defaultBaseMenuProps = {
@@ -46,7 +46,7 @@ export const defaultBaseMenuProps = {
   menuItemRender: VueTypes.any<SProLayoutMenuItemRender>().def(() => undefined),
   subMenuItemRender: VueTypes.any<SProLayoutSubMenuItemRender>().def(() => undefined),
   selectedKeys: VueTypes.any<string[] | false>().def(undefined),
-  openKeys: VueTypes.any<string[] | false>().def(undefined)
+  openKeys: VueTypes.any<string[] | false>().def(undefined),
 }
 
 export const defaultSiderMenuProps = {
@@ -69,7 +69,7 @@ export const defaultSiderMenuProps = {
   onMenuClick: VueTypes.func().def(undefined),
   onCollapse: VueTypes.func<(collapsed: boolean) => void>().def(undefined),
   onOpenKeys: VueTypes.func<(openKeys: Key[]) => void>().def(undefined),
-  onSelect: VueTypes.func<(selectedKeys: Key[]) => void>().def(undefined)
+  onSelect: VueTypes.func<(selectedKeys: Key[]) => void>().def(undefined),
 }
 
 export const defaultGlobalHeaderProps = {
@@ -87,7 +87,7 @@ export const defaultGlobalHeaderProps = {
   menuItemRender: VueTypes.any<SProLayoutMenuItemRender>().def(() => undefined),
   onCollapse: VueTypes.func<(collapsed: boolean) => void>().def(undefined),
   onOpenKeys: VueTypes.func<(openKeys: Key[]) => void>().def(undefined),
-  onSelect: VueTypes.func<(selectedKeys: Key[]) => void>().def(undefined)
+  onSelect: VueTypes.func<(selectedKeys: Key[]) => void>().def(undefined),
 }
 
 export const defaultProLayoutHeaderProps = {
@@ -97,7 +97,7 @@ export const defaultProLayoutHeaderProps = {
   hasSiderMenu: VueTypes.bool().def(false),
   headerRender: VueTypes.any<SProLayoutHeaderRender>().def(() => undefined),
   collapsedWidth: VueTypes.number().def(48),
-  siderWidth: VueTypes.number().def(192)
+  siderWidth: VueTypes.number().def(192),
 }
 
 export const defaultProBasicLayoutProps = {
@@ -111,5 +111,5 @@ export const defaultProBasicLayoutProps = {
   contentStyle: VueTypes.any<CSSProperties | null>().def(null),
   headerRender: VueTypes.any<SProLayoutHeaderRender>().def(() => undefined),
   locale: VueTypes.func<(message?: string) => string>().def((message?: string) => message || ''),
-  theme: VueTypes.string<SProLayoutTheme>().def('light')
+  theme: VueTypes.string<SProLayoutTheme>().def('light'),
 }

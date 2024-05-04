@@ -8,7 +8,7 @@ import type { InjectionKey, Ref } from 'vue'
 
 export const defaultRouteContext = reactive({
   getPrefixCls: (suffixCls?: string, customizePrefixCls?: string) => customizePrefixCls || (suffixCls ? `s-pro-${suffixCls}` : `s-pro`),
-  locale: (message?: string) => message || ''
+  locale: (message?: string) => message || '',
 })
 
 export const routeContextInjectKey: InjectionKey<SProLayoutRouteContextProps | Ref<SProLayoutRouteContextProps>> = Symbol('RouteContext')

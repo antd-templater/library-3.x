@@ -8,7 +8,7 @@ export const STablePaginate = defineComponent({
   props: {
     size: VueTypes.string<'small' | 'default'>().def('default'),
     disabled: VueTypes.bool().def(false),
-    showTotal:	VueTypes.func<(total: number, range: [number, number]) => void>().def(undefined),
+    showTotal: VueTypes.func<(total: number, range: [number, number]) => void>().def(undefined),
     hideOnSinglePage: VueTypes.bool().def(false),
     defaultPageSize: VueTypes.number().def(20),
     pageSizeOptions: VueTypes.array<string>().def(['10', '15', '20', '25', '30', '50', '100', '200', '300', '500']),
@@ -18,11 +18,11 @@ export const STablePaginate = defineComponent({
     totalSize: VueTypes.number().def(0),
     pageSize: VueTypes.number().def(20),
     pageNo: VueTypes.number().def(1),
-    simple: VueTypes.bool().def(false)
+    simple: VueTypes.bool().def(false),
   },
   emits: {
     pageSizeChange: (current: number, size: number) => true,
-    pageChange: (page: number, pageSize: number) => true
+    pageChange: (page: number, pageSize: number) => true,
   },
   setup(props, context) {
     const pageSizeChange = (page: number, pageSize: number) => {
@@ -40,10 +40,10 @@ export const STablePaginate = defineComponent({
       return (
         <div
           ref={container}
-          class='s-table-paginate-container'
+          class="s-table-paginate-container"
           style={style}
         >
-          <div class='s-table-paginate-content'>
+          <div class="s-table-paginate-content">
             <Pagination
               size={props.size}
               simple={props.simple}
@@ -65,7 +65,7 @@ export const STablePaginate = defineComponent({
         </div>
       )
     }
-  }
+  },
 })
 
 export default STablePaginate

@@ -19,7 +19,7 @@ export {
   proUseRouteContext,
   proFirstMenuChildren,
   proCreateRouteContext,
-  proProvideRouteContext
+  proProvideRouteContext,
 }
 
 export default SProLayout

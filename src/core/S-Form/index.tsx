@@ -33,8 +33,8 @@ interface SFormGroupsProps {
 type SFormWatchHandler = () => void
 type SFormItemsHandler = (groups: Array<SFormColPartItem | SFormRowPartItem | SFormGroupPartItem>) => SFormColItem[]
 type SFormGroupsHandler = (groups: Array<SFormGroupPartItem | SFormRowPartItem | SFormColPartItem>) => SFormGroupItem[]
-type SFormModelHandler = (item: SFormColItem, options: { first: boolean, oldModel: Record<string, any>, newModel: Record<string, any>, refModel: Ref<Record<string, any>> }) => void
-type SFormSyncHandler = (item: SFormColItem, options: { syncModel: Record<string, any>, refModel: Ref<Record<string, any>> }) => void
+type SFormModelHandler = (item: SFormColItem, options: { first: boolean; oldModel: Record<string, any>; newModel: Record<string, any>; refModel: Ref<Record<string, any>>; }) => void
+type SFormSyncHandler = (item: SFormColItem, options: { syncModel: Record<string, any>; refModel: Ref<Record<string, any>>; }) => void
 
 type SFormDefineMethods = {
   resetFields: (name?: NamePath) => void;
@@ -42,7 +42,7 @@ type SFormDefineMethods = {
   getFieldsValue: (nameList?: InternalNamePath[] | true) => { [key: string]: any; };
   validateFields: (nameList?: NamePath[] | string, options?: ValidateOptions) => Promise<{ [key: string]: any; }>;
   validate: (nameList?: NamePath[] | string, options?: ValidateOptions) => Promise<{ [key: string]: any; }>;
-  scrollToField: (name: NamePath, options?: {}) => void;
+  scrollToField: (name: NamePath, options?: object) => void;
 }
 
 type SFormDefineSlots = SlotsType<{
@@ -61,7 +61,7 @@ export const SForm = defineComponent({
   props: {
     rules: {
       type: Object as PropType<Record<string, Rule | SFormValidatorRule | Array<Rule | SFormValidatorRule>>>,
-      default: () => ({})
+      default: () => ({}),
     },
     grid: VueTypes.object<Partial<SFormGrid>>().def(() => ({})),
     border: VueTypes.any<string | boolean>().def(false),
@@ -70,7 +70,7 @@ export const SForm = defineComponent({
     model: VueTypes.object().def(() => undefined),
     disabled: VueTypes.bool().def(false),
     readonly: VueTypes.bool().def(false),
-    spinning: VueTypes.bool().def(false)
+    spinning: VueTypes.bool().def(false),
   },
   setup(props, context) {
     const watchHandler: SFormWatchHandler = () => {
@@ -103,18 +103,18 @@ export const SForm = defineComponent({
 
           default: {
             input: node?.default?.input || helper.isFunction(Normalize[node.type].default.input) ? Normalize[node.type].default.input : helper.deepClone(Normalize[node.type].default.input),
-            output: node?.default?.output || helper.isFunction(Normalize[node.type].default.output) ? Normalize[node.type].default.output : helper.deepClone(Normalize[node.type].default.output)
+            output: node?.default?.output || helper.isFunction(Normalize[node.type].default.output) ? Normalize[node.type].default.output : helper.deepClone(Normalize[node.type].default.output),
           },
 
           transfer: {
             input: node?.transfer?.input || Normalize[node.type].transfer.input,
-            output: node?.transfer?.output || Normalize[node.type].transfer.output
+            output: node?.transfer?.output || Normalize[node.type].transfer.output,
           },
 
           readonly: node.readonly !== undefined ? node.readonly : Normalize[node.type].readonly,
           disabled: node.disabled !== undefined ? node.disabled : Normalize[node.type].disabled,
           render: node.render !== undefined ? node.render : Normalize[node.type].render,
-          show: node.show !== undefined ? node.show : Normalize[node.type].show
+          show: node.show !== undefined ? node.show : Normalize[node.type].show,
         }
       })
     }
@@ -131,7 +131,7 @@ export const SForm = defineComponent({
         readonly: false,
         disabled: false,
         render: true,
-        show: true
+        show: true,
       }
 
       let row: SFormRowItem = {
@@ -139,7 +139,7 @@ export const SForm = defineComponent({
         grid: {},
         items: [],
         readonly: false,
-        disabled: false
+        disabled: false,
       }
 
       for (const node of parts) {
@@ -154,7 +154,7 @@ export const SForm = defineComponent({
             disabled: node.disabled !== undefined ? node.disabled : false,
             readonly: node.disabled !== undefined ? node.disabled : false,
             render: node.render !== undefined ? node.render : true,
-            show: node.show !== undefined ? node.show : true
+            show: node.show !== undefined ? node.show : true,
           }
 
           row = {
@@ -162,7 +162,7 @@ export const SForm = defineComponent({
             grid: node.grid || row.grid || group.grid || {},
             items: [],
             readonly: false,
-            disabled: false
+            disabled: false,
           }
         }
 
@@ -172,7 +172,7 @@ export const SForm = defineComponent({
             grid: node.grid || row.grid || {},
             items: [],
             disabled: node.disabled !== undefined ? node.disabled : false,
-            readonly: node.disabled !== undefined ? node.disabled : false
+            readonly: node.disabled !== undefined ? node.disabled : false,
           }
         }
 
@@ -192,18 +192,18 @@ export const SForm = defineComponent({
 
             default: {
               input: node?.default?.input || Normalize[node.type].default.input,
-              output: node?.default?.output || Normalize[node.type].default.output
+              output: node?.default?.output || Normalize[node.type].default.output,
             },
 
             transfer: {
               input: node?.transfer?.input || Normalize[node.type].transfer.input,
-              output: node?.transfer?.output || Normalize[node.type].transfer.output
+              output: node?.transfer?.output || Normalize[node.type].transfer.output,
             },
 
             readonly: node.readonly !== undefined ? node.readonly : Normalize[node.type].readonly,
             disabled: node.disabled !== undefined ? node.disabled : Normalize[node.type].disabled,
             render: node.render !== undefined ? node.render : Normalize[node.type].render,
-            show: node.show !== undefined ? node.show : Normalize[node.type].show
+            show: node.show !== undefined ? node.show : Normalize[node.type].show,
           }
 
           row.items.includes(col) || row.items.push(col)
@@ -302,22 +302,22 @@ export const SForm = defineComponent({
       const attrs = {
         border: border !== false && border !== 'no'
           ? undefined
-          : 'no'
+          : 'no',
       }
 
       if (group.label || group.slot) {
         return (
-          <div class='s-form-group-item-header' { ...attrs }>
+          <div class="s-form-group-item-header" {...attrs}>
             {
               slotRender
                 ? slotRender({ className: className, group, disabled, readonly })
-                : <div class='s-form-group-item-header-title'>{group.label}</div>
+                : <div class="s-form-group-item-header-title">{group.label}</div>
             }
           </div>
         )
       }
 
-      return <div/>
+      return <div />
     }
 
     const GroupContentRender = (opt: SFormProps & SFormGroupProps, ctx: typeof context) => {
@@ -326,7 +326,7 @@ export const SForm = defineComponent({
           type: row.grid.type || group.grid.type || opt.grid.type,
           align: row.grid.align || group.grid.align || opt.grid.align,
           gutter: row.grid.gutter || group.grid.gutter || opt.grid.gutter,
-          justify: row.grid.justify || group.grid.justify || opt.grid.justify
+          justify: row.grid.justify || group.grid.justify || opt.grid.justify,
         }
       }
 
@@ -344,7 +344,7 @@ export const SForm = defineComponent({
           lg: col.grid.lg || row.grid.lg || group.grid.lg || opt.grid.lg,
           md: col.grid.md || row.grid.md || group.grid.md || opt.grid.md,
           sm: col.grid.sm || row.grid.sm || group.grid.sm || opt.grid.sm,
-          xs: col.grid.xs || row.grid.xs || group.grid.xs || opt.grid.xs
+          xs: col.grid.xs || row.grid.xs || group.grid.xs || opt.grid.xs,
         }
       }
 
@@ -353,20 +353,20 @@ export const SForm = defineComponent({
           unref(opt.disabled),
           unref(group.disabled),
           unref(row.disabled),
-          helper.isBoolean(unref(col.props.disabled)) ? unref(col.props.disabled) : unref(col.disabled)
+          helper.isBoolean(unref(col.props.disabled)) ? unref(col.props.disabled) : unref(col.disabled),
         ].includes(true)
 
         const readonly = [
           unref(opt.readonly),
           unref(group.readonly),
           unref(row.readonly),
-          helper.isBoolean(unref(col.props.readonly)) ? unref(col.props.readonly) : unref(col.readonly)
+          helper.isBoolean(unref(col.props.readonly)) ? unref(col.props.readonly) : unref(col.readonly),
         ].includes(true)
 
         return {
           ...col.layer,
           'disabled': readonly || disabled,
-          'off-disabled': readonly && !disabled || undefined
+          'off-disabled': readonly && !disabled || undefined,
         }
       }
 
@@ -375,23 +375,23 @@ export const SForm = defineComponent({
           unref(opt.disabled),
           unref(group.disabled),
           unref(row.disabled),
-          helper.isBoolean(unref(col.props.disabled)) ? unref(col.props.disabled) : unref(col.disabled)
+          helper.isBoolean(unref(col.props.disabled)) ? unref(col.props.disabled) : unref(col.disabled),
         ].includes(true)
 
         const readonly = [
           unref(opt.readonly),
           unref(group.readonly),
           unref(row.readonly),
-          helper.isBoolean(unref(col.props.readonly)) ? unref(col.props.readonly) : unref(col.readonly)
+          helper.isBoolean(unref(col.props.readonly)) ? unref(col.props.readonly) : unref(col.readonly),
         ].includes(true)
 
         return {
-          disabled: readonly || disabled
+          disabled: readonly || disabled,
         }
       }
 
       return (
-        <div class='s-form-group-item-content'>
+        <div class="s-form-group-item-content">
           {
             opt.group.items
               .filter(row => row.items.some(col => unref(col.render)))
@@ -424,7 +424,7 @@ export const SForm = defineComponent({
                           >
                             <AFormItem
                               {...handleItemBind(col, row, group)}
-                              class='s-form-group-item-template'
+                              class="s-form-group-item-template"
                               rules={col.layer.rules || col.rules}
                               label={col.layer.label || col.label}
                               name={col.layer.name || col.field}
@@ -432,7 +432,7 @@ export const SForm = defineComponent({
                               {
                                 slotRender
                                   ? slotRender({ col, row, group, attrs, slots, disabled, readonly, source, field })
-                                  : <SFormComponent type={type} attrs={attrs} v-slots={slots} disabled={disabled} readonly={readonly} source={source} field={field}/>
+                                  : <SFormComponent type={type} attrs={attrs} v-slots={slots} disabled={disabled} readonly={readonly} source={source} field={field} />
                               }
                             </AFormItem>
                           </ACol>
@@ -454,7 +454,7 @@ export const SForm = defineComponent({
               .filter(group => unref(group.render))
               .map(group => (
                 <div
-                  class='s-form-group-container'
+                  class="s-form-group-container"
                   v-show={unref(group.show)}
                 >
                   <GroupHeaderRender
@@ -506,9 +506,9 @@ export const SForm = defineComponent({
       resetFields: (name?: NamePath) => form.value.resetFields(name),
       clearValidate: (name?: NamePath) => form.value.clearValidate(name),
       getFieldsValue: (nameList?: InternalNamePath[] | true) => form.value.getFieldsValue(nameList),
-      scrollToField: (name: NamePath, options?: ['auto' | 'smooth' | Function]) => form.value.scrollToField(name, options),
+      scrollToField: (name: NamePath, options?: ['auto' | 'smooth' | ((...rest: any[]) => any)]) => form.value.scrollToField(name, options),
       validateFields: (nameList?: NamePath[] | string, options?: ValidateOptions) => form.value.validateFields(nameList, options),
-      validate: (nameList?: NamePath[] | string, options?: ValidateOptions) => form.value.validate(nameList, options)
+      validate: (nameList?: NamePath[] | string, options?: ValidateOptions) => form.value.validate(nameList, options),
     })
 
     return () => {
@@ -519,7 +519,7 @@ export const SForm = defineComponent({
       const spinning = ref(props.spinning || false)
 
       return (
-        <div class='s-form-container'>
+        <div class="s-form-container">
           <ASpin spinning={spinning.value}>
             <AForm
               {...context.attrs}
@@ -548,7 +548,7 @@ export const SForm = defineComponent({
     }
   },
   slots: {} as SFormDefineSlots,
-  methods: {} as SFormDefineMethods
+  methods: {} as SFormDefineMethods,
 })
 
 export default SForm

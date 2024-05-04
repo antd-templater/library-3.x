@@ -26,12 +26,12 @@ export const BaseMenu = defineComponent({
   inheritAttrs: false,
   props: {
     ...defaultSettingProps,
-    ...defaultBaseMenuProps
+    ...defaultBaseMenuProps,
   },
   emits: {
     'click': (info: any) => true,
     'update:openKeys': (keys: Key[]) => true,
-    'update:selectedKeys': (keys: Key[]) => true
+    'update:selectedKeys': (keys: Key[]) => true,
   },
   setup(props, { emit, attrs }) {
     const routeContext = useRouteContext()
@@ -58,7 +58,7 @@ export const BaseMenu = defineComponent({
         const menuTitle = helper.isFunction(locale) ? locale(meta.title) : meta.title
 
         menu.title = (
-          <CustomTag { ...attrs } { ...binds } class={`${prefixCls}-menu-item`}>
+          <CustomTag {...attrs} {...binds} class={`${prefixCls}-menu-item`}>
             <span>{menuTitle}</span>
           </CustomTag>
         )
@@ -81,7 +81,7 @@ export const BaseMenu = defineComponent({
         )
 
         menu.title = (
-          <CustomTag { ...attrs } { ...binds } class={`${prefixCls}-menu-item`}>
+          <CustomTag {...attrs} {...binds} class={`${prefixCls}-menu-item`}>
             { menu.icon }
             <span class={`${prefixCls}-menu-item-title`}>{menuTitle}</span>
           </CustomTag>
@@ -101,7 +101,7 @@ export const BaseMenu = defineComponent({
 
       const render = {
         title: meta.title as SProLayoutRenderNode,
-        icon: null as SProLayoutRenderNode
+        icon: null as SProLayoutRenderNode,
       }
 
       const icon = menu.icon
@@ -117,7 +117,7 @@ export const BaseMenu = defineComponent({
         if (helper.isFunction(subMenuItemRender)) {
           return subMenuItemRender({
             item,
-            children: getNavMenuItems(item.children)
+            children: getNavMenuItems(item.children),
           })
         }
 
@@ -142,7 +142,7 @@ export const BaseMenu = defineComponent({
         }
 
         const isGroup = meta.type === 'group'
-        const menuIcon = !isGroup ? <LazyMenuIcon icon={meta.icon} iconPrefix={iconPrefix} iconfontUrl={iconfontUrl}/> : null
+        const menuIcon = !isGroup ? <LazyMenuIcon icon={meta.icon} iconPrefix={iconPrefix} iconfontUrl={iconfontUrl} /> : null
         const menuTitle = render.title
         const MenuComponent = !isGroup ? AMenu.SubMenu : AMenu.ItemGroup
 
@@ -173,7 +173,7 @@ export const BaseMenu = defineComponent({
       )
     }
 
-    const onSelect = (opt: { key: Key, selectedKeys: Key[] }) => {
+    const onSelect = (opt: { key: Key; selectedKeys: Key[]; }) => {
       if ((/^https?:\/\/[^\s\S]+/i).test(opt.key as string)) {
         return
       }
@@ -191,7 +191,7 @@ export const BaseMenu = defineComponent({
 
     return () => (
       <AMenu
-        key='Menu'
+        key="Menu"
         mode={props.mode}
         class={attrs.class}
         style={attrs.style}
@@ -207,7 +207,7 @@ export const BaseMenu = defineComponent({
         { getNavMenuItems(props.menuData) }
       </AMenu>
     )
-  }
+  },
 })
 
 export const SiderMenu = defineComponent({
@@ -216,13 +216,13 @@ export const SiderMenu = defineComponent({
   props: {
     ...defaultSettingProps,
     ...defaultBaseMenuProps,
-    ...defaultSiderMenuProps
+    ...defaultSiderMenuProps,
   },
   emits: {
     menuClick: (...args: any[]) => true,
     collapse: (bool: boolean) => true,
     openKeys: (keys: Key[]) => true,
-    select: (keys: Key[]) => true
+    select: (keys: Key[]) => true,
   },
   setup(props, { emit }) {
     const routeContext = useRouteContext()
@@ -292,15 +292,15 @@ export const SiderMenu = defineComponent({
         [baseClassName]: true,
         [`${baseClassName}-fixed`]: props.fixSiderbar,
         [`${baseClassName}-${SiderTheme.value}`]: true,
-        [`${baseClassName}-layout-${props.layout}`]: props.layout && !props.isMobile
+        [`${baseClassName}-layout-${props.layout}`]: props.layout && !props.isMobile,
       }
     })
 
     const RenderSiderMenuContent = () => {
       const defaultMenuVNode = (
         <BaseMenu
-          mode='inline'
-          style='width: 100%; background-color: transparent; border: none;'
+          mode="inline"
+          style="width: 100%; background-color: transparent; border: none;"
           class={`${baseClassName}-menu`}
           prefixCls={getPrefixCls('menu')}
           theme={SiderTheme.value}
@@ -318,7 +318,7 @@ export const SiderMenu = defineComponent({
           {
             ...{
               'onUpdate:selectedKeys': onUpdateSelectedKeys,
-              'onUpdate:openKeys': onUpdateOpenKeys
+              'onUpdate:openKeys': onUpdateOpenKeys,
             }
           }
         />
@@ -326,14 +326,14 @@ export const SiderMenu = defineComponent({
 
       if (helper.isFunction(props.menuContentRender)) {
         return (
-          <div style='flex: 1 1 auto; overflow: hidden auto;'>
+          <div style="flex: 1 1 auto; overflow: hidden auto;">
             { props.menuContentRender({ ...props }, defaultMenuVNode) || defaultMenuVNode }
           </div>
         )
       }
 
       return (
-        <div style='flex: 1 1 auto; overflow: hidden auto;'>
+        <div style="flex: 1 1 auto; overflow: hidden auto;">
           { defaultMenuVNode }
         </div>
       )
@@ -391,7 +391,7 @@ export const SiderMenu = defineComponent({
               maxWidth: `${siderWidth.value}px`,
               minWidth: `${siderWidth.value}px`,
               transition: `background-color 0.3s, min-width 0.3s, max-width 0.3s cubic-bezier(0.645, 0.045, 0.355, 1)`,
-              overflow: 'hidden'
+              overflow: 'hidden',
             }}
           />
         )
@@ -404,7 +404,7 @@ export const SiderMenu = defineComponent({
           style={{
             overflow: 'hidden',
             backgroundColor: SiderTheme.value !== 'light' ? '#001529 !important' : '#ffffff !important',
-            paddingTop: SiderHeaderTop.value
+            paddingTop: SiderHeaderTop.value,
           }}
           trigger={null}
           collapsible={true}
@@ -431,7 +431,7 @@ export const SiderMenu = defineComponent({
         { RenderLayoutSider() }
       </>
     )
-  }
+  },
 })
 
 export const SiderMenuWrapper = defineComponent({
@@ -440,13 +440,13 @@ export const SiderMenuWrapper = defineComponent({
   props: {
     ...defaultSettingProps,
     ...defaultBaseMenuProps,
-    ...defaultSiderMenuProps
+    ...defaultSiderMenuProps,
   },
   emits: {
     menuClick: (...args: any[]) => true,
     collapse: (bool: boolean) => true,
     openKeys: (keys: Key[]) => true,
-    select: (keys: Key[]) => true
+    select: (keys: Key[]) => true,
   },
   setup(props, { emit }) {
     const routeContext = useRouteContext()
@@ -477,17 +477,17 @@ export const SiderMenuWrapper = defineComponent({
             mask={true}
             closable={false}
             maskClosable={true}
-            placement={'left'}
+            placement="left"
             open={!props.collapsed}
             width={props.siderWidth}
             style={{ padding: 0, height: '100vh' }}
-            onClose={() => emit('collapse', true) }
+            onClose={() => emit('collapse', true)}
             rootClassName={getPrefixCls('sider-menu-drawer')}
             bodyStyle={{
               display: 'flex',
               height: '100vh',
               padding: '0px 0px',
-              flexDirection: 'row'
+              flexDirection: 'row',
             }}
           >
             <SiderMenu
@@ -528,7 +528,7 @@ export const SiderMenuWrapper = defineComponent({
               {
                 ...{
                   'onUpdate:selectedKeys': onUpdateSelectedKeys,
-                  'onUpdate:openKeys': onUpdateOpenKeys
+                  'onUpdate:openKeys': onUpdateOpenKeys,
                 }
               }
             />
@@ -575,13 +575,13 @@ export const SiderMenuWrapper = defineComponent({
           {
             ...{
               'onUpdate:selectedKeys': onUpdateSelectedKeys,
-              'onUpdate:openKeys': onUpdateOpenKeys
+              'onUpdate:openKeys': onUpdateOpenKeys,
             }
           }
         />
       )
     }
-  }
+  },
 })
 
 export default SiderMenuWrapper
