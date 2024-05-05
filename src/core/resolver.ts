@@ -50,4 +50,18 @@ export const AntdLibraries = [
   'treeEmitChangeDefiner',
   'treeDropHandlerDefiner',
   'treeReplaceFieldsDefiner',
+
+  // Components
+  'SEditCellDatePicker',
+  'SEditCellTreeSelect',
+  'SEditCellSelectIcon',
+  'SEditCellTextarea',
+  'SEditCellSelect',
+  'SEditCellInput',
+  'SIconSelect',
+  'SEllipsis',
+  'STable',
+  'STree',
+  'SForm',
+  'SIcon',
 ]
