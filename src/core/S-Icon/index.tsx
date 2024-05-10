@@ -30,6 +30,8 @@ export const SIcon = defineComponent({
   props: {
     spin: VueTypes.bool().def(false),
     type: VueTypes.string().isRequired,
+    style: VueTypes.any().def(undefined),
+    class: VueTypes.any().def(undefined),
     rotate: VueTypes.number().def(undefined),
     iconPrefix: VueTypes.string().def(undefined),
     iconfontUrl: VueTypes.string().def(undefined),
@@ -58,7 +60,7 @@ export const SIcon = defineComponent({
         delete binds.iconfontUrl
         delete binds.iconPrefix
 
-        return <IconFont {...binds} />
+        return <IconFont {...binds} onClick={event => context.emit('click', event)} />
       }
 
       return null

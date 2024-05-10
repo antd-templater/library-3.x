@@ -19,6 +19,10 @@ export const SIconSelect = defineComponent({
   name: 'SIconSelect',
   inheritAttrs: true,
   props: {
+    style: VueTypes.any().def(undefined),
+    class: VueTypes.any().def(undefined),
+    iconPrefix: VueTypes.string().def(undefined),
+    iconfontUrl: VueTypes.string().def(undefined),
     optionFilterProp: VueTypes.string().def(),
     optionLabelProp: VueTypes.string().def(),
     placeholder: VueTypes.string().def(''),
@@ -44,7 +48,16 @@ export const SIconSelect = defineComponent({
       if (isIconType(props.value)) {
         return (
           <span>
-            <SIcon type={props.value} style="margin: 0px 3px 0 -3px; font-size: 18px; vertical-align: middle;" />
+            <SIcon type={props.value} style="margin: 0px 3px 0 0; font-size: 18px; vertical-align: middle;" />
+            {props.label}
+          </span>
+        )
+      }
+
+      if (props.iconPrefix && props.iconfontUrl && props.type.startsWith(props.iconPrefix)) {
+        return (
+          <span>
+            <SIcon type={props.value} iconPrefix={props.iconPrefix} iconfontUrl={props.iconfontUrl} style="margin: 0px 3px 0 0; font-size: 18px; vertical-align: middle;" />
             {props.label}
           </span>
         )
@@ -58,6 +71,15 @@ export const SIconSelect = defineComponent({
         return (
           <span>
             <SIcon type={props.value} style="margin: 0px 3px 2px 2px; font-size: 20px; vertical-align: middle;" />
+            {props.label}
+          </span>
+        )
+      }
+
+      if (props.iconPrefix && props.iconfontUrl && props.type.startsWith(props.iconPrefix)) {
+        return (
+          <span>
+            <SIcon type={props.value} iconPrefix={props.iconPrefix} iconfontUrl={props.iconfontUrl} style="margin: 0px 3px 2px 2px; font-size: 20px; vertical-align: middle;" />
             {props.label}
           </span>
         )
@@ -99,6 +121,8 @@ export const SIconSelect = defineComponent({
           size={props.size || provider.componentSize?.value}
           mode={props.mode}
           value={propValue}
+          style={props.style}
+          class={props.class}
           options={props.options}
           disabled={props.disabled}
           showArrow={props.showArrow}
