@@ -5,21 +5,25 @@ const OutKeys = AllKeys.filter(key => key.endsWith('Outlined'))
 const Options = [] as Array<SIconSelectOption>
 
 export type SIconSelectOption = {
-  label?: string;
-  value?: string | number;
+  label: string;
+  value: string;
   options?: Omit<SIconSelectOption, 'options'>[];
   disabled?: boolean;
   [name: string]: any;
 }
 
 for (const key of OutKeys) {
-  let finder = Options.find(opt => opt.value === key[0])
+  const letter = key[0]
+  const finder = Options.find(opt => opt.value === letter)
 
   if (!finder) {
-    Options.push(finder = {
-      label: `字母${key[0]}`,
-      value: key[0],
-      options: [],
+    Options.push({
+      label: `字母${letter.toUpperCase()}`,
+      value: letter,
+      options: [{
+        label: key,
+        value: key,
+      }],
     })
   }
 
@@ -29,6 +33,10 @@ for (const key of OutKeys) {
       value: key,
     })
   }
+}
+
+if (Options) {
+  Options.sort((next, prev) => next.value < prev.value ? -1 : 1)
 }
 
 export default Options

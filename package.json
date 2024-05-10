@@ -4,7 +4,7 @@
   "homepage": "https://github.com/antd-templater/library-3.x",
   "author": "lin pengteng <china.linpengteng@gmail.com>",
   "license": "MIT",
-  "version": "4.2.3",
+  "version": "4.2.5",
   "keywords": [
     "form",
     "tree",
@@ -99,7 +99,7 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
     "typescript-eslint": "^7.8.0",
-    "volar-service-prettyhtml": "^0.0.43",
+    "volar-service-prettyhtml": "^0.0.44",
     "vue-template-compiler": "^2.7.16",
     "vue-tsc": "^2.0.16"
   },

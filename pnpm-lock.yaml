@@ -145,8 +145,8 @@ importers:
         specifier: ^7.8.0
         version: 7.8.0(eslint@9.2.0)(typescript@5.4.5)
       volar-service-prettyhtml:
-        specifier: ^0.0.43
-        version: 0.0.43
+        specifier: ^0.0.44
+        version: 0.0.44
       vue-template-compiler:
         specifier: ^2.7.16
         version: 2.7.16
@@ -4689,8 +4689,8 @@ packages:
       terser:
         optional: true
 
-  volar-service-prettyhtml@0.0.43:
-    resolution: {integrity: sha512-ZOFBKpa305dtPLSL4ltI7ozO0DUaTKJRwgE8SjFqNC2XFp/DiENlgqJaLka9BJ73MpKL6pwlRs4TMITMvPKRmQ==}
+  volar-service-prettyhtml@0.0.44:
+    resolution: {integrity: sha512-OKr4riGA270pxh06BVe4zpUfZzdJxVoShMbHAZrvXtXRqGxJI9l8OuFB5dcGZao1aR/hUYE3OCbHPjt+Z0EbHw==}
     peerDependencies:
       '@volar/language-service': ~2.2.0
     peerDependenciesMeta:
@@ -9829,7 +9829,7 @@ snapshots:
       less: 4.2.0
       terser: 5.31.0
 
-  volar-service-prettyhtml@0.0.43:
+  volar-service-prettyhtml@0.0.44:
     dependencies:
       '@starptech/prettyhtml': 0.10.0
     transitivePeerDependencies:

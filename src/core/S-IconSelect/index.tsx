@@ -1,15 +1,16 @@
 import * as VueTypes from 'vue-types'
-import { defineComponent, ref } from 'vue'
+import { defineComponent, watchEffect, ref } from 'vue'
 import { useConfigContextInject } from 'ant-design-vue/es/config-provider/context'
 import ASelect from 'ant-design-vue/es/select'
 
 import SIcon, { isIconType } from '../S-Icon'
+import generateOptions from './iconfont'
 import defaultOptions from './icons'
 import helper from '@/helper'
 
 export type SIconSelectOption = {
-  label?: string;
-  value?: string | number;
+  label: string | number;
+  value: string | number;
   options?: Omit<SIconSelectOption, 'options'>[];
   disabled?: boolean;
   [name: string]: any;
@@ -21,6 +22,8 @@ export const SIconSelect = defineComponent({
   props: {
     style: VueTypes.any().def(undefined),
     class: VueTypes.any().def(undefined),
+    iconStyle: VueTypes.any().def(undefined),
+    iconClass: VueTypes.any().def(undefined),
     iconPrefix: VueTypes.string().def(undefined),
     iconfontUrl: VueTypes.string().def(undefined),
     optionFilterProp: VueTypes.string().def(),
@@ -31,7 +34,7 @@ export const SIconSelect = defineComponent({
     showArrow: VueTypes.bool().def(true),
     multiple: VueTypes.bool().def(false),
     disabled: VueTypes.bool().def(false),
-    options: VueTypes.array<SIconSelectOption>().def(() => defaultOptions),
+    options: VueTypes.array<SIconSelectOption>().def(undefined),
     value: VueTypes.any<string | number | string[] | number[]>().def(),
     mode: VueTypes.string<'multiple' | 'tags'>().def(),
     size: VueTypes.string<'large' | 'middle' | 'small'>().def(),
@@ -44,54 +47,55 @@ export const SIconSelect = defineComponent({
     'blur': (_: Event) => true,
   },
   setup(props, { emit }) {
-    const OptionRender = (props: any) => {
-      if (isIconType(props.value)) {
+    const OptionRender = (option: any) => {
+      if (isIconType(option.value)) {
         return (
           <span>
-            <SIcon type={props.value} style="margin: 0px 3px 0 0; font-size: 18px; vertical-align: middle;" />
-            {props.label}
+            <SIcon type={option.value} class={props.iconClass} style={{ margin: '0px 3px 0 0', fontSize: '18px', verticalAlign: 'middle', ...props.iconStyle }} />
+            {option.label}
           </span>
         )
       }
 
-      if (props.iconPrefix && props.iconfontUrl && props.type.startsWith(props.iconPrefix)) {
+      if (props.iconPrefix && props.iconfontUrl && option.value.startsWith(props.iconPrefix)) {
         return (
           <span>
-            <SIcon type={props.value} iconPrefix={props.iconPrefix} iconfontUrl={props.iconfontUrl} style="margin: 0px 3px 0 0; font-size: 18px; vertical-align: middle;" />
-            {props.label}
+            <SIcon type={option.value} iconPrefix={props.iconPrefix} iconfontUrl={props.iconfontUrl} class={props.iconClass} style={{ margin: '0px 3px 0 0', fontSize: '18px', verticalAlign: 'middle', ...props.iconStyle }} />
+            {option.label}
           </span>
         )
       }
 
-      return <span>{props.label}</span>
+      return <span>{option.label}</span>
     }
 
-    const TagRender = (props: any) => {
-      if (isIconType(props.value)) {
+    const TagRender = (option: any) => {
+      if (isIconType(option.value)) {
         return (
           <span>
-            <SIcon type={props.value} style="margin: 0px 3px 2px 2px; font-size: 20px; vertical-align: middle;" />
-            {props.label}
+            <SIcon type={option.value} class={props.iconClass} style={{ margin: '0px 3px 2px 2px', fontSize: '18px', verticalAlign: 'middle', ...props.iconStyle }} />
+            {option.label}
           </span>
         )
       }
 
-      if (props.iconPrefix && props.iconfontUrl && props.type.startsWith(props.iconPrefix)) {
+      if (props.iconPrefix && props.iconfontUrl && option.value.startsWith(props.iconPrefix)) {
         return (
           <span>
-            <SIcon type={props.value} iconPrefix={props.iconPrefix} iconfontUrl={props.iconfontUrl} style="margin: 0px 3px 2px 2px; font-size: 20px; vertical-align: middle;" />
-            {props.label}
+            <SIcon type={option.value} iconPrefix={props.iconPrefix} iconfontUrl={props.iconfontUrl} class={props.iconClass} style={{ margin: '0px 3px 2px 2px', fontSize: '18px', verticalAlign: 'middle', ...props.iconStyle }} />
+            {option.label}
           </span>
         )
       }
 
-      return <span>{props.label}</span>
+      return <span>{option.label}</span>
     }
 
-    const open: any = ref(undefined)
-    const selector: any = ref(undefined)
-    const isMultiple = props.multiple !== false
+    const open = ref<any>(undefined)
+    const selector = ref<any>(undefined)
+    const iconOptions = ref<SIconSelectOption[]>([])
     const isMultipleMode = props.mode === 'tags' || props.mode === 'multiple'
+    const isMultiple = props.multiple !== false
     const provider = useConfigContextInject()
 
     const onChange = (value: any, option: any | any[]) => {
@@ -109,6 +113,20 @@ export const SIconSelect = defineComponent({
       emit('change', isOnlyArrayValue ? value.slice(-1)[0] : value, option)
     }
 
+    watchEffect(async() => {
+      if (!props.options && (!props.iconPrefix || !props.iconfontUrl)) {
+        iconOptions.value = defaultOptions
+      }
+
+      if (!props.options && props.iconPrefix && props.iconfontUrl) {
+        iconOptions.value = await generateOptions(props.iconfontUrl, props.iconPrefix)
+      }
+
+      if (props.options) {
+        iconOptions.value = props.options
+      }
+    })
+
     return () => {
       const propValue = isMultiple || isMultipleMode
         ? (helper.isArray(props.value) ? props.value : (helper.isNonEmptyString(props.value) ? [props.value] : []))
@@ -123,7 +141,7 @@ export const SIconSelect = defineComponent({
           value={propValue}
           style={props.style}
           class={props.class}
-          options={props.options}
+          options={iconOptions.value}
           disabled={props.disabled}
           showArrow={props.showArrow}
           allowClear={props.allowClear}
