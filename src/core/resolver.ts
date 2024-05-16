@@ -19,6 +19,16 @@ export const AntdLibraries = [
   'formRulesDefiner',
   'formGroupsDefiner',
 
+  // S-Tree
+  'treeDataDefiner',
+  'treeLoadDataDefiner',
+  'treeEmitCheckDefiner',
+  'treeEmitSelectDefiner',
+  'treeEmitExpandDefiner',
+  'treeEmitChangeDefiner',
+  'treeDropHandlerDefiner',
+  'treeReplaceFieldsDefiner',
+
   // S-Table
   'tableScrollDefiner',
   'tableStickyDefiner',
@@ -41,15 +51,8 @@ export const AntdLibraries = [
   'tableCustomBodyerCellRenderDefiner',
   'tableCustomFooterCellRenderDefiner',
 
-  // S-Tree
-  'treeDataDefiner',
-  'treeLoadDataDefiner',
-  'treeEmitCheckDefiner',
-  'treeEmitSelectDefiner',
-  'treeEmitExpandDefiner',
-  'treeEmitChangeDefiner',
-  'treeDropHandlerDefiner',
-  'treeReplaceFieldsDefiner',
+  // S-IconSelect
+  'iconOptionsDefiner',
 
   // Components
   'SEditCellDatePicker',

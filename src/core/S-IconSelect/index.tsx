@@ -1,4 +1,5 @@
 import * as VueTypes from 'vue-types'
+import { SIconSelectOption } from './type'
 import { defineComponent, watchEffect, ref } from 'vue'
 import { useConfigContextInject } from 'ant-design-vue/es/config-provider/context'
 import ASelect from 'ant-design-vue/es/select'
@@ -7,14 +8,6 @@ import SIcon, { isIconType } from '../S-Icon'
 import generateOptions from './iconfont'
 import defaultOptions from './icons'
 import helper from '@/helper'
-
-export type SIconSelectOption = {
-  label: string | number;
-  value: string | number;
-  options?: Omit<SIconSelectOption, 'options'>[];
-  disabled?: boolean;
-  [name: string]: any;
-}
 
 export const SIconSelect = defineComponent({
   name: 'SIconSelect',
@@ -159,5 +152,7 @@ export const SIconSelect = defineComponent({
     }
   },
 })
+
+export const iconOptionsDefiner = (options: SIconSelectOption) => ref(options)
 
 export default SIconSelect

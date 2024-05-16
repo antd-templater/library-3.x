@@ -1,10 +1,4 @@
-export type SIconSelectOption = {
-  label: string;
-  value: string;
-  options?: Omit<SIconSelectOption, 'options'>[];
-  disabled?: boolean;
-  [name: string]: any;
-}
+import { SIconSelectOption } from './type'
 
 export default async(url: string, pre = 'icon-') => {
   const Options = [] as Array<SIconSelectOption>

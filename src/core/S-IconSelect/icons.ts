@@ -1,16 +1,9 @@
 import * as AllIcons from '@ant-design/icons-vue'
+import { SIconSelectOption } from './type'
 
 const AllKeys = Object.keys(AllIcons)
 const OutKeys = AllKeys.filter(key => key.endsWith('Outlined'))
 const Options = [] as Array<SIconSelectOption>
-
-export type SIconSelectOption = {
-  label: string;
-  value: string;
-  options?: Omit<SIconSelectOption, 'options'>[];
-  disabled?: boolean;
-  [name: string]: any;
-}
 
 for (const key of OutKeys) {
   const letter = key[0]

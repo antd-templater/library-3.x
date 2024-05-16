@@ -104,7 +104,10 @@ export default tseslint.config(
     },
   },
   {
-    files: ['**/*.vue'],
+    files: [
+      '**/*.vue',
+      '**/*.tsx',
+    ],
     rules: {
       'vue/attribute-hyphenation': ['error', 'never', {
         ignore: ['vcoder-*'],
@@ -116,6 +119,7 @@ export default tseslint.config(
       'vue/multi-word-component-names': ['error', {
         ignores: ['index', 'Index', 'login', 'Login'],
       }],
+      'vue/one-component-per-file': 'off',
       'vue/prop-name-casing': ['error', 'camelCase'],
       'vue/v-on-event-hyphenation': ['error', 'never'],
     },

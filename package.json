@@ -4,7 +4,7 @@
   "homepage": "https://github.com/antd-templater/library-3.x",
   "author": "lin pengteng <china.linpengteng@gmail.com>",
   "license": "MIT",
-  "version": "4.2.5",
+  "version": "4.2.7",
   "keywords": [
     "form",
     "tree",
@@ -55,7 +55,7 @@
     "@ant-design/icons-vue": "^7.0.1",
     "ant-design-vue": "^4.2.1",
     "dayjs": "^1.11.11",
-    "js-simpler": "^1.5.0",
+    "js-simpler": "^1.6.2",
     "less": "^4.2.0",
     "vue": "^3.4.27",
     "vue-router": "^4.3.2",
@@ -78,7 +78,7 @@
     "@rollup/pluginutils": "^5.1.0",
     "@stylistic/eslint-plugin": "^2.1.0",
     "@types/eslint": "^8.56.10",
-    "@types/node": "^20.12.11",
+    "@types/node": "^20.12.12",
     "@vitejs/plugin-vue": "^5.0.4",
     "@vitejs/plugin-vue-jsx": "^3.1.0",
     "@vue/compiler-sfc": "^3.4.27",
@@ -98,10 +98,10 @@
     "shx": "^0.3.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
-    "typescript-eslint": "^7.8.0",
-    "volar-service-prettyhtml": "^0.0.44",
+    "typescript-eslint": "^7.9.0",
+    "volar-service-prettyhtml": "^0.0.45",
     "vue-template-compiler": "^2.7.16",
-    "vue-tsc": "^2.0.16"
+    "vue-tsc": "^2.0.18"
   },
   "config": {
     "cz-message-helper": {

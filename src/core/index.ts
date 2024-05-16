@@ -6,6 +6,7 @@ import { App } from 'vue'
 import { SIcon } from './S-Icon/index'
 import { SEllipsis } from './S-Ellipsis/index'
 import { SIconSelect } from './S-IconSelect/index'
+import { iconOptionsDefiner } from './S-IconSelect/index'
 
 // S-EditCell-*
 import { SEditCellInput } from './S-EditCell/input'
@@ -21,6 +22,17 @@ import { formValidator } from './S-Form/index'
 import { formGridDefiner } from './S-Form/index'
 import { formRulesDefiner } from './S-Form/index'
 import { formGroupsDefiner } from './S-Form/index'
+
+// S-Tree
+import { STree } from './S-Tree/index'
+import { treeDataDefiner } from './S-Tree/index'
+import { treeLoadDataDefiner } from './S-Tree/index'
+import { treeEmitCheckDefiner } from './S-Tree/index'
+import { treeEmitSelectDefiner } from './S-Tree/index'
+import { treeEmitExpandDefiner } from './S-Tree/index'
+import { treeEmitChangeDefiner } from './S-Tree/index'
+import { treeDropHandlerDefiner } from './S-Tree/index'
+import { treeReplaceFieldsDefiner } from './S-Tree/index'
 
 // S-Table
 import { STable } from './S-Table/index'
@@ -44,17 +56,6 @@ import { tableCustomBodyerRowStatesDefiner } from './S-Table/index'
 import { tableCustomHeaderCellRenderDefiner } from './S-Table/index'
 import { tableCustomBodyerCellRenderDefiner } from './S-Table/index'
 import { tableCustomFooterCellRenderDefiner } from './S-Table/index'
-
-// S-Tree
-import { STree } from './S-Tree/index'
-import { treeDataDefiner } from './S-Tree/index'
-import { treeLoadDataDefiner } from './S-Tree/index'
-import { treeEmitCheckDefiner } from './S-Tree/index'
-import { treeEmitSelectDefiner } from './S-Tree/index'
-import { treeEmitExpandDefiner } from './S-Tree/index'
-import { treeEmitChangeDefiner } from './S-Tree/index'
-import { treeDropHandlerDefiner } from './S-Tree/index'
-import { treeReplaceFieldsDefiner } from './S-Tree/index'
 
 // S-ProLayout
 import { SProLayout } from './S-ProLayout/index'
@@ -88,6 +89,7 @@ export {
   SIcon,
   SEllipsis,
   SIconSelect,
+  iconOptionsDefiner,
 
   SEditCellInput,
   SEditCellSelect,
@@ -101,6 +103,16 @@ export {
   formGridDefiner,
   formRulesDefiner,
   formGroupsDefiner,
+
+  STree,
+  treeDataDefiner,
+  treeLoadDataDefiner,
+  treeEmitCheckDefiner,
+  treeEmitSelectDefiner,
+  treeEmitExpandDefiner,
+  treeEmitChangeDefiner,
+  treeDropHandlerDefiner,
+  treeReplaceFieldsDefiner,
 
   STable,
   tableScrollDefiner,
@@ -123,16 +135,6 @@ export {
   tableCustomHeaderCellRenderDefiner,
   tableCustomBodyerCellRenderDefiner,
   tableCustomFooterCellRenderDefiner,
-
-  STree,
-  treeDataDefiner,
-  treeLoadDataDefiner,
-  treeEmitCheckDefiner,
-  treeEmitSelectDefiner,
-  treeEmitExpandDefiner,
-  treeEmitChangeDefiner,
-  treeDropHandlerDefiner,
-  treeReplaceFieldsDefiner,
 
   SProLayout,
   SProGlobalHeader,
