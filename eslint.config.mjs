@@ -12,6 +12,12 @@ const flatArray = options => {
 
 export default tseslint.config(
   {
+    ignores: [
+      'node_modules/**/*',
+      'dist/**/*',
+    ],
+  },
+  {
     files: [
       '**/*.vue',
       '**/*.mjs',
@@ -20,10 +26,6 @@ export default tseslint.config(
       '**/*.tsx',
       '**/*.ts',
       '**/*.js',
-    ],
-    ignores: [
-      'node_modules/**/*',
-      'dist/**/*',
     ],
     extends: [
       ...flatArray(eslint.configs.recommended),
