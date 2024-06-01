@@ -68,9 +68,7 @@ export const SEditCellInput = defineComponent({
     }
 
     const doConfirm = (event: Event) => {
-      if (!props.opened) {
-        proxy.editable = false
-      }
+      proxy.editable = false
       emit('confirm', toRaw(proxy))
       event.stopPropagation()
     }
