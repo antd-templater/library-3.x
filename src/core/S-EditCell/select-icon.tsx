@@ -37,6 +37,10 @@ export const SEditCellSelectIcon = defineComponent({
     tooltip: VueTypes.object<{ enable?: boolean; ellipsis?: boolean; }>().def(() => ({ enable: true, ellipsis: false })),
     disabled: VueTypes.bool().def(false),
     options: VueTypes.array<SEditCellSelectOptionType>().def(undefined),
+    iconStyle: VueTypes.any().def(undefined),
+    iconClass: VueTypes.any().def(undefined),
+    iconPrefix: VueTypes.string().def(undefined),
+    iconfontUrl: VueTypes.string().def(undefined),
     showArrow: VueTypes.bool().def(true),
     allowClear: VueTypes.bool().def(false),
     showSearch: VueTypes.bool().def(true),
@@ -129,6 +133,10 @@ export const SEditCellSelectIcon = defineComponent({
               options={props.options}
               mode="tags"
               multiple={false}
+              iconStyle={props.iconStyle}
+              iconClass={props.iconClass}
+              iconPrefix={props.iconPrefix}
+              iconfontUrl={props.iconfontUrl}
               showArrow={props.showArrow}
               allowClear={props.allowClear}
               showSearch={props.showSearch}
