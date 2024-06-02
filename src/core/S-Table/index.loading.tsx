@@ -25,7 +25,7 @@ export const STableLoading = defineComponent({
     })
 
     return () => {
-      if (Optionser.value.container instanceof HTMLElement && Optionser.value.scroller instanceof HTMLElement) {
+      if (typeof HTMLElement !== 'undefined' && Optionser.value.container instanceof HTMLElement && Optionser.value.scroller instanceof HTMLElement) {
         const containerRect = Optionser.value.container.getBoundingClientRect()
         const scrollerRect = Optionser.value.scroller.getBoundingClientRect()
 

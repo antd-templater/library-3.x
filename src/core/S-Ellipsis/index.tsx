@@ -12,6 +12,8 @@ export const SEllipsis = defineComponent({
   props: {
     open: VueTypes.bool().def(undefined),
     title: VueTypes.string().def(undefined),
+    color: VueTypes.string().def(undefined),
+    trigger: VueTypes.string<'hover' | 'focus' | 'click' | 'contextmenu'>().def('hover'),
     inspect: VueTypes.bool().def(true),
     tooltip: VueTypes.bool().def(true),
     ellipsis: VueTypes.bool().def(false),
@@ -41,7 +43,7 @@ export const SEllipsis = defineComponent({
     const element: any = ref(null)
 
     const bounding = (target: any) => {
-      if (target instanceof HTMLElement) {
+      if (typeof HTMLElement !== 'undefined' && target instanceof HTMLElement) {
         const clientHeight = target.getBoundingClientRect().height
         const clientWidth = target.getBoundingClientRect().width
         const outHeight = target.scrollHeight > clientHeight + 1
@@ -57,13 +59,13 @@ export const SEllipsis = defineComponent({
         : (open.value = state)
     }
 
-    const observer = new ResizeObserver(entries => {
-      for (const entry of entries) {
-        bounding(entry.target)
-      }
-    })
-
     onMounted(() => {
+      const observer = new ResizeObserver(entries => {
+        for (const entry of entries) {
+          bounding(entry.target)
+        }
+      })
+
       if (element.value instanceof HTMLElement) {
         observer.observe(element.value)
         bounding(element.value)

@@ -125,7 +125,7 @@ export const SFormComponent = defineComponent({
           const elements = component.value?.querySelectorAll(selector)
 
           elements?.forEach(element => {
-            if (element instanceof HTMLElement) {
+            if (typeof HTMLElement !== 'undefined' && (element instanceof HTMLElement)) {
               for (const name of Array.from(element.classList)) {
                 if (/-disabled(\b|$)/.test(name)) {
                   element.classList.remove(name)

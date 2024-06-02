@@ -126,7 +126,7 @@ export const STable = defineComponent({
     const watchOptions = { immediate: true }
     const watchDeepOptions = { immediate: true, deep: true }
     const renderRowPresets = reactive({ minBuffer: 5, maxBuffer: 10, minHeight: 32 })
-    const renderRowRanger = reactive({ renderOffset: [0, ~~(window.innerHeight / renderRowPresets.minHeight)], renderBuffer: [0, 10] })
+    const renderRowRanger = reactive({ renderOffset: [0, 0], renderBuffer: [0, 10] })
     const configProvider = useConfigContextInject()
 
     const propColumns = ref([...props.columns])
@@ -174,8 +174,8 @@ export const STable = defineComponent({
       refTableWrapper: ref(null) as Ref<HTMLElement | null>,
       refTableContainer: ref(null) as Ref<HTMLElement | null>,
       tableTheadSizes: ref([]) as Ref<Array<STableCellSizesType>>,
-      windowInnerWidth: ref(window.innerWidth),
-      windowInnerHeight: ref(window.innerHeight),
+      windowInnerWidth: ref(0),
+      windowInnerHeight: ref(0),
 
       // resizer - container
       getResizerContainer: undefined as (() => HTMLElement) | undefined,
@@ -2203,20 +2203,6 @@ export const STable = defineComponent({
       },
     }
 
-    const Observer = {
-      intersectionObserver: new IntersectionObserver(() => {
-
-      }),
-
-      mutationObserver: new MutationObserver(() => {
-
-      }),
-
-      resizeObserver: new ResizeObserver(() => {
-        Eventer.updateColumnRender()
-      }),
-    }
-
     const Eventer = {
       documentMouseMove(event: MouseEvent) {
         if (Optionser.resizer.activate) {
@@ -2366,7 +2352,7 @@ export const STable = defineComponent({
         const refTableNoder = Optionser.refTableNoder.value
         const resizerContainer = Optionser.resizerContainer.value
 
-        if (!(refTableNoder instanceof HTMLElement) || !(resizerContainer instanceof HTMLElement)) {
+        if (typeof HTMLElement === 'undefined' || !(refTableNoder instanceof HTMLElement) || !(resizerContainer instanceof HTMLElement)) {
           return
         }
 
@@ -2398,7 +2384,7 @@ export const STable = defineComponent({
           ? Normalizer.scroll.value.getScrollResizeContainer()
           : null
 
-        if (!(container instanceof HTMLElement)) {
+        if (typeof HTMLElement === 'undefined' || !(container instanceof HTMLElement)) {
           Optionser.resizerContainer.value = null
           Optionser.resizerScrollTop.value = 0
           Optionser.resizerScrollLeft.value = 0
@@ -2408,7 +2394,7 @@ export const STable = defineComponent({
           Optionser.resizerScrollClientHeight.value = 0
         }
 
-        if (container instanceof HTMLElement) {
+        if (typeof HTMLElement !== 'undefined' && container instanceof HTMLElement) {
           const clientRect = container.getBoundingClientRect()
           const scrollHeight = container.scrollHeight || 0
           const scrollWidth = container.scrollWidth || 0
@@ -2446,6 +2432,11 @@ export const STable = defineComponent({
       updateWindowContainer() {
         Optionser.windowInnerWidth.value = window.innerWidth
         Optionser.windowInnerHeight.value = window.innerHeight
+      },
+
+      updateRenderRowRanger() {
+        renderRowRanger.renderOffset = [0, ~~(window.innerHeight / renderRowPresets.minHeight)]
+        renderRowRanger.renderBuffer = [0, 10]
       },
 
       updateTheadContainer() {
@@ -2797,10 +2788,20 @@ export const STable = defineComponent({
     watch(() => loading.value, () => { context.emit('update:loading', loading.value) }, watchDeepOptions)
 
     onMounted(() => {
+      const Observer = {
+        intersectionObserver: new IntersectionObserver(() => {}),
+        mutationObserver: new MutationObserver(() => {}),
+        resizeObserver: new ResizeObserver(() => {
+          Eventer.updateColumnRender()
+        }),
+      }
+
       if (props.immediate !== false) {
         Requester.refresh()
       }
 
+      Eventer.updateWindowContainer()
+      Eventer.updateRenderRowRanger()
       Eventer.updateResizerContainer()
       Eventer.updateWrapperContainer()
       Eventer.updateColGroupRender()
@@ -2809,7 +2810,7 @@ export const STable = defineComponent({
       document.addEventListener('mousemove', Eventer.documentMouseMove)
       window.addEventListener('resize', Eventer.updateWindowContainer)
 
-      Observer.resizeObserver.observe(Optionser.refTableWrapper.value!)
+      Observer.resizeObserver?.observe(Optionser.refTableWrapper.value!)
 
       nextTick(() => {
         let proxyer: any = Optionser.refTableWrapper.value
@@ -2833,7 +2834,7 @@ export const STable = defineComponent({
 
         if (proxyer instanceof HTMLElement) {
           proxyer.addEventListener('scroll', Eventer.updateResizerContainer, { passive: true })
-          Observer.resizeObserver.observe(proxyer)
+          Observer.resizeObserver?.observe(proxyer)
           Eventer.updateResizerContainer()
         }
       })
@@ -4159,7 +4160,7 @@ export const STable = defineComponent({
 
       const RenderTableCursor = () => {
         if (!Optionser.cursor.visible) {
-          return <></>
+          return
         }
 
         return (
@@ -4174,7 +4175,7 @@ export const STable = defineComponent({
 
       const RenderTableDragger = () => {
         if (!Optionser.dragger.visible) {
-          return <></>
+          return
         }
 
         return (
@@ -4191,7 +4192,7 @@ export const STable = defineComponent({
       }
 
       const WrapperMousedown = (event: MouseEvent) => {
-        if (!(event.target instanceof HTMLElement)) {
+        if (typeof HTMLElement === 'undefined' || !(event.target instanceof HTMLElement)) {
           return
         }
 
@@ -4336,7 +4337,7 @@ export const STable = defineComponent({
     const RenderTableContianer = (ctx: typeof context) => {
       const RenderTableSettings = (_: typeof context) => {
         if (!props.columnPresetSettings) {
-          return <></>
+          return
         }
 
         const currentAllKeys = Methoder.getValue(columnSettingsAllKeys)

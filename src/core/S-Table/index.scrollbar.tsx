@@ -78,7 +78,7 @@ export const STableScrollbar = defineComponent({
     }
 
     const scrollbarMouseDown = (event: MouseEvent) => {
-      if (Optionser.value.scroller instanceof HTMLElement) {
+      if (typeof HTMLElement !== 'undefined' && Optionser.value.scroller instanceof HTMLElement) {
         if (props.direction === 'horizontal') {
           store.activate = true
           store.scrollbarX = Optionser.value.scrollLeft / Optionser.value.scrollWidth * Optionser.value.clientWidth
@@ -102,7 +102,7 @@ export const STableScrollbar = defineComponent({
     }
 
     const scrollbarMouseMove = (event: MouseEvent) => {
-      if (!(Optionser.value.scroller instanceof HTMLElement)) {
+      if (typeof HTMLElement === 'undefined' || !(Optionser.value.scroller instanceof HTMLElement)) {
         store.activate = false
         store.scrollbarX = 0
         store.scrollbarY = 0
@@ -164,19 +164,20 @@ export const STableScrollbar = defineComponent({
         return
       }
 
-      if (!(Optionser.value.container instanceof HTMLElement)) {
+      if (typeof HTMLElement === 'undefined' || !(Optionser.value.container instanceof HTMLElement)) {
         return
       }
 
-      if (!(Optionser.value.scroller instanceof HTMLElement)) {
+      if (typeof HTMLElement === 'undefined' || !(Optionser.value.scroller instanceof HTMLElement)) {
         return
       }
 
-      if (!(Optionser.value.table instanceof HTMLElement)) {
+      if (typeof HTMLElement === 'undefined' || !(Optionser.value.table instanceof HTMLElement)) {
         return
       }
 
-      const paddingLeft = props.direction === 'vertical' && parseInt(window.getComputedStyle(Optionser.value.scroller).paddingLeft) || 0
+      const tWindow = typeof window !== 'undefined' ? window : null // Support SSR
+      const paddingLeft = props.direction === 'vertical' && parseInt(tWindow?.getComputedStyle(Optionser.value.scroller)?.paddingLeft || '0') || 0
       const scrollerRect = Optionser.value.scroller.getBoundingClientRect()
 
       const isOutsideTop = scrollerRect.top >= Optionser.value.windowHeight - 20
