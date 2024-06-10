@@ -132,7 +132,7 @@ export interface STableExpanderRender<RecordType = STableRecordType> {
 }
 
 export interface STableHeaderCellRender<RecordType = STableRecordType> {
-  (option: { title: string | number; column: STableColumnType<RecordType>; rowIndex: number; colIndex: number; }): VNode | STableRefWrapper<{
+  (option: { title: string | number; column: STableColumnType<RecordType>; rowIndex: number; colIndex: number; }): undefined | VNode | STableRefWrapper<{
     attrs?: HTMLAttributes;
     props?: {
       align?: 'left' | 'center' | 'right';
@@ -152,7 +152,7 @@ export interface STableHeaderCellRender<RecordType = STableRecordType> {
 }
 
 export interface STableBodyerCellRender<RecordType = STableRecordType> {
-  (option: { value: any; record: RecordType; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: Record<number, number>; globalIndex: number; column: STableColumnType<RecordType>; colIndex: number; }): VNode | STableRefWrapper<{
+  (option: { value: any; record: RecordType; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: Record<number, number>; globalIndex: number; column: STableColumnType<RecordType>; colIndex: number; }): undefined | VNode | STableRefWrapper<{
     attrs?: HTMLAttributes;
     props?: {
       align?: 'left' | 'center' | 'right';
@@ -167,7 +167,7 @@ export interface STableBodyerCellRender<RecordType = STableRecordType> {
 }
 
 export interface STableFooterCellRender<RecordType = STableRecordType> {
-  (option: { value: any; record: RecordType; rowIndex: number; column: STableColumnType<RecordType>; colIndex: number; sources: RecordType[]; paginate: STablePaginateType; }): VNode | STableRefWrapper<{
+  (option: { value: any; record: RecordType; rowIndex: number; column: STableColumnType<RecordType>; colIndex: number; sources: RecordType[]; paginate: STablePaginateType; }): undefined | VNode | STableRefWrapper<{
     attrs?: HTMLAttributes;
     props?: {
       align?: 'left' | 'center' | 'right';
@@ -300,11 +300,11 @@ export type STablePartStickyType = Partial<STableStickyType>
 export type STablePartScrollType = Partial<STableScrollType>
 export type STablePartPaginate = Partial<STablePaginateType>
 
-export type STableeDefineSlots<RecordType = STableRecordType> = SlotsType<{
-  expander: Parameters<STableExpanderRender<RecordType>>[0];
-  headerCell: Parameters<STableHeaderCellRender<RecordType>>[0];
-  bodyerCell: Parameters<STableBodyerCellRender<RecordType>>[0];
-  footerCell: Parameters<STableFooterCellRender<RecordType>>[0];
+export type STableDefineSlots<RecordType = STableRecordType> = SlotsType<{
+  expander: Parameters<STableExpanderRender<RecordType>>[0] & { scroller: { top: number; left: number; right: number; bottom: number; }; };
+  headerCell: Parameters<STableHeaderCellRender<RecordType>>[0] & { scroller: { top: number; left: number; right: number; bottom: number; }; };
+  bodyerCell: Parameters<STableBodyerCellRender<RecordType>>[0] & { scroller: { top: number; left: number; right: number; bottom: number; }; };
+  footerCell: Parameters<STableFooterCellRender<RecordType>>[0] & { scroller: { top: number; left: number; right: number; bottom: number; }; };
 }>
 
 export type STableDefineMethods = {

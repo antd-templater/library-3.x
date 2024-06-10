@@ -208,6 +208,7 @@ body.user-select-none {
       & > .s-nested-table.s-border-table {
         width: 100%;
         min-width: 100%;
+        border: solid 0.5px var(--table-border-color);
 
         & > .s-table-thead,
         & > .s-table-tbody,
@@ -504,6 +505,14 @@ body.user-select-none {
       height: 32px;
       position: sticky;
       right: 8px;
+
+      ul,
+      ol,
+      dl {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
     }
   }
 

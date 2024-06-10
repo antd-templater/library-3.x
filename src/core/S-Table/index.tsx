@@ -52,7 +52,7 @@ import type { STableHeaderCellRender } from './type'
 import type { STableBodyerCellRender } from './type'
 import type { STableFooterCellRender } from './type'
 import type { STableDefineMethods } from './type'
-import type { STableeDefineSlots } from './type'
+import type { STableDefineSlots } from './type'
 
 export const STable = defineComponent({
   name: 'STable',
@@ -144,20 +144,20 @@ export const STable = defineComponent({
 
     const columnRowAttrs: Ref<STableRefWrapper<HTMLAttributes>[]> = ref([])
     const columnCellAttrs: Ref<STableRefWrapper<HTMLAttributes>[][]> = ref([])
-    const columnCellProps: Ref<STableRefWrapper<UnwrapRef<Exclude<ReturnType<STableHeaderCellRender>, VNode>>['props']>[][]> = ref([])
+    const columnCellProps: Ref<STableRefWrapper<UnwrapRef<NonNullable<Exclude<ReturnType<STableHeaderCellRender>, VNode>>>['props']>[][]> = ref([])
     const columnCellRender: Ref<Array<Array<any>>> = ref([])
 
     const treeSources: Ref<STableWrapRecordType[]> = ref([])
     const listSources: Ref<STableWrapRecordType[]> = ref([])
     const sourceRowAttrs: Ref<STableRefWrapper<HTMLAttributes>[]> = ref([])
     const sourceRowStates: Ref<ReturnType<STableCustomBodyerRowStates>[]> = ref([])
-    const sourceCellProps: Ref<Record<string, STableRefWrapper<UnwrapRef<Exclude<ReturnType<STableBodyerCellRender>, VNode>>['props']>>[]> = ref([])
+    const sourceCellProps: Ref<Record<string, STableRefWrapper<UnwrapRef<NonNullable<Exclude<ReturnType<STableBodyerCellRender>, VNode>>>['props']>>[]> = ref([])
     const sourceCellAttrs: Ref<Record<string, STableRefWrapper<HTMLAttributes>>[]> = ref([])
     const sourceCellRender: Ref<Array<Record<string, any>>> = ref([])
 
     const listSummarys: Ref<STableRecordType[]> = ref([])
     const summaryRowAttrs: Ref<STableRefWrapper<HTMLAttributes>[]> = ref([])
-    const summaryCellProps: Ref<Record<string, STableRefWrapper<UnwrapRef<Exclude<ReturnType<STableFooterCellRender>, VNode>>['props']>>[]> = ref([])
+    const summaryCellProps: Ref<Record<string, STableRefWrapper<UnwrapRef<NonNullable<Exclude<ReturnType<STableFooterCellRender>, VNode>>>['props']>>[]> = ref([])
     const summaryCellAttrs: Ref<Record<string, STableRefWrapper<HTMLAttributes>>[]> = ref([])
     const summaryCellRender: Ref<Array<Record<string, any>>> = ref([])
 
@@ -357,10 +357,10 @@ export const STable = defineComponent({
 
       sticky: computed(() => ({
         topHeader: props.sticky.topHeader ?? false,
-        leftFooter: props.sticky.leftFooter ?? true,
-        rightFooter: props.sticky.rightFooter ?? true,
+        leftFooter: props.sticky.leftFooter,
+        rightFooter: props.sticky.rightFooter,
         bottomFooter: props.sticky.bottomFooter ?? true,
-        bottomScrollbar: props.sticky.bottomScrollbar ?? true,
+        bottomScrollbar: props.sticky.bottomScrollbar ?? false,
       })),
 
       scroll: computed(() => ({
@@ -2060,7 +2060,7 @@ export const STable = defineComponent({
         }
       },
 
-      forceUpdate(clean?: boolean) {
+      forceUpdate(clean = false) {
         if (clean === true) {
           // Clean Keys
           sourceRowKeys.value = []
@@ -2076,7 +2076,7 @@ export const STable = defineComponent({
           columnSettingsAllTrees.value = []
           columnSettingsCheckKeys.value = []
 
-          // Clean DataSources
+          // Clean Sources
           sourceRowKeys.value = []
           sourceRowAttrs.value = []
           sourceRowStates.value = []
@@ -2089,6 +2089,11 @@ export const STable = defineComponent({
           summaryCellProps.value = []
           summaryCellAttrs.value = []
           summaryCellRender.value = []
+
+          // Reset Columns / Sources / Summarys
+          propColumns.value = [...props.columns]
+          propSources.value = [...props.sources]
+          propSummarys.value = [...props.summarys]
         }
 
         // Update loading
@@ -2107,7 +2112,7 @@ export const STable = defineComponent({
         Methoder.normalizeTreeSettings(treeColumns.value)
         Methoder.normalizeInitColumns(listColumns.value)
 
-        // Update DataSources
+        // Update Sources
         sourceRowKeys.value = []
         sourceRowAttrs.value = []
         sourceRowStates.value = []
@@ -2115,77 +2120,6 @@ export const STable = defineComponent({
         sourceCellAttrs.value = []
         sourceCellRender.value = []
         treeSources.value = Methoder.normalizeTreeSources(propSources.value, [])
-        listSources.value = Methoder.normalizeListSources(treeSources.value, [])
-        Methoder.normalizeInitSources(listSources.value)
-
-        // Update Summarys
-        summaryRowAttrs.value = []
-        summaryCellProps.value = []
-        summaryCellAttrs.value = []
-        summaryCellRender.value = []
-        listSummarys.value = Methoder.normalizeListSummary(propSummarys.value)
-        Methoder.normalizeInitSummary(listSummarys.value)
-
-        // Update Clean RowKeys
-        Methoder.cleanSelectedRowKeys()
-        Methoder.cleanExpandedRowKeys()
-      },
-
-      forceClear(clean?: boolean) {
-        if (clean === true) {
-          // Clean Keys
-          sourceRowKeys.value = []
-          selectedRowKeys.value = []
-          expandedRowKeys.value = []
-
-          // Clean Columns
-          columnRowAttrs.value = []
-          columnCellAttrs.value = []
-          columnCellProps.value = []
-          columnCellRender.value = []
-          columnSettingsAllKeys.value = []
-          columnSettingsAllTrees.value = []
-          columnSettingsCheckKeys.value = []
-
-          // Clean DataSources
-          sourceRowKeys.value = []
-          sourceRowAttrs.value = []
-          sourceRowStates.value = []
-          sourceCellProps.value = []
-          sourceCellAttrs.value = []
-          sourceCellRender.value = []
-
-          // Clean Summarys
-          summaryRowAttrs.value = []
-          summaryCellProps.value = []
-          summaryCellAttrs.value = []
-          summaryCellRender.value = []
-        }
-
-        // Update loading
-        loading.value = false
-
-        // Update Columns
-        columnRowAttrs.value = []
-        columnCellAttrs.value = []
-        columnCellProps.value = []
-        columnCellRender.value = []
-        columnSettingsAllKeys.value = []
-        columnSettingsAllTrees.value = []
-        treeColumns.value = Methoder.normalizeTreeColumns(propColumns.value, [])
-        listColumns.value = Methoder.normalizeListColumns(treeColumns.value, [])
-        dataColumns.value = Methoder.normalizeDataColumns(listColumns.value)
-        Methoder.normalizeTreeSettings(treeColumns.value)
-        Methoder.normalizeInitColumns(listColumns.value)
-
-        // Update DataSources
-        sourceRowKeys.value = []
-        sourceRowAttrs.value = []
-        sourceRowStates.value = []
-        sourceCellProps.value = []
-        sourceCellAttrs.value = []
-        sourceCellRender.value = []
-        treeSources.value = Methoder.normalizeTreeSources([], [])
         listSources.value = Methoder.normalizeListSources(treeSources.value, [])
         Methoder.normalizeInitSources(listSources.value)
 
@@ -2607,15 +2541,30 @@ export const STable = defineComponent({
       },
 
       computeTableChildStyle(column: STableColumnType, fixeder: STableCellFixedType, type: string) {
+        const fixed = {
+          left: false,
+          right: false,
+        }
+
         const style = {}
         const isThead = type === 'thead'
         const isTfoot = type === 'tfoot'
         const tableTheadSizes = Optionser.tableTheadSizes.value
         const OffsetLeftWidth = Computer.hasSelection.value ? (Normalizer.size.value === 'small' ? 32 : Normalizer.size.value === 'middle' ? 36 : 38) : 0
-        const currentFixedLeft = Computer.fixedLeftIndex.value > -1 && fixeder.colOffset <= Computer.fixedLeftIndex.value && (!isTfoot || Normalizer.sticky.value.leftFooter)
-        const currentFixedRight = Computer.fixedRightIndex.value > -1 && fixeder.colOffset >= Computer.fixedRightIndex.value && (!isTfoot || Normalizer.sticky.value.rightFooter)
+        const currentFixedLeft = Computer.fixedLeftIndex.value > -1 && fixeder.colOffset <= Computer.fixedLeftIndex.value
+        const currentFixedRight = Computer.fixedRightIndex.value > -1 && fixeder.colOffset >= Computer.fixedRightIndex.value
         const overflowScrollRight = Computer.overflowScrollRight.value
         const overflowScrollLeft = Computer.overflowScrollLeft.value
+
+        if (isTfoot) {
+          fixed.left = Normalizer.sticky.value.leftFooter ?? currentFixedLeft
+          fixed.right = Normalizer.sticky.value.rightFooter ?? currentFixedRight
+        }
+
+        if (!isTfoot) {
+          fixed.left = currentFixedLeft
+          fixed.right = currentFixedRight
+        }
 
         if (/^\+?\d+\.?\d*(px)?$/.test(`${column.minWidth}`)) {
           Object.assign(style, {
@@ -2635,29 +2584,29 @@ export const STable = defineComponent({
           })
         }
 
-        if (currentFixedLeft === true) {
-          const offsetWidth = !isTfoot || fixeder.colOffset > 0 ? OffsetLeftWidth : 0
-          const leftWidth = tableTheadSizes.reduce((total, item, index) => index < fixeder.colOffset ? total + item.width : total, 0)
-          const boxShadow = '2px ' + (isThead ? '-1px' : '1px') + ' 3px 0 rgba(0, 0, 0, .15)'
-
-          Object.assign(style, {
-            'z-index': 5,
-            'position': 'sticky',
-            'box-shadow': overflowScrollLeft && (isThead || fixeder.colOffset + fixeder.colSpan - 1 === Computer.fixedLeftIndex.value) ? boxShadow : 'none',
-            'left': (leftWidth + offsetWidth > 0 ? offsetWidth + leftWidth - 1 : offsetWidth) + 'px',
-          })
-        }
-
-        if (currentFixedRight === true) {
+        if (fixed.right === true) {
           const reverseSizes = [...tableTheadSizes].reverse()
           const rightWidth = reverseSizes.reduce((total, item, index) => index < reverseSizes.length - fixeder.colOffset - 1 ? total + item.width : total, 0)
-          const boxShadow = '-2px ' + (isThead ? '-1px' : '1px') + ' 3px 0 rgba(0, 0, 0, .15)'
+          const boxShadow = '-2px ' + (isThead ? '-1px' : '1px') + ' 3px 0 rgba(0, 0, 0, .1)'
 
           Object.assign(style, {
             'position': 'sticky',
             'box-shadow': overflowScrollRight && (isThead || fixeder.colOffset === Computer.fixedRightIndex.value) ? boxShadow : 'none',
             'z-index': reverseSizes.length + 5 - fixeder.colOffset,
             'right': (rightWidth > 0 ? rightWidth - 1 : 0) + 'px',
+          })
+        }
+
+        if (fixed.left === true) {
+          const offsetWidth = !isTfoot || fixeder.colOffset > 0 ? OffsetLeftWidth : 0
+          const leftWidth = tableTheadSizes.reduce((total, item, index) => index < fixeder.colOffset ? total + item.width : total, 0)
+          const boxShadow = '2px ' + (isThead ? '-1px' : '1px') + ' 3px 0 rgba(0, 0, 0, .1)'
+
+          Object.assign(style, {
+            'z-index': 5,
+            'position': 'sticky',
+            'box-shadow': overflowScrollLeft && (isThead || fixeder.colOffset + fixeder.colSpan - 1 === Computer.fixedLeftIndex.value) ? boxShadow : 'none',
+            'left': (leftWidth + offsetWidth > 0 ? offsetWidth + leftWidth - 1 : offsetWidth) + 'px',
           })
         }
 
@@ -2719,9 +2668,9 @@ export const STable = defineComponent({
     }
 
     watch([() => props.columns, () => props.sources, () => props.summarys], ([newColumns, newSources, newSummarys], [oldColumns, oldSources, oldSummarys]) => {
-      const columnsChanged = newColumns !== oldColumns && Methoder.isColumnsChanged(propColumns.value, treeColumns.value)
-      const sourcesChanged = newSources !== oldSources && Methoder.isSourcesChanged(propSources.value, treeSources.value)
-      const summaryChanged = newSummarys !== oldSummarys && Methoder.isSummaryChanged(propSummarys.value, listSummarys.value)
+      const columnsChanged = newColumns !== oldColumns && (Methoder.isColumnsChanged(newColumns, treeColumns.value) || Methoder.isColumnsChanged(propColumns.value, treeColumns.value))
+      const sourcesChanged = newSources !== oldSources && (Methoder.isSourcesChanged(newSources, treeSources.value) || Methoder.isSourcesChanged(propSources.value, treeSources.value))
+      const summaryChanged = newSummarys !== oldSummarys && (Methoder.isSummaryChanged(newSummarys, listSummarys.value) || Methoder.isSummaryChanged(propSummarys.value, listSummarys.value))
       const sourcesReseted = sourcesChanged && Methoder.isSourcesChanged(propSources.value.slice(0, treeSources.value.length), treeSources.value)
 
       if (columnsChanged) {
@@ -2846,7 +2795,6 @@ export const STable = defineComponent({
       select: Methoder.updateSetupSelectedRowKeys,
       expand: Methoder.updateSetupExpandedRowKeys,
       update: Methoder.forceUpdate,
-      clear: Methoder.forceClear,
     })
 
     const RenderTableScroller = (ctx: typeof context) => {
@@ -2929,7 +2877,7 @@ export const STable = defineComponent({
 
           if (Computer.overflowScrollTop.value) {
             Object.assign(style, {
-              'box-shadow': '0 1px 1px 0 rgba(0, 0, 0, .15)',
+              'box-shadow': '0 1px 1px 0 rgba(0, 0, 0, .1)',
             })
           }
         }
@@ -3036,11 +2984,24 @@ export const STable = defineComponent({
                       const sorterValue = column.sorterValue
                       const rowMaxSpans = Computer.filterDataColumns.value.map(col => col.rowMaxSpan)
                       const sortable = sorter && (rowOffset + rowSpan === Math.max(...rowMaxSpans, 0))
+                      const title = Methoder.getValue(columnCellRender.value[rowIndex][colIndex])
 
-                      const renderTitle = Methoder.getValue(columnCellRender.value[rowIndex][colIndex])
-                      const computeTitle = !Methoder.isVueNode(renderTitle) && helper.isFunction(ctx.slots.headerCell)
-                        ? Methoder.getVNodes(renderSlot(ctx.slots, 'headerCell', { title: renderTitle, column, rowIndex, colIndex }))
-                        : renderTitle
+                      const options = {
+                        title: title,
+                        column: column,
+                        rowIndex: rowIndex,
+                        colIndex: colIndex,
+                        scroller: {
+                          top: Optionser.resizerScrollTop.value,
+                          left: Optionser.resizerScrollLeft.value,
+                          right: Optionser.resizerScrollRight.value,
+                          bottom: Optionser.resizerScrollBottom.value,
+                        },
+                      }
+
+                      const computeTitle = !Methoder.isVueNode(title) && helper.isFunction(ctx.slots.headerCell)
+                        ? Methoder.getVNodes(renderSlot(ctx.slots, 'headerCell', options))
+                        : title
 
                       const sorterChanger = (options: STableSorterType) => {
                         const field = options.field
@@ -3110,7 +3071,7 @@ export const STable = defineComponent({
                             tooltip={column.tooltip === true || column.ellipsis === true}
                             ellipsis={column.tooltip === true || column.ellipsis === true}
                           >
-                            { computeTitle ?? renderTitle }
+                            { computeTitle ?? title }
                           </SEllipsis>
 
                           <div class="s-table-thead-th-functional">
@@ -3620,13 +3581,19 @@ export const STable = defineComponent({
                     const options = {
                       value: cellValue,
                       record: referRecord,
+                      column,
+                      colIndex,
                       rowIndex,
                       groupIndex,
                       groupLevel,
                       groupIndexs,
                       globalIndex,
-                      column,
-                      colIndex,
+                      scroller: {
+                        top: Optionser.resizerScrollTop.value,
+                        left: Optionser.resizerScrollLeft.value,
+                        right: Optionser.resizerScrollRight.value,
+                        bottom: Optionser.resizerScrollBottom.value,
+                      },
                     }
 
                     const fixeder = {
@@ -4067,12 +4034,18 @@ export const STable = defineComponent({
 
                           const options = {
                             value: cellValue,
-                            record: summary,
                             column: column,
+                            record: summary,
+                            sources: sources,
+                            paginate: paginate,
                             rowIndex: rowIndex,
                             colIndex: colIndex,
-                            paginate: paginate,
-                            sources: sources,
+                            scroller: {
+                              top: Optionser.resizerScrollTop.value,
+                              left: Optionser.resizerScrollLeft.value,
+                              right: Optionser.resizerScrollRight.value,
+                              bottom: Optionser.resizerScrollBottom.value,
+                            },
                           }
 
                           const fixeder = {
@@ -4456,7 +4429,7 @@ export const STable = defineComponent({
 
     return () => RenderTableContianer(context)
   },
-  slots: {} as STableeDefineSlots<STableRecordType>,
+  slots: {} as STableDefineSlots<STableRecordType>,
   methods: {} as STableDefineMethods,
 })
 
