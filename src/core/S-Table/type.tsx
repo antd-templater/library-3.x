@@ -7,8 +7,8 @@ import type { Ref } from 'vue'
 
 export interface STableStickyType {
   topHeader: boolean | number;
-  leftFooter: boolean;
-  rightFooter: boolean;
+  leftFooter: boolean | number;
+  rightFooter: boolean | number;
   bottomFooter: boolean | number;
   bottomScrollbar: boolean;
 }

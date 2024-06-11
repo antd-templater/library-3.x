@@ -186,6 +186,8 @@ export const STable = defineComponent({
       resizerScrollBottom: ref(0),
       resizerScrollClientWidth: ref(0),
       resizerScrollClientHeight: ref(0),
+      resizerScrollHeight: ref(0),
+      resizerScrollWidth: ref(0),
 
       // wrapper - scrollable
       wrapperScrollTop: ref(0),
@@ -194,6 +196,8 @@ export const STable = defineComponent({
       wrapperScrollBottom: ref(0),
       wrapperScrollClientHeight: ref(0),
       wrapperScrollClientWidth: ref(0),
+      wrapperScrollHeight: ref(0),
+      wrapperScrollWidth: ref(0),
 
       // column - draggable
       cursor: reactive({ visible: false, top: 0, left: 0, width: 0, height: 0, rowIndex: 0, colIndex: 0 }),
@@ -357,8 +361,8 @@ export const STable = defineComponent({
 
       sticky: computed(() => ({
         topHeader: props.sticky.topHeader ?? false,
-        leftFooter: props.sticky.leftFooter,
-        rightFooter: props.sticky.rightFooter,
+        leftFooter: props.sticky.leftFooter ?? true,
+        rightFooter: props.sticky.rightFooter ?? true,
         bottomFooter: props.sticky.bottomFooter ?? true,
         bottomScrollbar: props.sticky.bottomScrollbar ?? false,
       })),
@@ -2326,6 +2330,8 @@ export const STable = defineComponent({
           Optionser.resizerScrollBottom.value = 0
           Optionser.resizerScrollClientWidth.value = 0
           Optionser.resizerScrollClientHeight.value = 0
+          Optionser.resizerScrollHeight.value = 0
+          Optionser.resizerScrollWidth.value = 0
         }
 
         if (typeof HTMLElement !== 'undefined' && container instanceof HTMLElement) {
@@ -2342,6 +2348,8 @@ export const STable = defineComponent({
           Optionser.resizerScrollBottom.value = scrollHeight - (scrollTop + clientRect.height) || 0
           Optionser.resizerScrollClientWidth.value = clientRect.width
           Optionser.resizerScrollClientHeight.value = clientRect.height
+          Optionser.resizerScrollHeight.value = scrollHeight
+          Optionser.resizerScrollWidth.value = scrollWidth
         }
       },
 
@@ -2360,6 +2368,8 @@ export const STable = defineComponent({
           Optionser.wrapperScrollBottom.value = scrollHeight - (scrollTop + scrollBounding.height) || 0
           Optionser.wrapperScrollClientWidth.value = scrollBounding.width
           Optionser.wrapperScrollClientHeight.value = scrollBounding.height
+          Optionser.wrapperScrollHeight.value = scrollHeight
+          Optionser.wrapperScrollWidth.value = scrollWidth
         }
       },
 
@@ -2557,8 +2567,11 @@ export const STable = defineComponent({
         const overflowScrollLeft = Computer.overflowScrollLeft.value
 
         if (isTfoot) {
-          fixed.left = Normalizer.sticky.value.leftFooter ?? currentFixedLeft
-          fixed.right = Normalizer.sticky.value.rightFooter ?? currentFixedRight
+          const leftFooter = Normalizer.sticky.value.leftFooter
+          const rightFooter = Normalizer.sticky.value.rightFooter
+
+          fixed.left = currentFixedLeft && (helper.isNumber(leftFooter) ? (fixeder.colOffset <= leftFooter) : leftFooter === true)
+          fixed.right = currentFixedRight && (helper.isNumber(rightFooter) ? (fixeder.colOffset >= rightFooter) : rightFooter === true)
         }
 
         if (!isTfoot) {
