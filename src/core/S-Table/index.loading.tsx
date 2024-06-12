@@ -60,7 +60,6 @@ export const STableLoading = defineComponent({
             <span>正在加载中...</span>
           </div>
         </div>
-
       )
     }
   },

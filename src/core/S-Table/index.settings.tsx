@@ -36,6 +36,7 @@ export const STableSettings = defineComponent({
   },
   setup(props, context) {
     const visible = ref(false)
+    const token = ATheme.useToken().token
     const overlay = ref(null as HTMLElement | null)
     const checkedKeys = ref(props.checkedKeys)
     const expandedKeys = ref(props.expandedKeys)
@@ -53,7 +54,7 @@ export const STableSettings = defineComponent({
     return () => {
       const RenderOverlay = () => {
         if (!visible.value) {
-          return <></>
+          return <div />
         }
 
         nextTick(() => {
@@ -92,7 +93,7 @@ export const STableSettings = defineComponent({
           onClick={toggler}
         >
           <div class="s-table-settings-icon">
-            <SettingOutlined style={{ color: ATheme.useToken().token.value.colorPrimary }} />
+            <SettingOutlined style={{ color: token.value.colorPrimary }} />
           </div>
 
           <div class="s-table-settings-title">

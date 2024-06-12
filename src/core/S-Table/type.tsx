@@ -128,7 +128,7 @@ export interface STableSettingsType<RecordType = STableRecordType> {
 }
 
 export interface STableExpanderRender<RecordType = STableRecordType> {
-  (option: { record: RecordType; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: Record<number, number>; globalIndex: number; }): VNode;
+  (option: { record: RecordType; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: Record<number, number>; globalIndex: number; }): undefined | VNode;
 }
 
 export interface STableHeaderCellRender<RecordType = STableRecordType> {
@@ -182,22 +182,22 @@ export interface STableFooterCellRender<RecordType = STableRecordType> {
 }
 
 export interface STableCustomHeaderRowAttrs<RecordType = STableRecordType> {
-  (options: { columns: STableColumnType<RecordType>[]; rowIndex: number; }): STableRefWrapper<HTMLAttributes>;
+  (options: { columns: STableColumnType<RecordType>[]; rowIndex: number; }): undefined | STableRefWrapper<HTMLAttributes>;
 }
 
 export interface STableCustomBodyerRowAttrs<RecordType = STableRecordType> {
-  (options: { record: RecordType; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: Record<number, number>; globalIndex: number; }): STableRefWrapper<HTMLAttributes>;
+  (options: { record: RecordType; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: Record<number, number>; globalIndex: number; }): undefined | STableRefWrapper<HTMLAttributes>;
 }
 
 export interface STableCustomBodyerRowStates<RecordType = STableRecordType> {
-  (options: { record: RecordType; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: Record<number, number>; globalIndex: number; }): STableRefWrapper<{
+  (options: { record: RecordType; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: Record<number, number>; globalIndex: number; }): undefined | STableRefWrapper<{
     selectable?: STableRefWrapper<boolean>;
     expandable?: STableRefWrapper<boolean>;
   }>;
 }
 
 export interface STableCustomFooterRowAttrs<RecordType = STableRecordType> {
-  (options: { record: RecordType; rowIndex: number; sources: RecordType[]; paginate: STablePaginateType; }): STableRefWrapper<HTMLAttributes>;
+  (options: { record: RecordType; rowIndex: number; sources: RecordType[]; paginate: STablePaginateType; }): undefined | STableRefWrapper<HTMLAttributes>;
 }
 
 export interface STableWrapRecordType<RecordType = STableRecordType> {

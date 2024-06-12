@@ -1405,6 +1405,11 @@ export const STable = defineComponent({
           const columnResizable = helper.isBoolean(column.resizable) ? column.resizable : parent?.referColumn.resizable ?? props.columnPresetResizable
           const columnSettings = helper.isNonEmptyObject(column.settings) ? { checkbox: column.settings.checkbox !== false, disabled: column.settings.disabled === true } : { checkbox: true, disabled: false }
 
+          if (parent) {
+            columnSettings.checkbox = columnSettings.checkbox !== false && parent.referColumn.settings.checkbox !== false
+            columnSettings.disabled = columnSettings.disabled === true && parent.referColumn.settings.disabled === true
+          }
+
           const wrapColumn: STableWrapColumnType = {
             key: column.key || (helper.isArray(column.dataIndex) ? column.dataIndex.join('.') : column.dataIndex),
             title: column.title,
@@ -1653,7 +1658,7 @@ export const STable = defineComponent({
           }
 
           if (helper.isFunction(props.customHeaderRowAttrs)) {
-            columnRowAttrs.value[rowIndex] = props.customHeaderRowAttrs({ columns, rowIndex })
+            columnRowAttrs.value[rowIndex] = props.customHeaderRowAttrs({ columns, rowIndex }) as any
           }
 
           if (columnRowAttrs.value[rowIndex] === undefined) {
@@ -1748,7 +1753,7 @@ export const STable = defineComponent({
           const globalIndex = option.rowGlobalIndex
 
           if (helper.isFunction(props.customBodyerRowAttrs)) {
-            sourceRowAttrs.value[globalIndex] = props.customBodyerRowAttrs({ record, rowIndex, groupIndex, groupLevel, groupIndexs, globalIndex })
+            sourceRowAttrs.value[globalIndex] = props.customBodyerRowAttrs({ record, rowIndex, groupIndex, groupLevel, groupIndexs, globalIndex }) as any
           }
 
           if (helper.isFunction(props.customBodyerRowStates)) {
@@ -1879,7 +1884,7 @@ export const STable = defineComponent({
           }
 
           if (helper.isFunction(props.customFooterRowAttrs)) {
-            summaryRowAttrs.value[rowIndex] = props.customFooterRowAttrs({ record, rowIndex, sources, paginate })
+            summaryRowAttrs.value[rowIndex] = props.customFooterRowAttrs({ record, rowIndex, sources, paginate }) as any
           }
 
           if (summaryRowAttrs.value[rowIndex] === undefined) {
@@ -2811,7 +2816,6 @@ export const STable = defineComponent({
     })
 
     const RenderTableScroller = (ctx: typeof context) => {
-      const allKeys: STableKey[] = []
       const enableKeys: STableKey[] = []
       const disableKeys: STableKey[] = []
       const selectedKeys: STableKey[] = [...selectedRowKeys.value]
@@ -2853,11 +2857,23 @@ export const STable = defineComponent({
             }
           }
         }
+      }
 
-        allKeys.push(
-          ...enableKeys,
-          ...disableKeys,
-        )
+      if (props.selectedRowMode === 'Radio') {
+        for (const record of [...listSources.value]) {
+          const rowKey = record.key
+          const rowGlobalIndex = record.rowGlobalIndex
+          const rowState = Methoder.getValue(sourceRowStates.value[rowGlobalIndex])
+          const selectable = Methoder.getValue(rowState?.selectable) !== false
+
+          if (selectable && !disableKeys.includes(rowKey) && !enableKeys.includes(rowKey)) {
+            enableKeys.push(rowKey)
+          }
+
+          if (!selectable && !disableKeys.includes(rowKey)) {
+            disableKeys.push(rowKey)
+          }
+        }
       }
 
       const RenderColGroup = () => {
