@@ -30,6 +30,7 @@ export const AntdLibraries = [
   'treeReplaceFieldsDefiner',
 
   // S-Table
+  'tableSorterDefiner',
   'tableScrollDefiner',
   'tableStickyDefiner',
   'tableSourcesDefiner',

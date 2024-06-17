@@ -77,14 +77,15 @@ export const STable = defineComponent({
     customHeaderCellRender: VueTypes.func<STableHeaderCellRender>().def(undefined),
     customBodyerCellRender: VueTypes.func<STableBodyerCellRender>().def(undefined),
     customFooterCellRender: VueTypes.func<STableFooterCellRender>().def(undefined),
+    defaultColumnSorters: VueTypes.array<STableSorterType>().def(() => []),
+    defaultSelectAllRows: VueTypes.bool().def(false),
+    defaultExpandAllRows: VueTypes.bool().def(false),
     preserveSelectedRowKeys: VueTypes.bool().def(false),
     preserveExpandedRowKeys: VueTypes.bool().def(false),
     columnPresetResizable: VueTypes.bool().def(false),
     columnPresetDraggable: VueTypes.bool().def(false),
     columnSorterMultiple: VueTypes.bool().def(false),
     columnPresetSettings: VueTypes.bool().def(false),
-    defaultSelectAllRows: VueTypes.bool().def(false),
-    defaultExpandAllRows: VueTypes.bool().def(false),
     rowSelectedStrictly: VueTypes.bool().def(true),
     rowExpandedByClick: VueTypes.bool().def(false),
     cellMegreNormalize: VueTypes.bool().def(true),
@@ -133,7 +134,7 @@ export const STable = defineComponent({
     const propSources = ref([...props.sources])
     const propSummarys = ref([...props.summarys])
 
-    const listSorters: Ref<STableSorterType[]> = ref([])
+    const listSorters: Ref<STableSorterType[]> = ref([...props.defaultColumnSorters])
     const treeColumns: Ref<STableWrapColumnType[]> = ref([])
     const listColumns: Ref<Array<STableColumnType>[]> = ref([])
     const dataColumns: Ref<Array<STableColumnType>> = ref([])
@@ -1402,8 +1403,11 @@ export const STable = defineComponent({
         for (const [index, column] of columns.entries()) {
           const columnMinWidth = helper.isFiniteNumber(column.minWidth) && column.minWidth > 0 ? column.minWidth : 0
           const columnMaxWidth = helper.isFiniteNumber(column.maxWidth) && column.maxWidth < Infinity ? column.maxWidth : Infinity
-          const columnResizable = helper.isBoolean(column.resizable) ? column.resizable : parent?.referColumn.resizable ?? props.columnPresetResizable
           const columnSettings = helper.isNonEmptyObject(column.settings) ? { checkbox: column.settings.checkbox !== false, disabled: column.settings.disabled === true } : { checkbox: true, disabled: false }
+          const columnResizable = helper.isBoolean(column.resizable) ? column.resizable : parent?.referColumn.resizable ?? props.columnPresetResizable
+          const columnSorterField = column.sorterField ?? (helper.isArray(column.dataIndex) ? column.dataIndex.join('.') : column.dataIndex)
+          const columnSorterValue = listSorters.value.find(sorter => sorter.field === columnSorterField)?.value ?? ''
+          const columnKey = column.key || (([] as any[]).concat(column.dataIndex).join('.'))
 
           if (parent) {
             columnSettings.checkbox = columnSettings.checkbox !== false && parent.referColumn.settings.checkbox !== false
@@ -1411,13 +1415,13 @@ export const STable = defineComponent({
           }
 
           const wrapColumn: STableWrapColumnType = {
-            key: column.key || (helper.isArray(column.dataIndex) ? column.dataIndex.join('.') : column.dataIndex),
+            key: columnKey,
             title: column.title,
             childKeys: [],
             parentKey: parent ? parent.key : null,
             parentKeys: parent ? [...parent.parentKeys, parent.key] : [],
             referColumn: {
-              key: column.key || (helper.isArray(column.dataIndex) ? column.dataIndex.join('.') : column.dataIndex),
+              key: columnKey,
               title: column.title,
               parentKey: parent ? parent.key : '',
               dataIndex: column.dataIndex,
@@ -1440,9 +1444,8 @@ export const STable = defineComponent({
               colSpan: helper.isFiniteNumber(column.colSpan) ? column.colSpan : NaN,
               rowSpan: helper.isFiniteNumber(column.rowSpan) ? column.rowSpan : NaN,
               sorter: (column.sorter ?? parent?.referColumn.sorter) === true,
-              sortered: false,
-              sorterField: column.sorterField ?? (helper.isArray(column.dataIndex) ? column.dataIndex.join('.') : column.dataIndex),
-              sorterValue: '',
+              sorterField: columnSorterField,
+              sorterValue: columnSorterValue,
               expandIcon: column.expandIcon ?? parent?.referColumn.expandIcon,
               sorterValueChange: column.sorterValueChange ?? parent?.referColumn.sorterValueChange,
               customHeaderCellRender: column.customHeaderCellRender ?? parent?.referColumn.customHeaderCellRender,
@@ -4483,6 +4486,7 @@ export const tableColumnsDefiner = (columns: STablePartColumnType[]) => ref(colu
 export const tablePaginateDefiner = (paginate: STablePartPaginate) => ref(paginate)
 export const tableStickyDefiner = (sticky: STablePartStickyType) => ref(sticky)
 export const tableScrollDefiner = (scroll: STablePartScrollType) => ref(scroll)
+export const tableSorterDefiner = (sorter: STableSorterType[]) => ref(sorter)
 
 export type * from './type'
 export * from './preset'

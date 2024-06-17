@@ -54,7 +54,8 @@ export const STableSettings = defineComponent({
     return () => {
       const RenderOverlay = () => {
         if (!visible.value) {
-          return <div />
+          // fix bug (<div/> render same key)
+          return <span />
         }
 
         nextTick(() => {

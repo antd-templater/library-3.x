@@ -36,6 +36,7 @@ import { treeReplaceFieldsDefiner } from './S-Tree/index'
 
 // S-Table
 import { STable } from './S-Table/index'
+import { tableSorterDefiner } from './S-Table/index'
 import { tableScrollDefiner } from './S-Table/index'
 import { tableStickyDefiner } from './S-Table/index'
 import { tableSourcesDefiner } from './S-Table/index'
@@ -115,6 +116,7 @@ export {
   treeReplaceFieldsDefiner,
 
   STable,
+  tableSorterDefiner,
   tableScrollDefiner,
   tableStickyDefiner,
   tableColumnsDefiner,

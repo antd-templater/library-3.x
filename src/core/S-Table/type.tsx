@@ -281,7 +281,6 @@ export interface STableColumnType<RecordType = STableRecordType> {
   colSpan: number;
   rowSpan: number;
   sorter: boolean;
-  sortered: boolean;
   sorterField: string;
   sorterValue: 'ascend' | 'descend' | '';
   expandIcon?: boolean;
