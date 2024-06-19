@@ -2859,6 +2859,28 @@ export const STable = defineComponent({
               disableKeys.includes(rowKey) || disableKeys.push(rowKey)
             }
           }
+
+          for (const record of allReverseKeys) {
+            const rowKey = record.key
+            const childKeys = record.childKeys
+            const filterKeys = childKeys.filter(key => enableKeys.includes(key))
+
+            if (filterKeys.length === 0) {
+              continue
+            }
+
+            if (disableKeys.includes(rowKey)) {
+              continue
+            }
+
+            if (selectedRowKeys.value.includes(rowKey) && !filterKeys.every(key => selectedRowKeys.value.includes(key))) {
+              selectedRowKeys.value.splice(0, selectedRowKeys.value.length, ...selectedRowKeys.value.filter(key => key !== rowKey))
+            }
+
+            if (!selectedRowKeys.value.includes(rowKey) && filterKeys.every(key => selectedRowKeys.value.includes(key))) {
+              selectedRowKeys.value.push(rowKey)
+            }
+          }
         }
       }
 
@@ -3425,7 +3447,7 @@ export const STable = defineComponent({
                     style={{ left: width + 'px' }}
                   >
                     <div
-                      class={['s-table-tbody-expand-button', { 's-table-tbody-expand-disabled': rowExpandable }]}
+                      class={['s-table-tbody-expand-button', { 's-table-tbody-expand-disabled': !rowExpandable }]}
                       onClick={updateExpandedRowKeys}
                     >
                       <MinusOutlined class="s-table-tbody-expand-icon" />
@@ -3449,13 +3471,12 @@ export const STable = defineComponent({
                     style={{ left: width + 'px' }}
                   >
                     <div
-                      class={['s-table-tbody-expand-button', { 's-table-tbody-expand-disabled': rowExpandable }]}
+                      class={['s-table-tbody-expand-button', { 's-table-tbody-expand-disabled': !rowExpandable }]}
                       onClick={toggleExpandedRowKeys}
                     >
                       <PlusOutlined class="s-table-tbody-expand-icon" />
                     </div>
                   </div>
-
                 )
               }
             }
@@ -3531,33 +3552,36 @@ export const STable = defineComponent({
                   }
 
                   if (props.selectedRowMode === 'Checkbox' && !checked) {
-                    checkStrictly || selectedRowKeys.value.splice(0, selectedRowKeys.value.length, ...selectedKeys.filter(key => key !== rowKey && !parentKeys?.includes(key) && !childKeys.includes(key) || disableKeys.includes(key)))
                     checkStrictly && selectedRowKeys.value.splice(0, selectedRowKeys.value.length, ...selectedKeys.filter(key => key !== rowKey || disableKeys.includes(key)))
+                    checkStrictly || selectedRowKeys.value.splice(0, selectedRowKeys.value.length, ...selectedKeys.filter(key => key !== rowKey && !parentKeys?.includes(key) && !childKeys.includes(key) || disableKeys.includes(key)))
                     Emiter.select([...selectedRowKeys.value], selectedRowKeys.value.map(key => Methoder.getValue(listSources.value.find(record => record.key === key)?.referRecord || null)))
                   }
 
                   if (props.selectedRowMode === 'Checkbox' && checked) {
-                    checkStrictly || selectedRowKeys.value.splice(0, selectedRowKeys.value.length, ...selectedKeys, ...childKeys.filter(key => !disableKeys.includes(key)), rowKey)
                     checkStrictly && selectedRowKeys.value.splice(0, selectedRowKeys.value.length, ...selectedKeys, rowKey)
+                    checkStrictly || selectedRowKeys.value.splice(0, selectedRowKeys.value.length, ...selectedKeys, ...childKeys.filter(key => !disableKeys.includes(key)), rowKey)
+                  }
 
+                  if (props.selectedRowMode === 'Checkbox' && !checkStrictly) {
                     const allSourceKeys = listSources.value.filter(() => true)
                     const allReverseKeys = [...allSourceKeys].reverse()
 
                     for (const record of allReverseKeys) {
                       const rowKey = record.key
-                      const childKeys = record.childKeys.filter(key => enableKeys.includes(key))
+                      const childKeys = record.childKeys
+                      const filterKeys = childKeys.filter(key => enableKeys.includes(key))
 
                       if (disableKeys.includes(rowKey) || selectedRowKeys.value.includes(rowKey)) {
                         continue
                       }
 
-                      if (childKeys.length > 0 && childKeys.every(key => selectedRowKeys.value.includes(key))) {
+                      if (filterKeys.length > 0 && filterKeys.every(key => selectedRowKeys.value.includes(key))) {
                         selectedRowKeys.value.push(rowKey)
                       }
                     }
-
-                    Emiter.select([...selectedRowKeys.value], selectedRowKeys.value.map(key => Methoder.getValue(listSources.value.find(record => record.key === key)?.referRecord || null)))
                   }
+
+                  Emiter.select([...selectedRowKeys.value], selectedRowKeys.value.map(key => Methoder.getValue(listSources.value.find(record => record.key === key)?.referRecord || null)))
                 }
 
                 return (
@@ -3759,7 +3783,7 @@ export const STable = defineComponent({
                   'align-items': 'flex-start',
                   'width': '100%',
                   'height': '100%',
-                  'padding-left': (props.expandIndentSize > 0 ? props.expandIndentSize : totalWidth) + 'px',
+                  'padding-left': (props.expandIndentSize >= 0 ? props.expandIndentSize : totalWidth) + 'px',
                 }
 
                 return (
