@@ -1676,6 +1676,7 @@ export const STable = defineComponent({
 
           const rowIndex = column.rowIndex
           const colIndex = column.colIndex
+          const paginater = Paginator.paginate
           const isCellAttrsTreated = Methoder.isOwnProperty(columnCellAttrs.value, [rowIndex, colIndex])
           const isCellPropsTreated = Methoder.isOwnProperty(columnCellProps.value, [rowIndex, colIndex])
 
@@ -1698,6 +1699,7 @@ export const STable = defineComponent({
                 column,
                 rowIndex,
                 colIndex,
+                paginater,
               }),
             )
 
@@ -1716,6 +1718,7 @@ export const STable = defineComponent({
               column,
               rowIndex,
               colIndex,
+              paginater,
             })
 
             const cellAttrs = !isVNode(renderNode) && helper.isObject(renderNode) && helper.isObject(renderNode.attrs) && renderNode.attrs || undefined
@@ -1777,6 +1780,7 @@ export const STable = defineComponent({
           const columnKey = column.key
           const colIndex = column.colIndex
           const dataIndex = column.dataIndex
+          const paginater = Paginator.paginate
 
           for (const option of sources) {
             const record = option.referRecord
@@ -1828,6 +1832,7 @@ export const STable = defineComponent({
                 globalIndex,
                 column,
                 colIndex,
+                paginater,
               })
 
               const cellAttrs = !isVNode(renderNode) && helper.isObject(renderNode) && helper.isObject(renderNode.attrs) && renderNode.attrs || undefined
@@ -1850,6 +1855,7 @@ export const STable = defineComponent({
                 globalIndex,
                 column,
                 colIndex,
+                paginater,
               })
 
               const cellAttrs = !isVNode(renderNode) && helper.isObject(renderNode) && helper.isObject(renderNode.attrs) && renderNode.attrs || undefined
@@ -1879,7 +1885,7 @@ export const STable = defineComponent({
       normalizeInitSummary(summarys: STableRecordType[]) {
         const records = Computer.filterPageSources.value.filter(refer => refer.rowGroupLevel === 1)
         const sources = records.map(refer => refer.referRecord)
-        const paginate = Paginator.paginate
+        const paginater = Paginator.paginate
 
         for (const [rowIndex, record] of summarys.entries()) {
           if (Methoder.isOwnProperty(summaryRowAttrs.value, [rowIndex])) {
@@ -1887,7 +1893,7 @@ export const STable = defineComponent({
           }
 
           if (helper.isFunction(props.customFooterRowAttrs)) {
-            summaryRowAttrs.value[rowIndex] = props.customFooterRowAttrs({ record, rowIndex, sources, paginate }) as any
+            summaryRowAttrs.value[rowIndex] = props.customFooterRowAttrs({ record, rowIndex, sources, paginater }) as any
           }
 
           if (summaryRowAttrs.value[rowIndex] === undefined) {
@@ -1941,7 +1947,7 @@ export const STable = defineComponent({
                 column,
                 colIndex,
                 sources,
-                paginate,
+                paginater,
               })
 
               const cellAttrs = !isVNode(renderNode) && helper.isObject(renderNode) && helper.isObject(renderNode.attrs) && renderNode.attrs || undefined
@@ -1961,7 +1967,7 @@ export const STable = defineComponent({
                 column,
                 colIndex,
                 sources,
-                paginate,
+                paginater,
               })
 
               const cellAttrs = !isVNode(renderNode) && helper.isObject(renderNode) && helper.isObject(renderNode.attrs) && renderNode.attrs || undefined
@@ -3051,6 +3057,7 @@ export const STable = defineComponent({
                           right: Optionser.resizerScrollRight.value,
                           bottom: Optionser.resizerScrollBottom.value,
                         },
+                        paginater: Paginator.paginate,
                       }
 
                       const computeTitle = !Methoder.isVueNode(title) && helper.isFunction(ctx.slots.headerCell)
@@ -3650,6 +3657,7 @@ export const STable = defineComponent({
                         right: Optionser.resizerScrollRight.value,
                         bottom: Optionser.resizerScrollBottom.value,
                       },
+                      paginater: Paginator.paginate,
                     }
 
                     const fixeder = {
@@ -4086,14 +4094,12 @@ export const STable = defineComponent({
                           const array = Computer.filterPageSources.value.filter(refer => refer.rowGroupLevel === 1)
                           const column = filterColumns.find(col => col.colIndex === refer.colIndex)!
                           const sources = array.map(refer => refer.referRecord)
-                          const paginate = Paginator.paginate
 
                           const options = {
                             value: cellValue,
                             column: column,
                             record: summary,
                             sources: sources,
-                            paginate: paginate,
                             rowIndex: rowIndex,
                             colIndex: colIndex,
                             scroller: {
@@ -4102,6 +4108,7 @@ export const STable = defineComponent({
                               right: Optionser.resizerScrollRight.value,
                               bottom: Optionser.resizerScrollBottom.value,
                             },
+                            paginater: Paginator.paginate,
                           }
 
                           const fixeder = {

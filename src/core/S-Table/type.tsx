@@ -132,7 +132,7 @@ export interface STableExpanderRender<RecordType = STableRecordType> {
 }
 
 export interface STableHeaderCellRender<RecordType = STableRecordType> {
-  (option: { title: string | number; column: STableColumnType<RecordType>; rowIndex: number; colIndex: number; }): undefined | VNode | STableRefWrapper<{
+  (option: { title: string | number; column: STableColumnType<RecordType>; rowIndex: number; colIndex: number; paginater: STablePaginateType; }): undefined | VNode | STableRefWrapper<{
     attrs?: HTMLAttributes;
     props?: {
       align?: 'left' | 'center' | 'right';
@@ -152,7 +152,7 @@ export interface STableHeaderCellRender<RecordType = STableRecordType> {
 }
 
 export interface STableBodyerCellRender<RecordType = STableRecordType> {
-  (option: { value: any; record: RecordType; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: Record<number, number>; globalIndex: number; column: STableColumnType<RecordType>; colIndex: number; }): undefined | VNode | STableRefWrapper<{
+  (option: { value: any; record: RecordType; rowIndex: number; groupIndex: number; groupLevel: number; groupIndexs: Record<number, number>; globalIndex: number; column: STableColumnType<RecordType>; colIndex: number; paginater: STablePaginateType; }): undefined | VNode | STableRefWrapper<{
     attrs?: HTMLAttributes;
     props?: {
       align?: 'left' | 'center' | 'right';
@@ -167,7 +167,7 @@ export interface STableBodyerCellRender<RecordType = STableRecordType> {
 }
 
 export interface STableFooterCellRender<RecordType = STableRecordType> {
-  (option: { value: any; record: RecordType; rowIndex: number; column: STableColumnType<RecordType>; colIndex: number; sources: RecordType[]; paginate: STablePaginateType; }): undefined | VNode | STableRefWrapper<{
+  (option: { value: any; record: RecordType; rowIndex: number; column: STableColumnType<RecordType>; colIndex: number; sources: RecordType[]; paginater: STablePaginateType; }): undefined | VNode | STableRefWrapper<{
     attrs?: HTMLAttributes;
     props?: {
       align?: 'left' | 'center' | 'right';
@@ -197,7 +197,7 @@ export interface STableCustomBodyerRowStates<RecordType = STableRecordType> {
 }
 
 export interface STableCustomFooterRowAttrs<RecordType = STableRecordType> {
-  (options: { record: RecordType; rowIndex: number; sources: RecordType[]; paginate: STablePaginateType; }): undefined | STableRefWrapper<HTMLAttributes>;
+  (options: { record: RecordType; rowIndex: number; sources: RecordType[]; paginater: STablePaginateType; }): undefined | STableRefWrapper<HTMLAttributes>;
 }
 
 export interface STableWrapRecordType<RecordType = STableRecordType> {
