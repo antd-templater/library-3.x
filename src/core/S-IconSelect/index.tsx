@@ -15,8 +15,8 @@ export const SIconSelect = defineComponent({
   props: {
     style: VueTypes.any().def(undefined),
     class: VueTypes.any().def(undefined),
-    iconStyle: VueTypes.any().def(undefined),
     iconClass: VueTypes.any().def(undefined),
+    iconStyle: VueTypes.object().def(undefined),
     iconPrefix: VueTypes.string().def(undefined),
     iconfontUrl: VueTypes.string().def(undefined),
     optionFilterProp: VueTypes.string().def(),

@@ -37,8 +37,8 @@ export const SEditCellSelectIcon = defineComponent({
     tooltip: VueTypes.object<{ enable?: boolean; ellipsis?: boolean; }>().def(() => ({ enable: true, ellipsis: false })),
     disabled: VueTypes.bool().def(false),
     options: VueTypes.array<SEditCellSelectOptionType>().def(undefined),
-    iconStyle: VueTypes.any().def(undefined),
     iconClass: VueTypes.any().def(undefined),
+    iconStyle: VueTypes.object().def(undefined),
     iconPrefix: VueTypes.string().def(undefined),
     iconfontUrl: VueTypes.string().def(undefined),
     showArrow: VueTypes.bool().def(true),
@@ -179,6 +179,10 @@ export const SEditCellSelectIcon = defineComponent({
 
     const RenderEditableCellText = () => {
       const text = props.text
+      const iconClass = props.iconClass
+      const iconStyle = props.iconStyle
+      const iconPrefix = props.iconPrefix
+      const iconfontUrl = props.iconfontUrl
       const fieldLabel = props.fieldNames.label
       const fieldValue = props.fieldNames.value
       const fieldOptions = props.fieldNames.options
@@ -186,15 +190,15 @@ export const SEditCellSelectIcon = defineComponent({
 
       const slotText = slots.editableCellText ? slots.editableCellText({ text: props.text, ...toRaw(proxy) }) : null
       const cellText = (isPrimitive ? helper.takeTextByKey(props.options, text, fieldLabel, fieldValue, fieldOptions) || props.text : props.text) as any
-      const cellIcon = slotText ?? (isIconType(cellText)
+      const cellIcon = slotText ?? (isIconType(cellText) || (helper.isNonEmptyString(iconPrefix) && helper.isNonEmptyString(iconfontUrl) && cellText.startsWith(iconPrefix))
         ? (
           <span>
-            <SIcon type={cellText} style="margin-right: 5px;" />
-            {' '}
+            <SIcon type={cellText} iconPrefix={iconPrefix} iconfontUrl={iconfontUrl} class={iconClass} style={iconStyle ?? 'margin-right: 5px;'} />
             {cellText}
           </span>
           )
         : cellText)
+
       const empty = props.empty
 
       return cellIcon || cellIcon === 0

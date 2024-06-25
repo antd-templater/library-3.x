@@ -29,12 +29,14 @@ export interface SProLayoutPureSettings {
   headerHeight?: number;
   contentWidth: SProLayoutContentWidth;
   primaryColor: string;
-  iconfontUrl: string;
-  iconPrefix: string;
   fixedHeader: boolean;
   fixSiderbar: boolean;
   splitMenus?: boolean;
   colorWeak?: boolean;
+  iconfontUrl: string;
+  iconPrefix: string;
+  iconStyle?: Record<string, any> | string;
+  iconClass?: Array<any> | Record<string, any> | string;
 }
 
 export interface SProLayoutRouteContextProps extends Partial<SProLayoutPureSettings> {

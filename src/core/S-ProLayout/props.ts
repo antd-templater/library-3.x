@@ -24,11 +24,13 @@ export const defaultSettingProps = {
   headerHeight: VueTypes.any<SProLayoutPureSettings['headerHeight']>().def(48),
   contentWidth: VueTypes.any<SProLayoutPureSettings['contentWidth']>().def('Fluid'),
   primaryColor: VueTypes.any<SProLayoutPureSettings['primaryColor']>().def('#f5222d'),
-  iconfontUrl: VueTypes.any<SProLayoutPureSettings['iconfontUrl']>().def(''),
-  iconPrefix: VueTypes.any<SProLayoutPureSettings['iconPrefix']>().def('icon-'),
   fixedHeader: VueTypes.any<SProLayoutPureSettings['fixedHeader']>().def(true),
   fixSiderbar: VueTypes.any<SProLayoutPureSettings['fixSiderbar']>().def(true),
   splitMenus: VueTypes.any<SProLayoutPureSettings['splitMenus']>().def(false),
+  iconfontUrl: VueTypes.any<SProLayoutPureSettings['iconfontUrl']>().def(''),
+  iconPrefix: VueTypes.any<SProLayoutPureSettings['iconPrefix']>().def('icon-'),
+  iconStyle: VueTypes.any<SProLayoutPureSettings['iconStyle']>().def(undefined),
+  iconClass: VueTypes.any<SProLayoutPureSettings['iconClass']>().def(undefined),
 }
 
 export const defaultBaseMenuProps = {

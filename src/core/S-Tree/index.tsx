@@ -65,6 +65,10 @@ export const STree = defineComponent({
     allowUnExpanded: VueTypes.bool().def(false),
     allowUnSelected: VueTypes.bool().def(false),
     allowUnChecked: VueTypes.bool().def(true),
+    iconfontUrl: VueTypes.string().def(undefined),
+    iconPrefix: VueTypes.string().def(undefined),
+    iconStyle: VueTypes.object().def(undefined),
+    iconClass: VueTypes.object().def(undefined),
     selectable: VueTypes.bool().def(true),
     checkable: VueTypes.bool().def(false),
     blockNode: VueTypes.bool().def(false),
@@ -1165,7 +1169,7 @@ export const STree = defineComponent({
               title: level === 1 ? 'titleRoot' : !isLeaf ? 'titleParent' : 'titleLeaf',
             },
             key: key,
-            icon: helper.isString(icon) && isIconType(icon) ? <SIcon type={icon} /> : null,
+            icon: helper.isString(icon) ? <SIcon type={icon} iconPrefix={props.iconPrefix} iconfontUrl={props.iconfontUrl} class={props.iconClass} style={props.iconStyle} /> : null,
             level: level,
             title: title,
             titles: [],
@@ -2495,25 +2499,116 @@ export const STree = defineComponent({
 
     const RenderTreeSwitcherIcon = (node: STreeTargetNode, ctx: typeof context) => {
       const icon = Methoder.renderSwitcher(node)
+
       const onClick = (event: MouseEvent) => {
         if (icon !== 'LoadingOutlined') {
           Methoder.triggerSwitcher(node)
         }
         event.stopPropagation()
       }
-      return isIconType(icon) ? <SIcon type={icon} style="cursor: pointer;" class={{ [node.switcherCls]: icon === 'CaretDownOutlined' }} onClick={onClick} /> : null
+
+      return (
+        <SIcon
+          type={icon}
+          class={{ [node.switcherCls]: icon === 'CaretDownOutlined' }}
+          style={{ cursor: 'pointer' }}
+          onClick={onClick}
+        />
+      )
     }
 
     const RenderTreeNodeIcon = (node: STreeTargetNode, ctx: typeof context) => {
       if (node.scopedSlots.icon === 'iconRoot') {
-        return helper.isFunction(ctx.slots.iconRoot) ? ctx.slots.iconRoot({ ...node.referenceSourceNode }) : <SIcon type={isIconType(node.icon) ? node.icon : 'AppstoreOutlined'} />
+        if (helper.isFunction(ctx.slots.iconRoot)) {
+          return ctx.slots.iconRoot({ ...node.referenceSourceNode })
+        }
+
+        const iconClass = props.iconClass
+        const iconStyle = props.iconStyle
+        const iconPrefix = props.iconPrefix
+        const iconfontUrl = props.iconfontUrl
+
+        if (isIconType(node.icon) || (helper.isNonEmptyString(iconPrefix) && helper.isNonEmptyString(iconfontUrl) && node.icon.startsWith(iconPrefix))) {
+          return (
+            <SIcon
+              type={node.icon}
+              iconfontUrl={iconfontUrl}
+              iconPrefix={iconPrefix}
+              class={iconClass}
+              style={iconStyle}
+            />
+          )
+        }
+
+        return (
+          <SIcon
+            type="AppstoreOutlined"
+            class={iconClass}
+            style={iconStyle}
+          />
+        )
       }
 
       if (node.scopedSlots.icon === 'iconParent') {
-        return helper.isFunction(ctx.slots.iconParent) ? ctx.slots.iconParent({ ...node.referenceSourceNode }) : <SIcon type={isIconType(node.icon) ? node.icon : 'ApartmentOutlined'} />
+        if (helper.isFunction(ctx.slots.iconParent)) {
+          return ctx.slots.iconParent({ ...node.referenceSourceNode })
+        }
+
+        const iconClass = props.iconClass
+        const iconStyle = props.iconStyle
+        const iconPrefix = props.iconPrefix
+        const iconfontUrl = props.iconfontUrl
+
+        if (isIconType(node.icon) || (helper.isNonEmptyString(iconPrefix) && helper.isNonEmptyString(iconfontUrl) && node.icon.startsWith(iconPrefix))) {
+          return (
+            <SIcon
+              type={node.icon}
+              iconfontUrl={iconfontUrl}
+              iconPrefix={iconPrefix}
+              class={iconClass}
+              style={iconStyle}
+            />
+          )
+        }
+
+        return (
+          <SIcon
+            type="ApartmentOutlined"
+            class={iconClass}
+            style={iconStyle}
+          />
+        )
       }
+
       if (node.scopedSlots.icon === 'iconLeaf') {
-        return helper.isFunction(ctx.slots.iconLeaf) ? ctx.slots.iconLeaf({ ...node.referenceSourceNode }) : <SIcon type={isIconType(node.icon) ? node.icon : 'ApartmentOutlined'} />
+        if (helper.isFunction(ctx.slots.iconLeaf)) {
+          return ctx.slots.iconLeaf({ ...node.referenceSourceNode })
+        }
+
+        const iconClass = props.iconClass
+        const iconStyle = props.iconStyle
+        const iconPrefix = props.iconPrefix
+        const iconfontUrl = props.iconfontUrl
+
+        if (isIconType(node.icon) || (helper.isNonEmptyString(iconPrefix) && helper.isNonEmptyString(iconfontUrl) && node.icon.startsWith(iconPrefix))) {
+          return (
+            <SIcon
+              type={node.icon}
+              iconfontUrl={iconfontUrl}
+              iconPrefix={iconPrefix}
+              class={iconClass}
+              style={iconStyle}
+            />
+          )
+        }
+
+        return (
+          <SIcon
+            type="ApartmentOutlined"
+            class={iconClass}
+            style={iconStyle}
+          />
+        )
       }
     }
 

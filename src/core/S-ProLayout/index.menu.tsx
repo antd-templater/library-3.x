@@ -66,6 +66,8 @@ export const BaseMenu = defineComponent({
 
       if (meta.icon) {
         const locale = props.locale
+        const iconClass = props.iconClass
+        const iconStyle = props.iconStyle
         const prefixCls = props.prefixCls
         const iconPrefix = props.iconPrefix
         const iconfontUrl = props.iconfontUrl
@@ -75,6 +77,8 @@ export const BaseMenu = defineComponent({
         menu.icon = (
           <LazyMenuIcon
             icon={meta.icon}
+            class={iconClass}
+            style={iconStyle}
             iconPrefix={iconPrefix}
             iconfontUrl={iconfontUrl}
           />
@@ -107,6 +111,8 @@ export const BaseMenu = defineComponent({
       const icon = menu.icon
       const title = menu.title
       const locale = props.locale
+      const iconClass = props.iconClass
+      const iconStyle = props.iconStyle
       const prefixCls = props.prefixCls
       const iconPrefix = props.iconPrefix
       const iconfontUrl = props.iconfontUrl
@@ -142,7 +148,7 @@ export const BaseMenu = defineComponent({
         }
 
         const isGroup = meta.type === 'group'
-        const menuIcon = !isGroup ? <LazyMenuIcon icon={meta.icon} iconPrefix={iconPrefix} iconfontUrl={iconfontUrl} /> : null
+        const menuIcon = !isGroup ? <LazyMenuIcon icon={meta.icon} iconPrefix={iconPrefix} iconfontUrl={iconfontUrl} class={iconClass} style={iconStyle} /> : null
         const menuTitle = render.title
         const MenuComponent = !isGroup ? AMenu.SubMenu : AMenu.ItemGroup
 
