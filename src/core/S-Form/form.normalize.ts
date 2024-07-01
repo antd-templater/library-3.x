@@ -423,13 +423,13 @@ export const SFormNormalize: SFormNormalizeType = {
     transfer: {
       input: (value, { helper, self }) => {
         const values = helper.isArray(value) ? value : []
-        const format = self.props.valueFormat || self.props.format || (self.props.showTime ? 'YYYY-M-D HH:mm:ss' : 'YYYY-M-D')
-        return values.map((v: any) => v !== undefined && dayjs(v, format).isValid() ? dayjs(v, format) : undefined)
+        const format = self.props.valueFormat || (self.props.showTime ? 'YYYY-M-D HH:mm:ss' : 'YYYY-M-D')
+        return values.map((v: any) => v !== undefined ? (v instanceof Date && dayjs(v).isValid() ? dayjs(v) : dayjs(v, format).isValid() ? dayjs(v, format) : undefined) : undefined)
       },
       output: (value, { helper, self }) => {
         const values = helper.isArray(value) ? value : []
-        const format = self.props.valueFormat || self.props.format || (self.props.showTime ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD')
-        return values.map((v: any) => v !== undefined && dayjs(v, format).isValid() ? dayjs(v, format).format(format) : '')
+        const format = self.props.valueFormat || (self.props.showTime ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD')
+        return values.map((v: any) => v !== undefined ? (typeof value !== 'string' && dayjs(value).isValid() ? dayjs(value).format(format) : typeof value === 'string' ? value : '') : undefined)
       },
     },
 
@@ -457,12 +457,38 @@ export const SFormNormalize: SFormNormalizeType = {
     },
     transfer: {
       input: (value, { self }) => {
-        const format = self.props.valueFormat || self.props.format || (self.props.showTime ? 'YYYY-M-D HH:mm:ss' : 'YYYY-M-D')
-        return value !== undefined && dayjs(value, format).isValid() ? dayjs(value, format) : undefined
+        if (value === undefined) {
+          return undefined
+        }
+
+        const showTime = self.props.showTime
+        const valueFormat = self.props.valueFormat
+        const format = valueFormat || (showTime ? 'YYYY-M-D HH:mm:ss' : 'YYYY-M-D')
+
+        if (value instanceof Date && dayjs(value).isValid()) {
+          return dayjs(value)
+        }
+
+        if (dayjs(value, format).isValid()) {
+          return dayjs(value, format)
+        }
+
+        return undefined
       },
       output: (value, { self }) => {
-        const format = self.props.valueFormat || self.props.format || (self.props.showTime ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD')
-        return value !== undefined && dayjs(value, format).isValid() ? dayjs(value, format).format(format) : ''
+        if (value === undefined) {
+          return undefined
+        }
+
+        const showTime = self.props.showTime
+        const valueFormat = self.props.valueFormat
+        const format = valueFormat || (showTime ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD')
+
+        return typeof value !== 'string' && dayjs(value).isValid()
+          ? dayjs(value).format(format)
+          : typeof value === 'string'
+            ? value
+            : ''
       },
     },
 
@@ -490,12 +516,36 @@ export const SFormNormalize: SFormNormalizeType = {
     },
     transfer: {
       input: (value, { self }) => {
-        const format = 'YYYY'
-        return value !== undefined && dayjs(value, format).isValid() ? dayjs(value, format) : undefined
+        if (value === undefined) {
+          return undefined
+        }
+
+        const valueFormat = self.props.valueFormat
+        const format = valueFormat || 'YYYY'
+
+        if (value instanceof Date && dayjs(value).isValid()) {
+          return dayjs(value)
+        }
+
+        if (dayjs(value, format).isValid()) {
+          return dayjs(value, format)
+        }
+
+        return undefined
       },
       output: (value, { self }) => {
-        const format = 'YYYY'
-        return value !== undefined && dayjs(value, format).isValid() ? dayjs(value, format).format(format) : ''
+        if (value === undefined) {
+          return undefined
+        }
+
+        const valueFormat = self.props.valueFormat
+        const format = valueFormat || 'YYYY'
+
+        return typeof value !== 'string' && dayjs(value).isValid()
+          ? dayjs(value).format(format)
+          : typeof value === 'string'
+            ? value
+            : ''
       },
     },
 
@@ -523,12 +573,36 @@ export const SFormNormalize: SFormNormalizeType = {
     },
     transfer: {
       input: (value, { self }) => {
-        const format = 'YYYY-M'
-        return value !== undefined && dayjs(value, format).isValid() ? dayjs(value, format) : undefined
+        if (value === undefined) {
+          return undefined
+        }
+
+        const valueFormat = self.props.valueFormat
+        const format = valueFormat || 'YYYY-M'
+
+        if (value instanceof Date && dayjs(value).isValid()) {
+          return dayjs(value)
+        }
+
+        if (dayjs(value, format).isValid()) {
+          return dayjs(value, format)
+        }
+
+        return undefined
       },
       output: (value, { self }) => {
-        const format = (self.props.valueFormat || self.props.format) === 'YYYY-M' ? 'YYYY-M' : 'YYYY-MM'
-        return value !== undefined && dayjs(value, format).isValid() ? dayjs(value, format).format(format) : ''
+        if (value === undefined) {
+          return undefined
+        }
+
+        const valueFormat = self.props.valueFormat
+        const format = valueFormat || 'YYYY-MM'
+
+        return typeof value !== 'string' && dayjs(value).isValid()
+          ? dayjs(value).format(format)
+          : typeof value === 'string'
+            ? value
+            : ''
       },
     },
 
@@ -555,14 +629,37 @@ export const SFormNormalize: SFormNormalizeType = {
       output: '',
     },
     transfer: {
-      input: (value, _) => {
+      input: (value, { self }) => {
+        if (value === undefined) {
+          return undefined
+        }
+
+        const valueFormat = self.props.valueFormat
+
+        if (value instanceof Date && dayjs(value).isValid()) {
+          return dayjs(value)
+        }
+
+        if (valueFormat) {
+          if (dayjs(value, valueFormat).isValid()) {
+            return dayjs(value, valueFormat)
+          }
+        }
+
         const rex = /^(\d{4})-(\d{1,2})$/
         const date = dayjs(typeof value === 'string' ? value.replace(rex, '$1') : value || null)
         return date && date.isValid() ? (typeof value === 'string' ? date.quarter(+value.replace(rex, '$2')) : date) : undefined
       },
-      output: (value, _) => {
-        return value !== undefined && typeof value !== 'string' && dayjs(value).isValid()
-          ? dayjs(value).format('YYYY-Q')
+      output: (value, { self }) => {
+        if (value === undefined) {
+          return undefined
+        }
+
+        const valueFormat = self.props.valueFormat
+        const format = valueFormat || 'YYYY-Q'
+
+        return typeof value !== 'string' && dayjs(value).isValid()
+          ? dayjs(value).format(format)
           : typeof value === 'string'
             ? value
             : ''
@@ -592,14 +689,36 @@ export const SFormNormalize: SFormNormalizeType = {
       output: '',
     },
     transfer: {
-      input: (value, _) => {
+      input: (value, { self }) => {
+        if (value === undefined) {
+          return undefined
+        }
+
+        const valueFormat = self.props.valueFormat
+
+        if (value instanceof Date && dayjs(value).isValid()) {
+          return dayjs(value)
+        }
+
+        if (valueFormat) {
+          if (dayjs(value, valueFormat).isValid()) {
+            return dayjs(value, valueFormat)
+          }
+        }
+
         const rex = /^(\d{4})-(\d{1,2})$/
         const date = dayjs(typeof value === 'string' ? value.replace(rex, '$1') : value || null)
         return date && date.isValid() ? (typeof value === 'string' ? date.week(+value.replace(rex, '$2')) : date) : undefined
       },
       output: (value, { self }) => {
-        const format = (self.props.valueFormat || self.props.format) === 'YYYY-w' ? 'YYYY-w' : 'YYYY-ww'
-        return value !== undefined && typeof value !== 'string' && dayjs(value).isValid()
+        if (value === undefined) {
+          return undefined
+        }
+
+        const valueFormat = self.props.valueFormat
+        const format = valueFormat || 'YYYY-ww'
+
+        return typeof value !== 'string' && dayjs(value).isValid()
           ? dayjs(value).format(format)
           : typeof value === 'string'
             ? value
@@ -631,12 +750,38 @@ export const SFormNormalize: SFormNormalizeType = {
     },
     transfer: {
       input: (value, { self }) => {
-        const format = self.props.valueFormat || self.props.format || (self.props.use12Hours ? 'h:mm:ss a' : 'HH:mm:ss')
-        return value !== undefined && dayjs(value, format).isValid() ? dayjs(value, format) : undefined
+        if (value === undefined) {
+          return undefined
+        }
+
+        const use12Hours = self.props.use12Hours
+        const valueFormat = self.props.valueFormat
+        const format = valueFormat || (use12Hours ? 'h:mm:ss a' : 'HH:mm:ss')
+
+        if (value instanceof Date && dayjs(value).isValid()) {
+          return dayjs(value)
+        }
+
+        if (dayjs(value, format).isValid()) {
+          return dayjs(value, format)
+        }
+
+        return undefined
       },
       output: (value, { self }) => {
-        const format = self.props.valueFormat || self.props.format || (self.props.use12Hours ? 'h:mm:ss a' : 'HH:mm:ss')
-        return value !== undefined && dayjs(value, format).isValid() ? dayjs(value, format).format(format) : ''
+        if (value === undefined) {
+          return undefined
+        }
+
+        const use12Hours = self.props.use12Hours
+        const valueFormat = self.props.valueFormat
+        const format = valueFormat || (use12Hours ? 'h:mm:ss a' : 'HH:mm:ss')
+
+        return typeof value !== 'string' && dayjs(value).isValid()
+          ? dayjs(value).format(format)
+          : typeof value === 'string'
+            ? value
+            : ''
       },
     },
 

@@ -119,8 +119,8 @@ export const STable = defineComponent({
     'update:expandedRowKeys': (keys: Array<STableKey>) => true,
     'pageSizeChange': (pageNo: number, pageSize: number) => true,
     'pageChange': (pageNo: number, pageSize: number) => true,
-    'expand': (keys: Array<STableKey>, nodes: Array<STableRecordType | null>) => true,
-    'select': (keys: Array<STableKey>, nodes: Array<STableRecordType | null>) => true,
+    'expand': (keys: Array<STableKey>, records: Array<STableRecordType | null>) => true,
+    'select': (keys: Array<STableKey>, records: Array<STableRecordType | null>) => true,
     'sorter': (values: Array<STableSorterType>) => true,
   },
   setup(props, context) {
