@@ -99,24 +99,34 @@ export const SFormComponent = defineComponent({
         }
       }
 
-      if (type === 'AQuarterPicker') {
-        attrs.valueFormat = 'YYYY-Q'
-        attrs.format = 'YYYY-Q'
+      if (type === 'AQuarterPicker' || (type === 'ADatePicker' && attrs.picker === 'quarter') || (type === 'ARangePicker' && attrs.picker === 'quarter')) {
+        attrs.valueFormat = attrs.valueFormat ?? 'YYYY-Q'
+        attrs.format = attrs.format ?? 'YYYY-Q'
       }
 
-      if (type === 'AMonthPicker') {
-        attrs.valueFormat = 'YYYY-MM'
-        attrs.format = 'YYYY-MM'
+      if (type === 'AMonthPicker' || (type === 'ADatePicker' && attrs.picker === 'month') || (type === 'ARangePicker' && attrs.picker === 'month')) {
+        attrs.valueFormat = attrs.valueFormat ?? 'YYYY-MM'
+        attrs.format = attrs.format ?? 'YYYY-MM'
       }
 
-      if (type === 'AYearPicker') {
-        attrs.valueFormat = 'YYYY'
-        attrs.format = 'YYYY'
+      if (type === 'AYearPicker' || (type === 'ADatePicker' && attrs.picker === 'year') || (type === 'ARangePicker' && attrs.picker === 'year')) {
+        attrs.valueFormat = attrs.valueFormat ?? 'YYYY'
+        attrs.format = attrs.format ?? 'YYYY'
       }
 
-      if (type === 'AWeekPicker') {
-        attrs.valueFormat = 'YYYY-ww'
-        attrs.format = 'YYYY-ww'
+      if (type === 'AWeekPicker' || (type === 'ADatePicker' && attrs.picker === 'week') || (type === 'ARangePicker' && attrs.picker === 'week')) {
+        attrs.valueFormat = attrs.valueFormat ?? 'YYYY-ww'
+        attrs.format = attrs.format ?? 'YYYY-ww'
+      }
+
+      if (type === 'ADatePicker' || type === 'ARangePicker') {
+        attrs.valueFormat = attrs.valueFormat ?? (attrs.showTime === true ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD')
+        attrs.format = attrs.format ?? (attrs.showTime === true ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD')
+      }
+
+      if (type === 'ATimePicker') {
+        attrs.valueFormat = attrs.valueFormat ?? (attrs.use12Hours === true ? 'h:mm:ss a' : 'HH:mm:ss')
+        attrs.format = attrs.format ?? (attrs.use12Hours === true ? 'h:mm:ss a' : 'HH:mm:ss')
       }
 
       if (readonly && !disabled) {

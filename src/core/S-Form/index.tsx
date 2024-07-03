@@ -58,6 +58,7 @@ export * from './form.helper'
 
 export const SForm = defineComponent({
   name: 'SForm',
+  inheritAttrs: false,
   props: {
     rules: {
       type: Object as PropType<Record<string, Rule | SFormValidatorRule | Array<Rule | SFormValidatorRule>>>,

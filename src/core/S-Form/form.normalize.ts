@@ -15,12 +15,12 @@ export const SFormNormalize: SFormNormalizeType = {
     props: {},
     slots: {},
     default: {
-      input: 0,
-      output: 0,
+      input: undefined,
+      output: undefined,
     },
     transfer: {
-      input: (value, { helper }) => value && helper.isFiniteNumber(+value) ? +value : 0,
-      output: (value, { helper }) => value && helper.isFiniteNumber(+value) ? +value : 0,
+      input: (value, { helper }) => value !== undefined ? (value && helper.isFiniteNumber(+value) ? +value : 0) : undefined,
+      output: (value, { helper }) => value !== undefined ? (value && helper.isFiniteNumber(+value) ? +value : 0) : undefined,
     },
 
     readonly: false,
@@ -42,12 +42,12 @@ export const SFormNormalize: SFormNormalizeType = {
     props: {},
     slots: {},
     default: {
-      input: '',
-      output: '',
+      input: undefined,
+      output: undefined,
     },
     transfer: {
-      input: (value, { helper }) => helper.isPrimitive(value) ? String(value) : '',
-      output: (value, { helper }) => helper.isPrimitive(value) ? String(value) : '',
+      input: (value, { helper }) => value !== undefined ? (helper.isPrimitive(value) ? String(value) : '') : undefined,
+      output: (value, { helper }) => value !== undefined ? (helper.isPrimitive(value) ? String(value) : '') : undefined,
     },
 
     readonly: false,
@@ -69,12 +69,12 @@ export const SFormNormalize: SFormNormalizeType = {
     props: {},
     slots: {},
     default: {
-      input: ({ self }) => self.props.unCheckedValue !== undefined ? self.props.unCheckedValue : false,
-      output: ({ self }) => self.props.unCheckedValue !== undefined ? self.props.unCheckedValue : false,
+      input: ({ self }) => self.props.unCheckedValue !== undefined ? self.props.unCheckedValue : undefined,
+      output: ({ self }) => self.props.unCheckedValue !== undefined ? self.props.unCheckedValue : undefined,
     },
     transfer: {
-      input: (value, { self }) => value === self.props.checkedValue || value === self.props.unCheckedValue ? value : self.props.unCheckedValue !== undefined ? self.props.unCheckedValue : value === true,
-      output: (value, { self }) => value === self.props.checkedValue || value === self.props.unCheckedValue ? value : self.props.unCheckedValue !== undefined ? self.props.unCheckedValue : value === true,
+      input: (value, { self }) => value !== undefined ? (value === self.props.checkedValue || value === self.props.unCheckedValue ? value : self.props.unCheckedValue !== undefined ? self.props.unCheckedValue : value === true) : undefined,
+      output: (value, { self }) => value !== undefined ? (value === self.props.checkedValue || value === self.props.unCheckedValue ? value : self.props.unCheckedValue !== undefined ? self.props.unCheckedValue : value === true) : undefined,
     },
 
     readonly: false,
@@ -96,19 +96,19 @@ export const SFormNormalize: SFormNormalizeType = {
     props: {},
     slots: {},
     default: {
-      input: ({ self }) => self.props.range === true ? [] : 0,
-      output: ({ self }) => self.props.range === true ? [] : 0,
+      input: ({ self }) => self.props.range === true ? [] : undefined,
+      output: ({ self }) => self.props.range === true ? [] : undefined,
     },
     transfer: {
       input(value, { helper, self }) {
         return self.props.range === true
-          ? helper.isArray(value) ? value.filter((_, index) => index < 2).map(v => helper.isFiniteNumber(v) ? v : 0) : []
-          : helper.isFiniteNumber(value) ? value : 0
+          ? helper.isArray(value) ? value.filter((_, index) => index < 2).map(v => v !== undefined ? (helper.isFiniteNumber(v) ? v : 0) : undefined) : []
+          : value !== undefined ? (helper.isFiniteNumber(value) ? value : 0) : undefined
       },
       output(value, { helper, self }) {
         return self.props.range === true
-          ? helper.isArray(value) ? value.filter((_, index) => index < 2).map(v => helper.isFiniteNumber(v) ? v : 0) : []
-          : helper.isFiniteNumber(value) ? value : 0
+          ? helper.isArray(value) ? value.filter((_, index) => index < 2).map(v => v !== undefined ? (helper.isFiniteNumber(v) ? v : 0) : undefined) : []
+          : value !== undefined ? (helper.isFiniteNumber(value) ? value : 0) : undefined
       },
     },
 
@@ -170,8 +170,8 @@ export const SFormNormalize: SFormNormalizeType = {
       output: [],
     },
     transfer: {
-      input: (value, { helper }) => helper.isArray(value) ? value.map(v => helper.isPrimitive(v) ? v : '') : [],
-      output: (value, { helper }) => helper.isArray(value) ? value.map(v => helper.isPrimitive(v) ? v : '') : [],
+      input: (value, { helper }) => helper.isArray(value) ? value.filter(v => helper.isPrimitive(v)) : [],
+      output: (value, { helper }) => helper.isArray(value) ? value.filter(v => helper.isPrimitive(v)) : [],
     },
 
     readonly: false,
@@ -282,12 +282,12 @@ export const SFormNormalize: SFormNormalizeType = {
     props: {},
     slots: {},
     default: {
-      input: '',
-      output: '',
+      input: undefined,
+      output: undefined,
     },
     transfer: {
-      input: (value, { helper }) => helper.isPrimitive(value) ? String(value) : '',
-      output: (value, { helper }) => helper.isPrimitive(value) ? String(value) : '',
+      input: (value, { helper }) => helper.isPrimitive(value) ? String(value) : undefined,
+      output: (value, { helper }) => helper.isPrimitive(value) ? String(value) : undefined,
     },
 
     readonly: false,
@@ -309,12 +309,12 @@ export const SFormNormalize: SFormNormalizeType = {
     props: {},
     slots: {},
     default: {
-      input: '',
-      output: '',
+      input: undefined,
+      output: undefined,
     },
     transfer: {
-      input: (value, { helper }) => helper.isPrimitive(value) ? String(value) : '',
-      output: (value, { helper }) => helper.isPrimitive(value) ? String(value) : '',
+      input: (value, { helper }) => helper.isPrimitive(value) ? String(value) : undefined,
+      output: (value, { helper }) => helper.isPrimitive(value) ? String(value) : undefined,
     },
 
     readonly: false,
@@ -336,12 +336,12 @@ export const SFormNormalize: SFormNormalizeType = {
     props: {},
     slots: {},
     default: {
-      input: '',
-      output: '',
+      input: undefined,
+      output: undefined,
     },
     transfer: {
-      input: (value, { helper }) => helper.isPrimitive(value) ? String(value) : '',
-      output: (value, { helper }) => helper.isPrimitive(value) ? String(value) : '',
+      input: (value, { helper }) => helper.isPrimitive(value) ? String(value) : undefined,
+      output: (value, { helper }) => helper.isPrimitive(value) ? String(value) : undefined,
     },
 
     readonly: false,
@@ -363,12 +363,12 @@ export const SFormNormalize: SFormNormalizeType = {
     props: {},
     slots: {},
     default: {
-      input: '',
-      output: '',
+      input: undefined,
+      output: undefined,
     },
     transfer: {
-      input: (value, { helper }) => helper.isPrimitive(value) ? String(value) : '',
-      output: (value, { helper }) => helper.isPrimitive(value) ? String(value) : '',
+      input: (value, { helper }) => helper.isPrimitive(value) ? String(value) : undefined,
+      output: (value, { helper }) => helper.isPrimitive(value) ? String(value) : undefined,
     },
 
     readonly: false,
@@ -390,12 +390,12 @@ export const SFormNormalize: SFormNormalizeType = {
     props: {},
     slots: {},
     default: {
-      input: 0,
-      output: 0,
+      input: undefined,
+      output: undefined,
     },
     transfer: {
-      input: (value, { helper }) => helper.isFiniteNumber(+value) ? +value : '',
-      output: (value, { helper }) => helper.isFiniteNumber(+value) ? +value : '',
+      input: (value, { helper }) => helper.isFiniteNumber(+value) ? +value : undefined,
+      output: (value, { helper }) => helper.isFiniteNumber(+value) ? +value : undefined,
     },
 
     readonly: false,
@@ -423,13 +423,13 @@ export const SFormNormalize: SFormNormalizeType = {
     transfer: {
       input: (value, { helper, self }) => {
         const values = helper.isArray(value) ? value : []
-        const format = self.props.valueFormat || (self.props.showTime ? 'YYYY-M-D HH:mm:ss' : 'YYYY-M-D')
+        const format = self.props.valueFormat || (self.props.showTime === true ? 'YYYY-M-D H:m:s' : 'YYYY-M-D')
         return values.map((v: any) => v !== undefined ? (v instanceof Date && dayjs(v).isValid() ? dayjs(v) : dayjs(v, format).isValid() ? dayjs(v, format) : undefined) : undefined)
       },
       output: (value, { helper, self }) => {
         const values = helper.isArray(value) ? value : []
-        const format = self.props.valueFormat || (self.props.showTime ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD')
-        return values.map((v: any) => v !== undefined ? (typeof value !== 'string' && dayjs(value).isValid() ? dayjs(value).format(format) : typeof value === 'string' ? value : '') : undefined)
+        const format = self.props.valueFormat || (self.props.showTime === true ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD')
+        return values.map((v: any) => v !== undefined ? (typeof v !== 'string' && dayjs(v).isValid() ? dayjs(v).format(format) : typeof v === 'string' ? v : '') : undefined)
       },
     },
 
@@ -463,7 +463,7 @@ export const SFormNormalize: SFormNormalizeType = {
 
         const showTime = self.props.showTime
         const valueFormat = self.props.valueFormat
-        const format = valueFormat || (showTime ? 'YYYY-M-D HH:mm:ss' : 'YYYY-M-D')
+        const format = valueFormat || (showTime === true ? 'YYYY-M-D H:m:s' : 'YYYY-M-D')
 
         if (value instanceof Date && dayjs(value).isValid()) {
           return dayjs(value)
@@ -482,7 +482,7 @@ export const SFormNormalize: SFormNormalizeType = {
 
         const showTime = self.props.showTime
         const valueFormat = self.props.valueFormat
-        const format = valueFormat || (showTime ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD')
+        const format = valueFormat || (showTime === true ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD')
 
         return typeof value !== 'string' && dayjs(value).isValid()
           ? dayjs(value).format(format)
@@ -756,7 +756,7 @@ export const SFormNormalize: SFormNormalizeType = {
 
         const use12Hours = self.props.use12Hours
         const valueFormat = self.props.valueFormat
-        const format = valueFormat || (use12Hours ? 'h:mm:ss a' : 'HH:mm:ss')
+        const format = valueFormat || (use12Hours === true ? 'h:m:s a' : 'H:m:s')
 
         if (value instanceof Date && dayjs(value).isValid()) {
           return dayjs(value)
@@ -775,7 +775,7 @@ export const SFormNormalize: SFormNormalizeType = {
 
         const use12Hours = self.props.use12Hours
         const valueFormat = self.props.valueFormat
-        const format = valueFormat || (use12Hours ? 'h:mm:ss a' : 'HH:mm:ss')
+        const format = valueFormat || (use12Hours === true ? 'hh:mm:ss a' : 'HH:mm:ss')
 
         return typeof value !== 'string' && dayjs(value).isValid()
           ? dayjs(value).format(format)
