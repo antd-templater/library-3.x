@@ -42,37 +42,13 @@ export const BaseMenu = defineComponent({
       const menu = { title: null as SProLayoutRenderNode, icon: null as SProLayoutRenderNode }
       const binds = { to: { name: item.name, ...item.meta } } as Record<string, any>
       const attrs = {} as Record<string, any>
-
-      if ((/^https?:\/\/[^\s\S]+/i).test(item.path)) {
-        Object.assign(attrs, { ...item.meta, href: item.path })
-      }
-
-      if (meta.target) {
-        Object.assign(attrs, { ...item.meta, href: item.path, target: meta.target })
-      }
-
-      if (!meta.icon) {
-        const locale = props.locale
-        const prefixCls = props.prefixCls
-        const CustomTag = meta.target ? 'a' : resolveComponent('router-link') as any
-        const menuTitle = helper.isFunction(locale) ? locale(meta.title) : meta.title
-
-        menu.title = (
-          <CustomTag {...attrs} {...binds} class={`${prefixCls}-menu-item`}>
-            <span>{menuTitle}</span>
-          </CustomTag>
-        )
-      }
+      const check = /^https?:\/\/.+/i
 
       if (meta.icon) {
-        const locale = props.locale
         const iconClass = props.iconClass
         const iconStyle = props.iconStyle
-        const prefixCls = props.prefixCls
         const iconPrefix = props.iconPrefix
         const iconfontUrl = props.iconfontUrl
-        const CustomTag = meta.target ? 'a' : resolveComponent('router-link') as any
-        const menuTitle = helper.isFunction(locale) ? locale(meta.title) : meta.title
 
         menu.icon = (
           <LazyMenuIcon
@@ -83,20 +59,80 @@ export const BaseMenu = defineComponent({
             iconfontUrl={iconfontUrl}
           />
         )
+      }
+
+      if (meta.target) {
+        Object.assign(attrs, { href: item.path, target: meta.target })
+      }
+
+      if (check.test(item.path)) {
+        Object.assign(attrs, { href: item.path, target: '_blank' })
+      }
+
+      if (meta.target !== '_blank' && meta.target !== '_self' && meta.target !== 'none') {
+        const locale = props.locale
+        const prefixCls = props.prefixCls
+        const CustomTag = resolveComponent('router-link') as any
+        const menuTitle = helper.isFunction(locale) ? locale(meta.title) : meta.title
+        const titleStyle = menu.icon ? { marginInlineStart: '10px' } : {}
 
         menu.title = (
-          <CustomTag {...attrs} {...binds} class={`${prefixCls}-menu-item`}>
+          <CustomTag {...binds} class={`${prefixCls}-menu-item`}>
             { menu.icon }
-            <span class={`${prefixCls}-menu-item-title`}>{menuTitle}</span>
+            <span style={titleStyle}>{menuTitle}</span>
           </CustomTag>
+        )
+      }
+
+      if (meta.target === '_blank' || meta.target === '_self') {
+        const locale = props.locale
+        const prefixCls = props.prefixCls
+        const menuTitle = helper.isFunction(locale) ? locale(meta.title) : meta.title
+        const titleStyle = menu.icon ? { marginInlineStart: '10px' } : {}
+
+        menu.title = (
+          <a {...attrs} class={`${prefixCls}-menu-item`}>
+            { menu.icon }
+            <span style={titleStyle}>{menuTitle}</span>
+          </a>
+        )
+      }
+
+      if (meta.target !== 'none' && check.test(item.path)) {
+        const locale = props.locale
+        const prefixCls = props.prefixCls
+        const menuTitle = helper.isFunction(locale) ? locale(meta.title) : meta.title
+        const titleStyle = menu.icon ? { marginInlineStart: '10px' } : {}
+
+        menu.title = (
+          <a {...attrs} class={`${prefixCls}-menu-item`}>
+            { menu.icon }
+            <span style={titleStyle}>{menuTitle}</span>
+          </a>
+        )
+      }
+
+      if (meta.target === 'none') {
+        const locale = props.locale
+        const prefixCls = props.prefixCls
+        const menuTitle = helper.isFunction(locale) ? locale(meta.title) : meta.title
+        const titleStyle = menu.icon ? { marginInlineStart: '10px' } : {}
+
+        menu.title = (
+          <span class={`${prefixCls}-menu-item`}>
+            { menu.icon }
+            <span style={titleStyle}>{menuTitle}</span>
+          </span>
         )
       }
 
       return menu
     }
 
-    const getNavMenuItems = (menus: SProLayoutMenuItem[]) => {
-      return menus.map(item => getSubMenuOrItem(item)).filter(item => item)
+    const getNavMenuItems = (menus?: SProLayoutMenuItem[]) => {
+      if (helper.isArray(menus)) {
+        return menus.map(item => getSubMenuOrItem(item)).filter(item => item)
+      }
     }
 
     const getSubMenuOrItem = (item: SProLayoutMenuItem): SProLayoutRenderNode => {
@@ -121,10 +157,7 @@ export const BaseMenu = defineComponent({
 
       if (helper.isNonEmptyArray(item.children) && !meta.hideInMenu && !meta.hideChildrenInMenu) {
         if (helper.isFunction(subMenuItemRender)) {
-          return subMenuItemRender({
-            item,
-            children: getNavMenuItems(item.children),
-          })
+          return subMenuItemRender({ item, children: getNavMenuItems(item.children) })
         }
 
         if (helper.isFunction(locale)) {
@@ -147,20 +180,18 @@ export const BaseMenu = defineComponent({
           )
         }
 
-        const isGroup = meta.type === 'group'
-        const menuIcon = !isGroup ? <LazyMenuIcon icon={meta.icon} iconPrefix={iconPrefix} iconfontUrl={iconfontUrl} class={iconClass} style={iconStyle} /> : null
+        const menuIcon = <LazyMenuIcon icon={meta.icon} iconPrefix={iconPrefix} iconfontUrl={iconfontUrl} class={iconClass} style={iconStyle} />
         const menuTitle = render.title
-        const MenuComponent = !isGroup ? AMenu.SubMenu : AMenu.ItemGroup
 
         return (
-          <MenuComponent
+          <AMenu.SubMenu
             key={item.path}
             icon={menuIcon}
             title={menuTitle}
-            popupClassName={!isGroup ? `${prefixCls}-menu-popup` : undefined}
+            popupClassName={`${prefixCls}-menu-popup`}
           >
-            { getNavMenuItems(item.children!) }
-          </MenuComponent>
+            { getNavMenuItems(item.children) }
+          </AMenu.SubMenu>
         )
       }
 

@@ -6,8 +6,9 @@ export interface SProLayoutMetaInfo {
   icon?: string | VNode;
   type?: string;
   title?: string;
-  target?: '_blank' | '_self' | null;
+  target?: '_blank' | '_self' | 'none' | null;
   hideChildInMenu?: boolean;
+  isMenuGroup?: boolean;
   hideInMenu?: boolean;
   disabled?: boolean;
   flatMenu?: boolean;

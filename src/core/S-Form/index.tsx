@@ -4,7 +4,7 @@ import * as VueTypes from 'vue-types'
 import Normalize from './form.normalize'
 import SFormComponent from './index.component'
 import { SFormValidatorRule } from './form.declare'
-import { SFormGrid, SFormColItem, SFormColPartItem, SFormRowItem, SFormRowPartItem, SFormGroupItem, SFormGroupPartItem } from './form.declare'
+import { SFormGrid, SFormColItem, SFormColPartItem, SFormColSlotItem, SFormRowItem, SFormRowPartItem, SFormRowSlotItem, SFormGroupItem, SFormGroupPartItem, SFormGroupSlotItem } from './form.declare'
 import { SlotsType, Ref, defineComponent, watchEffect, watch, shallowRef, toRaw, unref, ref, readonly, PropType } from 'vue'
 import { Rule, NamePath, InternalNamePath, ValidateOptions } from 'ant-design-vue/es/form/interface'
 import { useConfigContextInject } from 'ant-design-vue/es/config-provider/context'
@@ -48,8 +48,8 @@ type SFormDefineMethods = {
 type SFormDefineSlots = SlotsType<{
   after: void;
   before: void;
-  [slot: `s-header-${string}`]: { className: string; group: SFormGroupItem; disabled: boolean; readonly: boolean; };
-  [slot: `s-component-${string}`]: { col: SFormColItem; row: SFormRowItem; group: SFormGroupItem; attrs: Record<string, any>; slots: Record<string, any>; disabled: boolean; readonly: boolean; source: Record<string, any>; field: string; };
+  [slot: `s-header-${string}`]: { className: string; group: SFormGroupSlotItem; disabled: boolean; readonly: boolean; };
+  [slot: `s-component-${string}`]: { col: SFormColSlotItem; row: SFormRowSlotItem; group: SFormGroupSlotItem; attrs: Record<string, any>; slots: Record<string, any>; disabled: boolean; readonly: boolean; source: Record<string, any>; field: string; };
   [slot: string]: any;
 }>
 
@@ -153,7 +153,7 @@ export const SForm = defineComponent({
             items: [],
             border: node.border,
             disabled: node.disabled !== undefined ? node.disabled : false,
-            readonly: node.disabled !== undefined ? node.disabled : false,
+            readonly: node.readonly !== undefined ? node.readonly : false,
             render: node.render !== undefined ? node.render : true,
             show: node.show !== undefined ? node.show : true,
           }
@@ -173,7 +173,7 @@ export const SForm = defineComponent({
             grid: node.grid || row.grid || {},
             items: [],
             disabled: node.disabled !== undefined ? node.disabled : false,
-            readonly: node.disabled !== undefined ? node.disabled : false,
+            readonly: node.readonly !== undefined ? node.readonly : false,
           }
         }
 
@@ -311,7 +311,7 @@ export const SForm = defineComponent({
           <div class="s-form-group-item-header" {...attrs}>
             {
               slotRender
-                ? slotRender({ className: className, group, disabled, readonly })
+                ? slotRender({ className: className, group, disabled, readonly } as any)
                 : <div class="s-form-group-item-header-title">{group.label}</div>
             }
           </div>
@@ -432,7 +432,7 @@ export const SForm = defineComponent({
                             >
                               {
                                 slotRender
-                                  ? slotRender({ col, row, group, attrs, slots, disabled, readonly, source, field })
+                                  ? slotRender({ col, row, group, attrs, slots, disabled, readonly, source, field } as any)
                                   : <SFormComponent type={type} attrs={attrs} v-slots={slots} disabled={disabled} readonly={readonly} source={source} field={field} />
                               }
                             </AFormItem>

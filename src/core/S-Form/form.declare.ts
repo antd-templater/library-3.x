@@ -116,6 +116,35 @@ export type SFormColPartItem = {
   show?: Ref<boolean> | boolean;
 }
 
+export type SFormColSlotItem = {
+  type: SFormType;
+  slot: string;
+  label: string;
+  field: string[];
+
+  grid: SFormGrid;
+  rules: Rule | Array<Rule> | undefined;
+  layer: Record<string, any>;
+
+  props: Record<string, any>;
+  slots: Record<string, VNode | ((...rest: any[]) => any)>;
+
+  default: {
+    input: string | number | boolean | undefined | null | Record<string, any> | Array<any> | ((options: { helper: typeof helper; self: DeepReadonly<SFormColItem>; }) => any);
+    output: string | number | boolean | undefined | null | Record<string, any> | Array<any> | ((options: { helper: typeof helper; self: DeepReadonly<SFormColItem>; }) => any);
+  };
+
+  transfer: {
+    input: (value: any, options: { helper: typeof helper; self: DeepReadonly<SFormColItem>; }) => any;
+    output: (value: any, options: { helper: typeof helper; self: DeepReadonly<SFormColItem>; }) => any;
+  };
+
+  readonly: boolean;
+  disabled: boolean;
+  render: boolean;
+  show: boolean;
+}
+
 export type SFormRowItem = {
   type: 'ARow';
   grid: SFormGrid;
@@ -129,6 +158,14 @@ export type SFormRowPartItem = {
   grid?: SFormGrid;
   readonly?: Ref<boolean> | boolean;
   disabled?: Ref<boolean> | boolean;
+}
+
+export type SFormRowSlotItem = {
+  type: 'ARow';
+  grid: SFormGrid;
+  items: Array<SFormColItem>;
+  readonly: boolean;
+  disabled: boolean;
 }
 
 export type SFormGroupItem = {
@@ -155,6 +192,19 @@ export type SFormGroupPartItem = {
   disabled?: Ref<boolean> | boolean;
   render?: Ref<boolean> | boolean;
   show?: Ref<boolean> | boolean;
+}
+
+export type SFormGroupSlotItem = {
+  type: 'AGroup';
+  grid: SFormGrid;
+  slot: string;
+  label: string;
+  items: Array<SFormRowSlotItem>;
+  border?: string | boolean ;
+  readonly: boolean;
+  disabled: boolean;
+  render: boolean;
+  show: boolean;
 }
 
 export type SFormNormalizeType = Record<SFormType, SFormColItem>
