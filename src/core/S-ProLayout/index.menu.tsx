@@ -419,7 +419,7 @@ export const SiderMenu = defineComponent({
     }
 
     const RenderFixSiderbar = () => {
-      if (props.fixSiderbar) {
+      if (props.fixSiderbar && helper.isNonEmptyArray(SiderMenuData.value)) {
         return (
           <div
             style={{
@@ -436,30 +436,32 @@ export const SiderMenu = defineComponent({
     }
 
     const RenderLayoutSider = () => {
-      return (
-        <ALayout.Sider
-          style={{
-            overflow: 'hidden',
-            backgroundColor: SiderTheme.value !== 'light' ? '#001529 !important' : '#ffffff !important',
-            paddingTop: SiderHeaderTop.value,
-          }}
-          trigger={null}
-          collapsible={true}
-          width={siderWidth.value}
-          theme={SiderTheme.value}
-          class={SiderClassNames.value}
-          prefixCls={getPrefixCls('layout-sider')}
-          collapsed={props.collapsed}
-          breakpoint={props.breakpoint}
-          collapsedWidth={props.collapsedWidth}
-          onCollapse={onCollapse}
-        >
-          { RenderSiderMenuHeader() }
-          { RenderSiderMenuExtra() }
-          { RenderSiderMenuContent() }
-          { RenderSiderMenuFooter()}
-        </ALayout.Sider>
-      )
+      if (helper.isNonEmptyArray(SiderMenuData.value)) {
+        return (
+          <ALayout.Sider
+            style={{
+              overflow: 'hidden',
+              backgroundColor: SiderTheme.value !== 'light' ? '#001529 !important' : '#ffffff !important',
+              paddingTop: SiderHeaderTop.value,
+            }}
+            trigger={null}
+            collapsible={true}
+            width={siderWidth.value}
+            theme={SiderTheme.value}
+            class={SiderClassNames.value}
+            prefixCls={getPrefixCls('layout-sider')}
+            collapsed={props.collapsed}
+            breakpoint={props.breakpoint}
+            collapsedWidth={props.collapsedWidth}
+            onCollapse={onCollapse}
+          >
+            { RenderSiderMenuHeader() }
+            { RenderSiderMenuExtra() }
+            { RenderSiderMenuContent() }
+            { RenderSiderMenuFooter()}
+          </ALayout.Sider>
+        )
+      }
     }
 
     return () => (

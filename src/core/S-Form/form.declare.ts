@@ -186,7 +186,6 @@ export type SFormGroupPartItem = {
   grid?: SFormGrid;
   slot?: string;
   label?: string;
-  field?: string;
   border?: string | boolean | Ref<string | boolean>;
   readonly?: Ref<boolean> | boolean;
   disabled?: Ref<boolean> | boolean;
