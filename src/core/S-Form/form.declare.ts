@@ -173,6 +173,7 @@ export type SFormGroupItem = {
   grid: SFormGrid;
   slot: string;
   label: string;
+  field: string;
   items: Array<SFormRowItem>;
   border?: string | boolean | Ref<string | boolean>;
   readonly: Ref<boolean> | boolean;
@@ -186,6 +187,7 @@ export type SFormGroupPartItem = {
   grid?: SFormGrid;
   slot?: string;
   label?: string;
+  field?: string;
   border?: string | boolean | Ref<string | boolean>;
   readonly?: Ref<boolean> | boolean;
   disabled?: Ref<boolean> | boolean;
@@ -198,6 +200,7 @@ export type SFormGroupSlotItem = {
   grid: SFormGrid;
   slot: string;
   label: string;
+  field: string;
   items: Array<SFormRowSlotItem>;
   border?: string | boolean ;
   readonly: boolean;
