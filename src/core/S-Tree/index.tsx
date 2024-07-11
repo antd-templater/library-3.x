@@ -1,7 +1,7 @@
 import './index.less'
 
 import * as VueTypes from 'vue-types'
-import { shallowReactive, defineComponent, shallowRef, watch, onMounted, toRaw, unref, ref } from 'vue'
+import { shallowReactive, defineComponent, shallowRef, watch, onMounted, toRaw, unref, ref, renderSlot, Fragment } from 'vue'
 import { Key } from 'ant-design-vue/es/vc-tree/interface'
 import SIcon, { isIconType } from '@/S-Icon/index'
 import SEllipsis from '@/S-Ellipsis/index'
@@ -35,11 +35,14 @@ import type { STreeDefineSlots } from './type'
 
 export const STree = defineComponent({
   name: 'STree',
-  inheritAttrs: true,
+  inheritAttrs: false,
   props: {
+    class: VueTypes.any().def(undefined),
+    style: VueTypes.any().def(undefined),
+    height: VueTypes.number().def(undefined),
     bgColor: VueTypes.string().def('transparent'),
     treeData: VueTypes.array<STreeSourceNode>().def(() => []),
-    loadData: VueTypes.func<STreeLoadData>().def(undefined),
+    loadData: VueTypes.func<STreeLoadData<any>>().def(undefined),
     dropHandler: VueTypes.func<STreeDropHandler>().def(undefined),
     checkedKeys: VueTypes.array<string | number>().def(() => []),
     selectedKeys: VueTypes.array<string | number>().def(() => []),
@@ -48,7 +51,7 @@ export const STree = defineComponent({
     checkedMode: VueTypes.string<'link' | 'default'>().def('default'),
     filterField: VueTypes.string<'key' | 'title'>().def('title'),
     filterValue: VueTypes.any<string | number>().def(''),
-    replaceFields: VueTypes.object<STreeFieldNames>().def(() => ({})),
+    fieldNames: VueTypes.object<STreeFieldNames>().def(() => ({})),
     allowCheckedLevel: VueTypes.any<number | ((...rest: any[]) => boolean)>().def(1),
     allowSelectedLevel: VueTypes.any<number | ((...rest: any[]) => boolean)>().def(1),
     forceCleanWhenNotInTreeNodes: VueTypes.bool().def(false),
@@ -151,6 +154,12 @@ export const STree = defineComponent({
     }
 
     const Methoder: STreeMethoder = {
+      getVNodes(node) {
+        return helper.isNonEmptyObject(node) && node.type === Fragment
+          ? helper.isNonEmptyArray(node.children) ? node : null
+          : node
+      },
+
       renderSwitcher(node) {
         const loadKeys = Stater.loadKeys
         const expandedKeys = Stater.expandedKeys
@@ -609,8 +618,8 @@ export const STree = defineComponent({
         const parentTreeNode = helper.isPrimitive(parentKey) ? flatTreeNodes.find(every => every.key === parentKey) : undefined
         const findChildrenNodes = parentTreeNode ? [...parentTreeNode.children] : [...linkTreeNodes]
         const noReloadTreeNode = helper.isPrimitive(parentKey) && !parentTreeNode
-        const replaceFieldChildren = props.replaceFields.children || 'children'
-        const replaceFieldKey = props.replaceFields.key || 'key'
+        const replaceFieldChildren = props.fieldNames.children || 'children'
+        const replaceFieldKey = props.fieldNames.key || 'key'
 
         if (noReloadTreeNode) {
           return
@@ -735,8 +744,8 @@ export const STree = defineComponent({
         const parentTreeNode = helper.isPrimitive(parentKey) ? flatTreeNodes.find(every => every.key === parentKey) : undefined
         const findChildrenNodes = parentTreeNode ? [...parentTreeNode.children] : [...linkTreeNodes]
         const noReloadTreeNode = helper.isPrimitive(parentKey) && !parentTreeNode
-        const replaceFieldChildren = props.replaceFields.children || 'children'
-        const replaceFieldKey = props.replaceFields.key || 'key'
+        const replaceFieldChildren = props.fieldNames.children || 'children'
+        const replaceFieldKey = props.fieldNames.key || 'key'
 
         if (noReloadTreeNode) {
           return
@@ -844,8 +853,8 @@ export const STree = defineComponent({
         const parentTreeNode = helper.isPrimitive(parentKey) ? flatTreeNodes.find(every => every.key === parentKey) : undefined
         const findChildrenNodes = parentTreeNode ? [...parentTreeNode.children] : [...linkTreeNodes]
         const noReloadTreeNode = helper.isPrimitive(parentKey) && !parentTreeNode
-        const replaceFieldChildren = props.replaceFields.children || 'children'
-        const replaceFieldKey = props.replaceFields.key || 'key'
+        const replaceFieldChildren = props.fieldNames.children || 'children'
+        const replaceFieldKey = props.fieldNames.key || 'key'
 
         if (noReloadTreeNode) {
           return
@@ -966,8 +975,8 @@ export const STree = defineComponent({
         const parentTreeNode = helper.isPrimitive(parentKey) ? flatTreeNodes.find(every => every.key === parentKey) : undefined
         const findChildrenNodes = parentTreeNode ? [...parentTreeNode.children] : [...linkTreeNodes]
         const noReloadTreeNode = helper.isPrimitive(parentKey) && !parentTreeNode
-        const replaceFieldChildren = props.replaceFields.children || 'children'
-        const replaceFieldKey = props.replaceFields.key || 'key'
+        const replaceFieldChildren = props.fieldNames.children || 'children'
+        const replaceFieldKey = props.fieldNames.key || 'key'
 
         if (noReloadTreeNode) {
           return
@@ -1152,16 +1161,17 @@ export const STree = defineComponent({
         }
 
         for (const node of nodes) {
-          const key: Key = node[props.replaceFields.key || 'key']
-          const icon: string = node[props.replaceFields.icon || 'icon']
-          const title: string = node[props.replaceFields.title || 'title']
-          const children: STreeSourceNodes = node[props.replaceFields.children || 'children']
-          const alwaysShowTitleButton: boolean = node[props.replaceFields.alwaysShowTitleButton || 'alwaysShowTitleButton'] === true
-          const forceApplyDisableCheckbox: boolean = node[props.replaceFields.forceApplyDisableCheckbox || 'forceApplyDisableCheckbox'] === true
-          const forceApplyDisabled: boolean = node[props.replaceFields.forceApplyDisabled || 'forceApplyDisabled'] === true
-          const disableCheckbox: boolean = node[props.replaceFields.disableCheckbox || 'disableCheckbox'] === true
-          const disabled: boolean = node[props.replaceFields.disabled || 'disabled'] === true
-          const isLeaf: boolean = !helper.isNonEmptyArray(children) && node.isLeaf !== false
+          const key: Key = node[props.fieldNames.key || 'key']
+          const icon: string = node[props.fieldNames.icon || 'icon']
+          const title: string = node[props.fieldNames.title || 'title']
+          const leafed: boolean = node[props.fieldNames.isLeaf || 'isLeaf']
+          const children: STreeSourceNodes = node[props.fieldNames.children || 'children']
+          const alwaysShowTitleButton: boolean = node[props.fieldNames.alwaysShowTitleButton || 'alwaysShowTitleButton'] === true
+          const forceApplyDisableCheckbox: boolean = node[props.fieldNames.forceApplyDisableCheckbox || 'forceApplyDisableCheckbox'] === true
+          const forceApplyDisabled: boolean = node[props.fieldNames.forceApplyDisabled || 'forceApplyDisabled'] === true
+          const disableCheckbox: boolean = node[props.fieldNames.disableCheckbox || 'disableCheckbox'] === true
+          const disabled: boolean = node[props.fieldNames.disabled || 'disabled'] === true
+          const isLeaf: boolean = !helper.isNonEmptyArray(children) && leafed !== false
 
           const newNode: STreeTargetNode = {
             scopedSlots: {
@@ -1203,7 +1213,7 @@ export const STree = defineComponent({
 
         for (const node of rawNodes) {
           const replaceFieldChildren = !Object.hasOwn(node, 'referenceSourceNode')
-            ? props.replaceFields.children || 'children'
+            ? props.fieldNames.children || 'children'
             : 'children'
 
           helper.isFiniteNumber(level)
@@ -1955,7 +1965,7 @@ export const STree = defineComponent({
         if (!newSelectedKey) {
           !props.allowUnSelected && oldSelectedKey
             ? selectedKeys.splice(0, selectedKeys.length, oldSelectedKey)
-            : selectedKeys.splice(0, selectedKeys.length)
+            : null
         }
 
         const nowFirstSelectedKey = selectedKeys[0]
@@ -2260,7 +2270,7 @@ export const STree = defineComponent({
 
             promises.push(
               Promise.resolve(loadTreeNodes(loadNode.referenceSourceNode, options))
-                .then(nodes => doSuccess(nodes))
+                .then(nodes => doSuccess(nodes || []))
                 .catch(error => doError(error)),
             )
           }
@@ -2451,10 +2461,14 @@ export const STree = defineComponent({
     }
 
     const RenderTreeContainer = (_: any, ctx: typeof context) => {
+      const propClass = [''].concat(props.class)
+      const propStyle = props.style
+
       return (
         <section
           ref={Cacher.treeContainer}
-          class="s-tree-container"
+          class={[...propClass, 's-tree-container']}
+          style={propStyle}
         >
           <ASpin spinning={props.loading}>
             <RenderTreeComponent v-slots={ctx.slots} />
@@ -2490,6 +2504,7 @@ export const STree = defineComponent({
           showIcon={props.showIcon}
           showLine={props.showLine}
           virtual={props.virtual}
+          height={props.height}
           checkStrictly={true}
           multiple={false}
           v-slots={slots}
@@ -2520,7 +2535,11 @@ export const STree = defineComponent({
     const RenderTreeNodeIcon = (node: STreeTargetNode, ctx: typeof context) => {
       if (node.scopedSlots.icon === 'iconRoot') {
         if (helper.isFunction(ctx.slots.iconRoot)) {
-          return ctx.slots.iconRoot({ ...node.referenceSourceNode })
+          const vnode = renderSlot(ctx.slots, 'iconRoot', ({ ...node.referenceSourceNode }))
+
+          if (Methoder.getVNodes(vnode)) {
+            return vnode
+          }
         }
 
         const iconClass = props.iconClass
@@ -2528,7 +2547,7 @@ export const STree = defineComponent({
         const iconPrefix = props.iconPrefix
         const iconfontUrl = props.iconfontUrl
 
-        if (isIconType(node.icon) || (helper.isNonEmptyString(iconPrefix) && helper.isNonEmptyString(iconfontUrl) && node.icon.startsWith(iconPrefix))) {
+        if (isIconType(node.icon) || (helper.isString(node.icon) && helper.isNonEmptyString(iconPrefix) && helper.isNonEmptyString(iconfontUrl) && node.icon.startsWith(iconPrefix))) {
           return (
             <SIcon
               type={node.icon}
@@ -2551,7 +2570,11 @@ export const STree = defineComponent({
 
       if (node.scopedSlots.icon === 'iconParent') {
         if (helper.isFunction(ctx.slots.iconParent)) {
-          return ctx.slots.iconParent({ ...node.referenceSourceNode })
+          const vnode = renderSlot(ctx.slots, 'iconParent', ({ ...node.referenceSourceNode }))
+
+          if (Methoder.getVNodes(vnode)) {
+            return vnode
+          }
         }
 
         const iconClass = props.iconClass
@@ -2559,7 +2582,7 @@ export const STree = defineComponent({
         const iconPrefix = props.iconPrefix
         const iconfontUrl = props.iconfontUrl
 
-        if (isIconType(node.icon) || (helper.isNonEmptyString(iconPrefix) && helper.isNonEmptyString(iconfontUrl) && node.icon.startsWith(iconPrefix))) {
+        if (isIconType(node.icon) || (helper.isString(node.icon) && helper.isNonEmptyString(iconPrefix) && helper.isNonEmptyString(iconfontUrl) && node.icon.startsWith(iconPrefix))) {
           return (
             <SIcon
               type={node.icon}
@@ -2582,7 +2605,11 @@ export const STree = defineComponent({
 
       if (node.scopedSlots.icon === 'iconLeaf') {
         if (helper.isFunction(ctx.slots.iconLeaf)) {
-          return ctx.slots.iconLeaf({ ...node.referenceSourceNode })
+          const vnode = renderSlot(ctx.slots, 'iconLeaf', ({ ...node.referenceSourceNode }))
+
+          if (Methoder.getVNodes(vnode)) {
+            return vnode
+          }
         }
 
         const iconClass = props.iconClass
@@ -2590,7 +2617,7 @@ export const STree = defineComponent({
         const iconPrefix = props.iconPrefix
         const iconfontUrl = props.iconfontUrl
 
-        if (isIconType(node.icon) || (helper.isNonEmptyString(iconPrefix) && helper.isNonEmptyString(iconfontUrl) && node.icon.startsWith(iconPrefix))) {
+        if (isIconType(node.icon) || (helper.isString(node.icon) && helper.isNonEmptyString(iconPrefix) && helper.isNonEmptyString(iconfontUrl) && node.icon.startsWith(iconPrefix))) {
           return (
             <SIcon
               type={node.icon}
@@ -2615,21 +2642,24 @@ export const STree = defineComponent({
     const RenderTreeNodeTitle = (node: STreeTargetNode, ctx: typeof context) => {
       const RenderTreeNodeTitleRootLabel = (node: STreeTargetNode, ctx: typeof context) => {
         if (helper.isFunction(ctx.slots.titleRootLabel)) {
-          return (
-            <span class="s-tree-title-label">
-              <SEllipsis
-                tooltip={props.tooltip}
-                ellipsis={true}
-              >
-                { ctx.slots.titleRootLabel({ ...node.referenceSourceNode }) }
-              </SEllipsis>
-            </span>
-          )
+          const vnode = renderSlot(ctx.slots, 'titleRootLabel', ({ ...node.referenceSourceNode }))
+
+          if (Methoder.getVNodes(vnode)) {
+            return (
+              <span class="s-tree-title-label">
+                <SEllipsis
+                  tooltip={props.tooltip}
+                  ellipsis={true}
+                >
+                  { vnode }
+                </SEllipsis>
+              </span>
+            )
+          }
         }
 
         if (helper.isNonEmptyArray(node.titles)) {
-          const token = ATheme.useToken().token.value
-          const primary = token.colorPrimary
+          const primary = token.value.colorPrimary
           const inherit = 'inherit'
 
           return (
@@ -2638,9 +2668,9 @@ export const STree = defineComponent({
                 tooltip={props.tooltip}
                 ellipsis={true}
               >
-                <span style={{ color: inherit }}>{ node.titles[0] }</span>
-                <span style={{ color: primary }}>{ node.titles[1] }</span>
-                <span style={{ color: inherit }}>{ node.titles[2] }</span>
+                <span class="normal" style={{ color: inherit }}>{ node.titles[0] }</span>
+                <span class="primary" style={{ color: primary }}>{ node.titles[1] }</span>
+                <span class="normal" style={{ color: inherit }}>{ node.titles[2] }</span>
               </SEllipsis>
             </span>
           )
@@ -2660,11 +2690,15 @@ export const STree = defineComponent({
 
       const RenderTreeNodeTitleRootButton = (node: STreeTargetNode, ctx: typeof context) => {
         if (helper.isFunction(ctx.slots.titleRootButton)) {
-          return (
-            <span class={['s-tree-title-button', { 'always-show-title-button': props.alwaysShowTitleButton === true || node.alwaysShowTitleButton === true }]}>
-              { ctx.slots.titleRootButton({ ...node.referenceSourceNode }) }
-            </span>
-          )
+          const vnode = renderSlot(ctx.slots, 'titleRootButton', ({ ...node.referenceSourceNode }))
+
+          if (Methoder.getVNodes(vnode)) {
+            return (
+              <span class={['s-tree-title-button', { 'always-show-title-button': props.alwaysShowTitleButton === true || node.alwaysShowTitleButton === true }]}>
+                { vnode }
+              </span>
+            )
+          }
         }
 
         return <span class="s-tree-title-button"></span>
@@ -2672,28 +2706,35 @@ export const STree = defineComponent({
 
       const RenderTreeNodeTitleParentLabel = (node: STreeTargetNode, ctx: typeof context) => {
         if (helper.isFunction(ctx.slots.titleParentLabel)) {
-          return (
-            <span class="s-tree-title-label">
-              <SEllipsis
-                tooltip={props.tooltip}
-                ellipsis={true}
-              >
-                { ctx.slots.titleParentLabel({ ...node.referenceSourceNode }) }
-              </SEllipsis>
-            </span>
-          )
+          const vnode = renderSlot(ctx.slots, 'titleParentLabel', ({ ...node.referenceSourceNode }))
+
+          if (Methoder.getVNodes(vnode)) {
+            return (
+              <span class="s-tree-title-label">
+                <SEllipsis
+                  tooltip={props.tooltip}
+                  ellipsis={true}
+                >
+                  { vnode }
+                </SEllipsis>
+              </span>
+            )
+          }
         }
 
         if (helper.isNonEmptyArray(node.titles)) {
+          const primary = token.value.colorPrimary
+          const inherit = 'inherit'
+
           return (
             <span class="s-tree-title-label">
               <SEllipsis
                 tooltip={props.tooltip}
                 ellipsis={true}
               >
-                <span class="normal">{ node.titles[0] }</span>
-                <span class="primary">{ node.titles[1] }</span>
-                <span class="normal">{ node.titles[2] }</span>
+                <span class="normal" style={{ color: inherit }}>{ node.titles[0] }</span>
+                <span class="primary" style={{ color: primary }}>{ node.titles[1] }</span>
+                <span class="normal" style={{ color: inherit }}>{ node.titles[2] }</span>
               </SEllipsis>
             </span>
           )
@@ -2713,11 +2754,15 @@ export const STree = defineComponent({
 
       const RenderTreeNodeTitleParentButton = (node: STreeTargetNode, ctx: typeof context) => {
         if (helper.isFunction(ctx.slots.titleParentButton)) {
-          return (
-            <span class={['s-tree-title-button', { 'always-show-title-button': props.alwaysShowTitleButton === true || node.alwaysShowTitleButton === true }]}>
-              { ctx.slots.titleParentButton({ ...node.referenceSourceNode }) }
-            </span>
-          )
+          const vnode = renderSlot(ctx.slots, 'titleParentButton', ({ ...node.referenceSourceNode }))
+
+          if (Methoder.getVNodes(vnode)) {
+            return (
+              <span class={['s-tree-title-button', { 'always-show-title-button': props.alwaysShowTitleButton === true || node.alwaysShowTitleButton === true }]}>
+                { vnode }
+              </span>
+            )
+          }
         }
 
         return <span class="s-tree-title-button"></span>
@@ -2725,28 +2770,35 @@ export const STree = defineComponent({
 
       const RenderTreeNodeTitleLeafLabel = (node: STreeTargetNode, ctx: typeof context) => {
         if (helper.isFunction(ctx.slots.titleLeafLabel)) {
-          return (
-            <span class="s-tree-title-label">
-              <SEllipsis
-                tooltip={props.tooltip}
-                ellipsis={true}
-              >
-                { ctx.slots.titleLeafLabel({ ...node.referenceSourceNode }) }
-              </SEllipsis>
-            </span>
-          )
+          const vnode = renderSlot(ctx.slots, 'titleLeafLabel', ({ ...node.referenceSourceNode }))
+
+          if (Methoder.getVNodes(vnode)) {
+            return (
+              <span class="s-tree-title-label">
+                <SEllipsis
+                  tooltip={props.tooltip}
+                  ellipsis={true}
+                >
+                  { vnode }
+                </SEllipsis>
+              </span>
+            )
+          }
         }
 
         if (helper.isNonEmptyArray(node.titles)) {
+          const primary = token.value.colorPrimary
+          const inherit = 'inherit'
+
           return (
             <span class="s-tree-title-label">
               <SEllipsis
                 tooltip={props.tooltip}
                 ellipsis={true}
               >
-                <span class="normal">{ node.titles[0] }</span>
-                <span class="primary">{ node.titles[1] }</span>
-                <span class="normal">{ node.titles[2] }</span>
+                <span class="normal" style={{ color: inherit }}>{ node.titles[0] }</span>
+                <span class="primary" style={{ color: primary }}>{ node.titles[1] }</span>
+                <span class="normal" style={{ color: inherit }}>{ node.titles[2] }</span>
               </SEllipsis>
             </span>
           )
@@ -2766,11 +2818,15 @@ export const STree = defineComponent({
 
       const RenderTreeNodeTitleLeafButton = (node: STreeTargetNode, ctx: typeof context) => {
         if (helper.isFunction(ctx.slots.titleLeafButton)) {
-          return (
-            <span class={['s-tree-title-button', { 'always-show-title-button': props.alwaysShowTitleButton === true || node.alwaysShowTitleButton === true }]}>
-              { ctx.slots.titleLeafButton({ ...node.referenceSourceNode }) }
-            </span>
-          )
+          const vnode = renderSlot(ctx.slots, 'titleLeafButton', ({ ...node.referenceSourceNode }))
+
+          if (Methoder.getVNodes(vnode)) {
+            return (
+              <span class={['s-tree-title-button', { 'always-show-title-button': props.alwaysShowTitleButton === true || node.alwaysShowTitleButton === true }]}>
+                { vnode }
+              </span>
+            )
+          }
         }
 
         return <span class="s-tree-title-button"></span>
@@ -2783,7 +2839,11 @@ export const STree = defineComponent({
         }
 
         if (helper.isFunction(ctx.slots.titleRoot)) {
-          return ctx.slots.titleRoot({ ...node.referenceSourceNode })
+          const vnode = renderSlot(ctx.slots, 'titleRoot', ({ ...node.referenceSourceNode }))
+
+          if (Methoder.getVNodes(vnode)) {
+            return vnode
+          }
         }
 
         return (
@@ -2801,7 +2861,11 @@ export const STree = defineComponent({
         }
 
         if (helper.isFunction(ctx.slots.titleParent)) {
-          return ctx.slots.titleParent({ ...node.referenceSourceNode })
+          const vnode = renderSlot(ctx.slots, 'titleParent', ({ ...node.referenceSourceNode }))
+
+          if (Methoder.getVNodes(vnode)) {
+            return vnode
+          }
         }
 
         return (
@@ -2819,7 +2883,11 @@ export const STree = defineComponent({
         }
 
         if (helper.isFunction(ctx.slots.titleLeaf)) {
-          return ctx.slots.titleLeaf({ ...node.referenceSourceNode })
+          const vnode = renderSlot(ctx.slots, 'titleLeaf', ({ ...node.referenceSourceNode }))
+
+          if (Methoder.getVNodes(vnode)) {
+            return vnode
+          }
         }
 
         return (
@@ -2936,9 +3004,9 @@ export const STree = defineComponent({
     })
 
     watch(() => [Stater.filterField.value, Stater.filterValue.value], () => Transformer.resetPropFilters())
-    watch(() => [...Stater.checkedKeys, ...Stater.outCheckedKeys], () => Transformer.resetPropCheckedKeys())
-    watch(() => [...Stater.selectedKeys], () => Transformer.resetPropSelectedKeys())
-    watch(() => [...Stater.expandedKeys], () => Transformer.resetPropExpandedKeys())
+    watch(() => [...Stater.checkedKeys, ...Stater.outCheckedKeys, ...Stater.flatTreeNodes], () => Transformer.resetPropCheckedKeys())
+    watch(() => [...Stater.selectedKeys, ...Stater.flatTreeNodes], () => Transformer.resetPropSelectedKeys())
+    watch(() => [...Stater.expandedKeys, ...Stater.flatTreeNodes], () => Transformer.resetPropExpandedKeys())
 
     watch(() => props.bgColor, () => {
       const bgColor = props.bgColor
@@ -2982,6 +3050,8 @@ export const STree = defineComponent({
       forceUpdate: Methoder.forceUpdate,
     })
 
+    const token = ATheme.useToken().token
+
     Transformer.resetStaterLinkTreeNodes()
     Transformer.resetStaterExpandedKeys()
     Transformer.resetStaterSelectedKeys()
@@ -3005,7 +3075,7 @@ export const STree = defineComponent({
 export const treeDataDefiner = <T extends Record<string, any> = Record<string, any>>(treeData: T[]) => ref(treeData)
 export const treeLoadDataDefiner = <T extends Record<string, any> = Record<string, any>>(loadData: STreeLoadData<T>) => loadData
 export const treeDropHandlerDefiner = (dropHandler: STreeDropHandler) => dropHandler
-export const treeReplaceFieldsDefiner = (replaceFields: STreeFieldNames) => ref(replaceFields)
+export const treeFieldNamesDefiner = (fieldNames: STreeFieldNames) => ref(fieldNames)
 
 export const treeEmitCheckDefiner = (func: (emiter: STreeEmiterCheck) => void) => func
 export const treeEmitSelectDefiner = (func: (emiter: STreeEmiterSelect) => void) => func

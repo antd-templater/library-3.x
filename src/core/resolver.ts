@@ -27,7 +27,7 @@ export const AntdLibraries = [
   'treeEmitExpandDefiner',
   'treeEmitChangeDefiner',
   'treeDropHandlerDefiner',
-  'treeReplaceFieldsDefiner',
+  'treeFieldNamesDefiner',
 
   // S-Table
   'tableSorterDefiner',

@@ -32,7 +32,7 @@ import { treeEmitSelectDefiner } from './S-Tree/index'
 import { treeEmitExpandDefiner } from './S-Tree/index'
 import { treeEmitChangeDefiner } from './S-Tree/index'
 import { treeDropHandlerDefiner } from './S-Tree/index'
-import { treeReplaceFieldsDefiner } from './S-Tree/index'
+import { treeFieldNamesDefiner } from './S-Tree/index'
 
 // S-Table
 import { STable } from './S-Table/index'
@@ -113,7 +113,7 @@ export {
   treeEmitExpandDefiner,
   treeEmitChangeDefiner,
   treeDropHandlerDefiner,
-  treeReplaceFieldsDefiner,
+  treeFieldNamesDefiner,
 
   STable,
   tableSorterDefiner,

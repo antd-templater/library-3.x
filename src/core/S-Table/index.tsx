@@ -67,7 +67,7 @@ export const STable = defineComponent({
     sources: VueTypes.array<STableRecordType>().def(() => ([])),
     summarys: VueTypes.array<STableRecordType>().def(() => ([])),
     paginate: VueTypes.any<STablePartPaginate>().def(() => ({})),
-    loadData: VueTypes.func<STableLoadSource>().def(undefined),
+    loadData: VueTypes.func<STableLoadSource<any>>().def(undefined),
     tableLayout: VueTypes.string<'auto' | 'fixed'>().def(undefined),
     persistSourceRanges: VueTypes.any<Array<[number, number]> | boolean>().def(false),
     customHeaderRowAttrs: VueTypes.func<STableCustomHeaderRowAttrs>().def(undefined),

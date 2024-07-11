@@ -23,6 +23,7 @@
   }
 
   .ant-tree-switcher {
+    height: 24px;
     background-color: transparent;
 
     // fix boundary
@@ -36,7 +37,9 @@
   }
 
   .ant-tree-checkbox {
-    margin: 4px 6px 0 0;
+    margin: 0 6px 0 0;
+    margin-inline-end: 6px;
+    margin-block-start: 0;
   }
 
   .ant-tree {
@@ -114,6 +117,18 @@
       width: 100%;
       display: flex;
       flex: 1 1 auto;
+    }
+
+    .ant-tree-node-content-wrapper .ant-tree-iconEle {
+      flex: 0 0 auto;
+      padding-right: 5px;
+      margin-left: -4px;
+    }
+
+    .ant-tree-checkbox + span .ant-tree-iconEle {
+      flex: 0 0 auto;
+      padding-right: 5px;
+      margin-left: -4px;
     }
 
     .ant-tree-list-holder-inner {

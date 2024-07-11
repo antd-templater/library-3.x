@@ -13,6 +13,7 @@ export interface STreeFieldNames {
   key?: string;
   icon?: string;
   title?: string;
+  isLeaf?: string;
   children?: string;
   disabled?: string;
   disableCheckbox?: string;
@@ -107,6 +108,8 @@ export interface STreeSourcer {
 }
 
 export interface STreeMethoder {
+  getVNodes: (node: any) => any;
+
   renderSwitcher: (node: STreeTargetNode) => string;
   triggerSwitcher: (node: STreeTargetNode) => void;
 
@@ -222,7 +225,7 @@ export interface STreeEmiterChange {
 }
 
 export interface STreeLoadData<T = STreeSourceNode> {
-  (treeNode: T, options?: { loadKeys: STreeKeys; loadedKeys: STreeKeys; checkedKeys: STreeKeys; outCheckedKeys: STreeKeys; selectedKeys: STreeKeys; expandedKeys: STreeKeys; }): Promise<STreeSourceNodes>;
+  (treeNode: T, options?: { loadKeys: STreeKeys; loadedKeys: STreeKeys; checkedKeys: STreeKeys; outCheckedKeys: STreeKeys; selectedKeys: STreeKeys; expandedKeys: STreeKeys; }): Promise<Array<T> | void> | Array<T> | void;
 }
 
 export type STreeKey = Key
