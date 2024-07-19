@@ -54,7 +54,7 @@
   "dependencies": {
     "@ant-design/icons-vue": "^7.0.1",
     "ant-design-vue": "^4.2.3",
-    "dayjs": "^1.11.11",
+    "dayjs": "^1.11.12",
     "js-simpler": "^1.6.2",
     "less": "^4.2.0",
     "vue": "^3.4.32",
@@ -85,7 +85,7 @@
     "cz-message-helper": "^1.3.1",
     "eslint": "^9.7.0",
     "eslint-plugin-vue": "^9.27.0",
-    "husky": "^9.1.0",
+    "husky": "^9.1.1",
     "lint-staged": "^15.2.7",
     "postcss": "^8.4.39",
     "prettier": "^3.3.3",
