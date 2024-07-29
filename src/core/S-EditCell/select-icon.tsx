@@ -192,10 +192,10 @@ export const SEditCellSelectIcon = defineComponent({
       const cellText = (isPrimitive ? helper.takeTextByKey(props.options, text, fieldLabel, fieldValue, fieldOptions) || props.text : props.text) as any
       const cellIcon = slotText ?? (isIconType(cellText) || (helper.isNonEmptyString(iconPrefix) && helper.isNonEmptyString(iconfontUrl) && cellText.startsWith(iconPrefix))
         ? (
-          <span>
-            <SIcon type={cellText} iconPrefix={iconPrefix} iconfontUrl={iconfontUrl} class={iconClass} style={iconStyle ?? 'margin-right: 5px;'} />
-            {cellText}
-          </span>
+            <span>
+              <SIcon type={cellText} iconPrefix={iconPrefix} iconfontUrl={iconfontUrl} class={iconClass} style={iconStyle ?? 'margin-right: 5px;'} />
+              {cellText}
+            </span>
           )
         : cellText)
 
