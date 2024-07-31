@@ -103,7 +103,7 @@ importers:
         specifier: ^9.27.0
         version: 9.27.0(eslint@9.8.0)
       husky:
-        specifier: ^9.1.3
+        specifier: ^9.1.4
         version: 9.1.4
       lint-staged:
         specifier: ^15.2.7
@@ -142,7 +142,7 @@ importers:
         specifier: ^5.5.4
         version: 5.5.4
       typescript-eslint:
-        specifier: ^7.17.0
+        specifier: ^7.18.0
         version: 7.18.0(eslint@9.8.0)(typescript@5.5.4)
       volar-service-prettyhtml:
         specifier: ^0.0.54
