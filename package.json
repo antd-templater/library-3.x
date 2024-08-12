@@ -98,7 +98,7 @@
     "shx": "^0.3.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4",
-    "typescript-eslint": "^7.18.0",
+    "typescript-eslint": "^8.1.0",
     "volar-service-prettyhtml": "^0.0.54",
     "vue-template-compiler": "^2.7.16",
     "vue-tsc": "^2.0.29"
