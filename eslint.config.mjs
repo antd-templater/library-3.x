@@ -90,6 +90,7 @@ export default tseslint.config(
         allowDeclarations: true,
         allowDefinitionFiles: true,
       }],
+      '@typescript-eslint/no-unused-expressions': 'off',
       '@typescript-eslint/no-unused-vars': ['error', {
         vars: 'all',
         args: 'none',
