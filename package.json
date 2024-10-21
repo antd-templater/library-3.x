@@ -67,7 +67,7 @@
     "@ctrl/tinycolor": "^4.1.0",
     "@eslint/config-inspector": "^0.5.5",
     "@eslint/js": "^9.13.0",
-    "@release-it/conventional-changelog": "^8.0.2",
+    "@release-it/conventional-changelog": "^9.0.0",
     "@rollup/plugin-alias": "^5.1.1",
     "@rollup/plugin-commonjs": "^28.0.1",
     "@rollup/plugin-json": "^6.1.0",
