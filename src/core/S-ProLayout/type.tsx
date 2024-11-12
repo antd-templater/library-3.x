@@ -6,7 +6,7 @@ export interface SProLayoutMetaInfo {
   icon?: string | VNode;
   type?: string;
   title?: string;
-  target?: '_blank' | '_self' | 'none' | null;
+  target?: '_blank' | '_self' | '_none' | 'router-link' | 'nuxt-link' | 'RouterLink' | 'NuxtLink' | null;
   hideChildInMenu?: boolean;
   isMenuGroup?: boolean;
   hideInMenu?: boolean;

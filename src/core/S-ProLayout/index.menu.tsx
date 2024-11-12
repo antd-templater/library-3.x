@@ -69,10 +69,10 @@ export const BaseMenu = defineComponent({
         Object.assign(attrs, { href: item.path, target: '_blank' })
       }
 
-      if (meta.target !== '_blank' && meta.target !== '_self' && meta.target !== 'none') {
+      if (meta.target !== '_blank' && meta.target !== '_self' && meta.target !== '_none') {
         const locale = props.locale
         const prefixCls = props.prefixCls
-        const CustomTag = resolveComponent('router-link') as any
+        const CustomTag = resolveComponent(meta.target ?? 'RouterLink') as any
         const menuTitle = helper.isFunction(locale) ? locale(meta.title) : meta.title
         const titleStyle = menu.icon ? { marginInlineStart: '10px' } : {}
 
@@ -98,7 +98,7 @@ export const BaseMenu = defineComponent({
         )
       }
 
-      if (meta.target !== 'none' && check.test(item.path)) {
+      if (meta.target !== '_none' && check.test(item.path)) {
         const locale = props.locale
         const prefixCls = props.prefixCls
         const menuTitle = helper.isFunction(locale) ? locale(meta.title) : meta.title
@@ -112,7 +112,7 @@ export const BaseMenu = defineComponent({
         )
       }
 
-      if (meta.target === 'none') {
+      if (meta.target === '_none') {
         const locale = props.locale
         const prefixCls = props.prefixCls
         const menuTitle = helper.isFunction(locale) ? locale(meta.title) : meta.title
