@@ -15,6 +15,7 @@ import { SEditCellTextarea } from './S-EditCell/textarea'
 import { SEditCellSelectIcon } from './S-EditCell/select-icon'
 import { SEditCellTreeSelect } from './S-EditCell/tree-select'
 import { SEditCellDatePicker } from './S-EditCell/date-picker'
+import { SEditCellAutoComplete } from './S-EditCell/auto-complete'
 
 // S-Form
 import { SForm } from './S-Form/index'
@@ -77,6 +78,7 @@ export default {
     app.component('SEditCellSelectIcon', SEditCellSelectIcon)
     app.component('SEditCellTreeSelect', SEditCellTreeSelect)
     app.component('SEditCellDatePicker', SEditCellDatePicker)
+    app.component('SEditCellAutoComplete', SEditCellAutoComplete)
     app.component('SIconSelect', SIconSelect)
     app.component('SEllipsis', SEllipsis)
     app.component('STable', STable)
@@ -98,6 +100,7 @@ export {
   SEditCellSelectIcon,
   SEditCellTreeSelect,
   SEditCellDatePicker,
+  SEditCellAutoComplete,
 
   SForm,
   formValidator,

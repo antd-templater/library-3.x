@@ -1,0 +1,64 @@
+.s-editable-cell-container {
+  width: 100%;
+  position: relative;
+
+  &.editabled {
+    min-width: 90px;
+  }
+
+  .s-editable-cell-input-wrapper {
+    position: relative;
+
+    &:not(.disabled-icon) {
+      padding-right: 24px;
+    }
+
+    &.disabled-icon {
+      padding-right: 5px;
+    }
+
+    & > .s-editable-cell-input {
+      width: 100%;
+    }
+
+    & > .s-editable-cell-button-check {
+      position: absolute;
+      top: 52%;
+      right: 2px;
+      width: 20px;
+      transform: translateY(-50%);
+      cursor: pointer;
+      border: none;
+    }
+  }
+
+  .s-editable-cell-text-wrapper {
+    width: 100%;
+    min-height: 20px;
+    position: relative;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    word-break: break-all;
+    overflow: hidden;
+    cursor: pointer;
+
+    &:not(.disabled-icon) {
+      padding-right: 24px;
+      cursor: pointer;
+    }
+
+    &.disabled-icon {
+      padding-right: 5px;
+    }
+
+    & > .s-editable-cell-button-edit {
+      position: absolute;
+      top: 52%;
+      right: 8px;
+      width: 20px;
+      transform: translateY(-50%);
+      cursor: pointer;
+      border: none;
+    }
+  }
+}

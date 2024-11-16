@@ -2,6 +2,7 @@
 
 declare module 'vue' {
   export interface GlobalComponents {
+    SEditCellAutoComplete: typeof import('./S-EditCell/auto-complete')['default'];
     SEditCellDatePicker: typeof import('./S-EditCell/date-picker')['default'];
     SEditCellTreeSelect: typeof import('./S-EditCell/tree-select')['default'];
     SEditCellSelectIcon: typeof import('./S-EditCell/select-icon')['default'];
@@ -18,6 +19,7 @@ declare module 'vue' {
 }
 
 declare global {
+  export type SEditCellAutoComplete = typeof import('./S-EditCell/auto-complete')['default']
   export type SEditCellDatePicker = typeof import('./S-EditCell/date-picker')['default']
   export type SEditCellTreeSelect = typeof import('./S-EditCell/tree-select')['default']
   export type SEditCellSelectIcon = typeof import('./S-EditCell/select-icon')['default']
