@@ -7,6 +7,7 @@ import { defaultBaseMenuProps } from './props'
 import { defaultSettingProps } from './props'
 import { resolveComponent } from 'vue'
 import { defineComponent } from 'vue'
+import { Fragment } from 'vue'
 import { computed } from 'vue'
 
 import type { Key } from 'ant-design-vue/es/_util/type'
@@ -465,10 +466,10 @@ export const SiderMenu = defineComponent({
     }
 
     return () => (
-      <>
+      <Fragment>
         { RenderFixSiderbar() }
         { RenderLayoutSider() }
-      </>
+      </Fragment>
     )
   },
 })

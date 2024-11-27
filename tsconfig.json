@@ -5,6 +5,8 @@
     "target": "ESNext",
     "module": "ESNext",
     "jsx": "preserve",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
     "moduleResolution": "Bundler",
     "useDefineForClassFields": true,
     "allowSyntheticDefaultImports": true,

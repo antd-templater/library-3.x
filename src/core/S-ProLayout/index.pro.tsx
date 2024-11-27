@@ -15,6 +15,7 @@ import { defaultBaseMenuProps } from './props'
 import { defaultSettingProps } from './props'
 import { defineComponent } from 'vue'
 import { CSSProperties } from 'vue'
+import { Fragment } from 'vue'
 import { computed } from 'vue'
 
 import helper from '@/helper'
@@ -130,10 +131,10 @@ export const ProLayoutHeader = defineComponent({
 
     return () => {
       return (
-        <>
+        <Fragment>
           { RenderPaddingHeader() }
           { RenderLayoutHeader() }
-        </>
+        </Fragment>
       )
     }
   },

@@ -3821,10 +3821,10 @@ export const STable = defineComponent({
             }
 
             return (
-              <>
+              <Fragment>
                 { RenderSourceNode() }
                 { RenderExpandNode() }
-              </>
+              </Fragment>
             )
           })
         }
