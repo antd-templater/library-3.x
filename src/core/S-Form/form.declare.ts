@@ -202,7 +202,7 @@ export type SFormGroupSlotItem = {
   label: string;
   field: string;
   items: Array<SFormRowSlotItem>;
-  border?: string | boolean ;
+  border?: string | boolean;
   readonly: boolean;
   disabled: boolean;
   render: boolean;
