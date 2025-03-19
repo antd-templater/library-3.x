@@ -103,7 +103,7 @@ export default tseslint.config(
       }],
       '@typescript-eslint/no-var-requires': 'off',
       'no-empty': 'off',
-      'no-undef': 'error',
+      'no-undef': 'off',
     },
   },
   {
